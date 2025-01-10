@@ -8,10 +8,14 @@ import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.team1533.frc.robot.Robot;
+import com.team1533.frc2025.Robot;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class TalonFXIO implements MotorIO {
     protected final TalonFX talon;
@@ -21,11 +25,11 @@ public class TalonFXIO implements MotorIO {
     private final VelocityVoltage velocityVoltageControl = new VelocityVoltage(0.0);
     private final PositionVoltage positionVoltageControl = new PositionVoltage(0.0);
     private final MotionMagicVoltage motionMagicPositionControl = new MotionMagicVoltage(0.0);
-    private final StatusSignal<Double> positionSignal;
-    private final StatusSignal<Double> velocitySignal;
-    private final StatusSignal<Double> voltageSignal;
-    private final StatusSignal<Double> currentStatorSignal;
-    private final StatusSignal<Double> currentSupplySignal;
+    private final StatusSignal<Angle> positionSignal;
+    private final StatusSignal<AngularVelocity> velocitySignal;
+    private final StatusSignal<Voltage> voltageSignal;
+    private final StatusSignal<Current> currentStatorSignal;
+    private final StatusSignal<Current> currentSupplySignal;
 
     private BaseStatusSignal[] signals;
 

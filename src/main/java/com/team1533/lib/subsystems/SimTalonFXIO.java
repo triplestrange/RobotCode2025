@@ -4,10 +4,16 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.team1533.lib.time.RobotTime;
 
+import edu.wpi.first.math.controller.LinearQuadraticRegulator;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+
+import org.ejml.ops.DConvertMatrixStruct;
+import org.ironmaple.simulation.motorsims.MapleMotorSim;
+import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.littletonrobotics.junction.Logger;
 
 public class SimTalonFXIO extends TalonFXIO {
@@ -17,7 +23,6 @@ public class SimTalonFXIO extends TalonFXIO {
 
     public SimTalonFXIO(ServoMotorSubsystemConfig config) {
         super(config);
-
         sim = new DCMotorSim(
                 DCMotor.getKrakenX60Foc(1),
                 1.0 / config.unitToRotorRatio,

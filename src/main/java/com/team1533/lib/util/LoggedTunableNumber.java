@@ -13,8 +13,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
-import com.team1533.frc.robot.Constants;
+import com.team1533.frc2025.Constants;
 
 /**
  * Class for a tunable number. Gets value from dashboard in tuning mode, returns
@@ -22,12 +23,12 @@ import com.team1533.frc.robot.Constants;
  * value not in dashboard.
  */
 public class LoggedTunableNumber implements DoubleSupplier {
-  private static final String tableKey = "TunableNumbers";
+  private static final String tableKey = "/SmartDashboard/TunableNumbers";
 
   private final String key;
   private boolean hasDefault = false;
   private double defaultValue;
-  private LoggedDashboardNumber dashboardNumber;
+  private LoggedNetworkNumber dashboardNumber;
   private Map<Integer, Double> lastHasChangedValues = new HashMap<>();
 
   /**
@@ -59,7 +60,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
     if (!hasDefault) {
       hasDefault = true;
       this.defaultValue = defaultValue;
-      if (Constants.LoggerConstants.tuningMode) {
+      if (Constants.tuningMode) {
         dashboardNumber = new LoggedDashboardNumber(key, defaultValue);
       }
     }
@@ -74,7 +75,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
     if (!hasDefault) {
       return 0.0;
     } else {
-      return Constants.LoggerConstants.tuningMode ? dashboardNumber.get() : defaultValue;
+      return Constants.tuningMode ? dashboardNumber.get() : defaultValue;
     }
   }
 
@@ -89,7 +90,7 @@ public class LoggedTunableNumber implements DoubleSupplier {
    *         otherwise.
    */
   public boolean hasChanged(int id) {
-    if (!Constants.LoggerConstants.tuningMode)
+    if (!Constants.tuningMode)
       return false;
     double currentValue = get();
     Double lastValue = lastHasChangedValues.get(id);

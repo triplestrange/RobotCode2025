@@ -1,7 +1,6 @@
 package com.team1533.lib.subsystems;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.team1533.frc.robot.Constants;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.Util;
 
@@ -9,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.*;
 
 import org.littletonrobotics.junction.Logger;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 /**

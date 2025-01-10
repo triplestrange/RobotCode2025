@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter.AdvantageScopeOpenBehavior;
 
 import com.team1533.lib.loops.Looper;
 import com.team1533.lib.util.Alert;
@@ -33,8 +34,8 @@ import java.util.Map;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private Looper enabledLoop = new Looper(Constants.LoggerConstants.kSimDt);
-  private Looper disabledLoop = new Looper(Constants.LoggerConstants.kSimDt);
+  private Looper enabledLoop = new Looper(Constants.kSimDt);
+  private Looper disabledLoop = new Looper(Constants.kSimDt);
 
   private Command autonomousCommand;
   private RobotContainer robotContainer;
@@ -50,7 +51,7 @@ public class Robot extends LoggedRobot {
 
     // Set a metadata value
 
-    switch (Constants.LoggerConstants.getMode()) {
+    switch (Constants.getMode()) {
       case REAL:
         // Running on a real robot, log to a USB stick ("/U/logs")
         try {
@@ -82,7 +83,7 @@ public class Robot extends LoggedRobot {
         setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog();
         Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim"), 0.01));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         break;
     }
 
