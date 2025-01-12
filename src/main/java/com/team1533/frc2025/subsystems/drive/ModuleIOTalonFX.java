@@ -22,8 +22,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants;
-import frc.robot.generated.TunerConstants;
+import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.generated.TunerConstants;
 
 public abstract class ModuleIOTalonFX implements ModuleIO {
     protected final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;

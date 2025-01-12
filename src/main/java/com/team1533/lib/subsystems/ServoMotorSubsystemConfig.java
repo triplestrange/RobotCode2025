@@ -3,6 +3,8 @@ package com.team1533.lib.subsystems;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.team1533.lib.drivers.CANDeviceId;
 
+import edu.wpi.first.units.measure.MomentOfInertia;
+
 public class ServoMotorSubsystemConfig {
     public String name = "UNNAMED";
     public CANDeviceId talonCANID;

@@ -3,7 +3,7 @@ package com.team1533.frc2025.subsystems.drive;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.util.Units;
-import frc.robot.util.PhoenixUtil;
+import com.team1533.lib.util.PhoenixUtil;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 
 public class GyroIOSim implements GyroIO {
