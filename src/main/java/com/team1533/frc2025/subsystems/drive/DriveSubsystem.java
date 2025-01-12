@@ -20,7 +20,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Mode;
 import com.team1533.frc2025.generated.TunerConstants;
-import com.team1533.frc2025.subsystems.vision.Vision;
+import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -53,7 +53,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends SubsystemBase implements Vision.VisionConsumer {
+public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.VisionConsumer {
 
     // TunerConstants doesn't include these constants, so they are declared locally
     static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
@@ -122,7 +122,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
             lastModulePositions, new Pose2d());
 
-    public Drive(
+    public DriveSubsystem(
             GyroIO gyroIO,
             ModuleIO flModuleIO,
             ModuleIO frModuleIO,
