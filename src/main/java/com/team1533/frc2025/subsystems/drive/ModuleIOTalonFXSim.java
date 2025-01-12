@@ -10,19 +10,24 @@ package com.team1533.frc2025.subsystems.drive;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.team1533.lib.util.PhoenixUtil;
 import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 
 /**
- * Physics sim implementation of module IO. The sim models are configured using a set of module
+ * Physics sim implementation of module IO. The sim models are configured using
+ * a set of module
  * constants from Phoenix. Simulation is always based on voltage control.
  */
 public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
   private final SwerveModuleSimulation simulation;
 
-  public ModuleIOTalonFXSim(SwerveModuleConstants constants, SwerveModuleSimulation simulation) {
+  public ModuleIOTalonFXSim(
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
+      SwerveModuleSimulation simulation) {
     super(constants);
 
     this.simulation = simulation;
@@ -45,10 +50,9 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
     // Update odometry inputs
     inputs.odometryTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
 
-    inputs.odometryDrivePositionsRad =
-        Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
-            .mapToDouble(angle -> angle.in(Radians))
-            .toArray();
+    inputs.odometryDrivePositionsRad = Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
+        .mapToDouble(angle -> angle.in(Radians))
+        .toArray();
 
     inputs.odometryTurnPositions = simulation.getCachedSteerAbsolutePositions();
   }

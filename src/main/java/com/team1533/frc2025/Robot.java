@@ -7,6 +7,7 @@
 
 package com.team1533.frc2025;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotController;
@@ -154,7 +155,6 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void autonomousInit() {
-
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
       autonomousCommand.schedule();

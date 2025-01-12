@@ -18,12 +18,14 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.Constants.Mode;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -308,7 +310,10 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        if (Constants.getMode() == Constants.Mode.REAL)
+            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        else
+            RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
     }
 
     /** Adds a new timestamped vision measurement. */

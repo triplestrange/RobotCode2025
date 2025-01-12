@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.team1533.frc2025.subsystems.drive.DriveConstants;
 import com.team1533.frc2025.subsystems.drive.DriveSubsystem;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -134,7 +136,7 @@ public class DriveCharacterizer {
                                     for (int i = 0; i < 4; i++) {
                                         wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                                     }
-                                    double wheelRadius = (state.gyroDelta * DriveSubsystem.DRIVE_BASE_RADIUS)
+                                    double wheelRadius = (state.gyroDelta * DriveConstants.DRIVE_BASE_RADIUS)
                                             / wheelDelta;
 
                                     NumberFormat formatter = new DecimalFormat("#0.000");

@@ -18,7 +18,10 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.frc2025.subsystems.drive.DriveConstants;
 import com.team1533.frc2025.subsystems.drive.DriveSubsystem;
 import com.team1533.frc2025.subsystems.drive.GyroIO;
 import com.team1533.frc2025.subsystems.drive.GyroIOPigeon2;
@@ -36,7 +39,7 @@ import com.team1533.lib.swerve.DriveCharacterizer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
 
@@ -49,9 +52,13 @@ public class RobotContainer {
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
-        private SwerveDriveSimulation driveSimulation = null;
+        public SwerveDriveSimulation driveSimulation = null;
+
+        @Getter
+        private static RobotContainer instance;
 
         public RobotContainer(Robot robot) {
+                instance = this;
 
                 switch (Constants.getMode()) {
                         case REAL:
@@ -70,7 +77,7 @@ public class RobotContainer {
 
                         case SIM:
 
-                                driveSimulation = new SwerveDriveSimulation(DriveSubsystem.mapleSimConfig,
+                                driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig,
                                                 new Pose2d(3, 3, Rotation2d.fromDegrees(0)));
                                 SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 
@@ -130,13 +137,14 @@ public class RobotContainer {
                 autoChooser.addOption("Drive SysId (Dynamic Reverse)",
                                 driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+                autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
+
                 // configure button bindings
                 configureButtonBindings();
 
         }
 
         private void configureButtonBindings() {
-
         }
 
         /**
@@ -168,4 +176,5 @@ public class RobotContainer {
                                 "FieldSimulation/Algae",
                                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
         }
+
 }
