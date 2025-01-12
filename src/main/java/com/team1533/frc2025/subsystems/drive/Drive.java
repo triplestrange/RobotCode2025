@@ -1,27 +1,15 @@
-// Copyright 2021-2024 FRC 6328
-// http://github.com/Mechanical-Advantage
+// Copyright (c) 2025 FRC 1533
+// 
 //
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
 
 package com.team1533.frc2025.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-import com.ctre.phoenix6.swerve.jni.SwerveJNI;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
@@ -29,15 +17,16 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.Constants.Mode;
+import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.frc2025.subsystems.vision.Vision;
 import com.team1533.lib.util.LocalADStarAK;
-
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.estimator.ExtendedKalmanFilter;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -53,7 +42,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -91,7 +79,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                     TunerConstants.FrontLeft.WheelRadius,
                     TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
                     WHEEL_COF,
-                    DCMotor.getKrakenX60Foc(1).withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+                    DCMotor.getKrakenX60Foc(1)
+                            .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
                     TunerConstants.FrontLeft.SlipCurrent,
                     1),
             getModuleTranslations());
@@ -100,16 +89,17 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
             .withCustomModuleTranslations(getModuleTranslations())
             .withGyro(COTS.ofPigeon2())
-            .withSwerveModule(new SwerveModuleSimulationConfig(
-                    DCMotor.getKrakenX60(1),
-                    DCMotor.getFalcon500(1),
-                    TunerConstants.FrontLeft.DriveMotorGearRatio,
-                    TunerConstants.FrontLeft.SteerMotorGearRatio,
-                    Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
-                    Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
-                    Meters.of(TunerConstants.FrontLeft.WheelRadius),
-                    KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
-                    WHEEL_COF));
+            .withSwerveModule(
+                    new SwerveModuleSimulationConfig(
+                            DCMotor.getKrakenX60(1),
+                            DCMotor.getFalcon500(1),
+                            TunerConstants.FrontLeft.DriveMotorGearRatio,
+                            TunerConstants.FrontLeft.SteerMotorGearRatio,
+                            Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
+                            Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
+                            Meters.of(TunerConstants.FrontLeft.WheelRadius),
+                            KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
+                            WHEEL_COF));
 
     static final Lock odometryLock = new ReentrantLock();
 
@@ -132,7 +122,12 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
             lastModulePositions, new Pose2d());
 
-    public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
+    public Drive(
+            GyroIO gyroIO,
+            ModuleIO flModuleIO,
+            ModuleIO frModuleIO,
+            ModuleIO blModuleIO,
+            ModuleIO brModuleIO) {
         this.gyroIO = gyroIO;
         modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
@@ -151,23 +146,31 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 this::setPose,
                 this::getChassisSpeeds,
                 this::runVelocity,
-                new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+                new PPHolonomicDriveController(
+                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
                 PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
-        PathPlannerLogging.setLogActivePathCallback((activePath) -> {
-            Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-        });
-        PathPlannerLogging.setLogTargetPoseCallback((targetPose) -> {
-            Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-        });
+        PathPlannerLogging.setLogActivePathCallback(
+                (activePath) -> {
+                    Logger.recordOutput(
+                            "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+                });
+        PathPlannerLogging.setLogTargetPoseCallback(
+                (targetPose) -> {
+                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+                });
 
         // Configure SysId
         sysId = new SysIdRoutine(
                 new SysIdRoutine.Config(
-                        null, null, null, (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-                new SysIdRoutine.Mechanism((voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+                        null,
+                        null,
+                        null,
+                        (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                new SysIdRoutine.Mechanism(
+                        (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
     }
 
     @Override
@@ -203,7 +206,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
                 modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
                 moduleDeltas[moduleIndex] = new SwerveModulePosition(
-                        modulePositions[moduleIndex].distanceMeters - lastModulePositions[moduleIndex].distanceMeters,
+                        modulePositions[moduleIndex].distanceMeters
+                                - lastModulePositions[moduleIndex].distanceMeters,
                         modulePositions[moduleIndex].angle);
                 lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
             }
@@ -222,7 +226,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.getMode() != Mode.SIM);
     }
 
     /**
@@ -263,8 +267,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     /**
      * Stops the drive and turns the modules to an X arrangement to resist movement.
-     * The modules will return to their
-     * normal orientations the next time a nonzero velocity is requested.
+     * The modules will
+     * return to their normal orientations the next time a nonzero velocity is
+     * requested.
      */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
@@ -277,7 +282,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     /** Returns a command to run a quasistatic test in the specified direction. */
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.quasistatic(direction));
+        return run(() -> runCharacterization(0.0))
+                .withTimeout(1.0)
+                .andThen(sysId.quasistatic(direction));
     }
 
     /** Returns a command to run a dynamic test in the specified direction. */
@@ -355,8 +362,12 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     /** Adds a new timestamped vision measurement. */
     @Override
-    public void accept(Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs) {
-        poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    public void accept(
+            Pose2d visionRobotPoseMeters,
+            double timestampSeconds,
+            Matrix<N3, N1> visionMeasurementStdDevs) {
+        poseEstimator.addVisionMeasurement(
+                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
     /** Returns the maximum linear speed in meters per sec. */

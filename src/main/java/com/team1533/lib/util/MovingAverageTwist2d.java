@@ -1,51 +1,53 @@
+// Copyright (c) 2025 FRC 1533
+// 
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1533.lib.util;
 
+import edu.wpi.first.math.geometry.Twist2d;
 import java.util.ArrayList;
 
-import edu.wpi.first.math.geometry.Twist2d;
-
-/**
- * Helper class for storing and calculating a moving average of the Twist2d
- * class
- */
+/** Helper class for storing and calculating a moving average of the Twist2d class */
 public class MovingAverageTwist2d {
-    ArrayList<Twist2d> twists = new ArrayList<Twist2d>();
-    private int maxSize;
+  ArrayList<Twist2d> twists = new ArrayList<Twist2d>();
+  private int maxSize;
 
-    public MovingAverageTwist2d(int maxSize) {
-        this.maxSize = maxSize;
+  public MovingAverageTwist2d(int maxSize) {
+    this.maxSize = maxSize;
+  }
+
+  public synchronized void add(Twist2d twist) {
+    twists.add(twist);
+    if (twists.size() > maxSize) {
+      twists.remove(0);
+    }
+  }
+
+  public synchronized Twist2d getAverage() {
+    double x = 0.0, y = 0.0, t = 0.0;
+
+    for (Twist2d twist : twists) {
+      x += twist.dx;
+      y += twist.dy;
+      t += twist.dtheta;
     }
 
-    public synchronized void add(Twist2d twist) {
-        twists.add(twist);
-        if (twists.size() > maxSize) {
-            twists.remove(0);
-        }
-    }
+    double size = getSize();
+    return new Twist2d(x / size, y / size, t / size);
+  }
 
-    public synchronized Twist2d getAverage() {
-        double x = 0.0, y = 0.0, t = 0.0;
+  public int getSize() {
+    return twists.size();
+  }
 
-        for (Twist2d twist : twists) {
-            x += twist.dx;
-            y += twist.dy;
-            t += twist.dtheta;
-        }
+  public boolean isUnderMaxSize() {
+    return getSize() < maxSize;
+  }
 
-        double size = getSize();
-        return new Twist2d(x / size, y / size, t / size);
-    }
-
-    public int getSize() {
-        return twists.size();
-    }
-
-    public boolean isUnderMaxSize() {
-        return getSize() < maxSize;
-    }
-
-    public void clear() {
-        twists.clear();
-    }
-
+  public void clear() {
+    twists.clear();
+  }
 }

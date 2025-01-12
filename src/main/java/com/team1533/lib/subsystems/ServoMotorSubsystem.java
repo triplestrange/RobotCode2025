@@ -1,153 +1,174 @@
+// Copyright (c) 2025 FRC 1533
+// 
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1533.lib.subsystems;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.Util;
-
 import edu.wpi.first.wpilibj2.command.*;
-
-import org.littletonrobotics.junction.Logger;
-
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * RollerMotorSubsystem
- * 
+ *
  * @param <T>
  */
-public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends MotorIO> extends SubsystemBase {
-    protected U io;
-    protected T inputs;
-    private double positionSetpoint = 0.0;
+public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends MotorIO>
+    extends SubsystemBase {
+  protected U io;
+  protected T inputs;
+  private double positionSetpoint = 0.0;
 
-    protected ServoMotorSubsystemConfig conf;
+  protected ServoMotorSubsystemConfig conf;
 
-    public ServoMotorSubsystem(ServoMotorSubsystemConfig config, T inputs, U io) {
-        super(config.name);
-        this.conf = config;
-        this.io = io;
-        this.inputs = inputs;
+  public ServoMotorSubsystem(ServoMotorSubsystemConfig config, T inputs, U io) {
+    super(config.name);
+    this.conf = config;
+    this.io = io;
+    this.inputs = inputs;
 
-        setDefaultCommand(dutyCycleCommand(() -> 0.0).withName(
-                getName() + " Default Command Neutral"));
-    }
+    setDefaultCommand(dutyCycleCommand(() -> 0.0).withName(getName() + " Default Command Neutral"));
+  }
 
-    @Override
-    public void periodic() {
-        double timestamp = RobotTime.getTimestampSeconds();
-        io.readInputs(inputs);
-        Logger.processInputs(getName(), inputs);
-        Logger.recordOutput(getName() + "/latencyPeriodicSec", RobotTime.getTimestampSeconds() - timestamp);
-    }
+  @Override
+  public void periodic() {
+    double timestamp = RobotTime.getTimestampSeconds();
+    io.readInputs(inputs);
+    Logger.processInputs(getName(), inputs);
+    Logger.recordOutput(
+        getName() + "/latencyPeriodicSec", RobotTime.getTimestampSeconds() - timestamp);
+  }
 
-    protected void setOpenLoopDutyCycleImpl(double dutyCycle) {
-        Logger.recordOutput(getName() + "/API/setOpenLoopDutyCycle/dutyCycle", dutyCycle);
-        io.setOpenLoopDutyCycle(dutyCycle);
-    }
+  protected void setOpenLoopDutyCycleImpl(double dutyCycle) {
+    Logger.recordOutput(getName() + "/API/setOpenLoopDutyCycle/dutyCycle", dutyCycle);
+    io.setOpenLoopDutyCycle(dutyCycle);
+  }
 
-    protected void setPositionSetpointImpl(double units) {
-        positionSetpoint = units;
-        Logger.recordOutput(getName() + "/API/setPositionSetpointImp/Units", units);
-        io.setPositionSetpoint(units);
-    }
+  protected void setPositionSetpointImpl(double units) {
+    positionSetpoint = units;
+    Logger.recordOutput(getName() + "/API/setPositionSetpointImp/Units", units);
+    io.setPositionSetpoint(units);
+  }
 
-    protected void setNeutralModeImpl(NeutralModeValue mode) {
-        Logger.recordOutput(getName() + "/API/setNeutralModeImpl/Mode", mode);
-        io.setNeutralMode(mode);
-    }
+  protected void setNeutralModeImpl(NeutralModeValue mode) {
+    Logger.recordOutput(getName() + "/API/setNeutralModeImpl/Mode", mode);
+    io.setNeutralMode(mode);
+  }
 
-    protected void setMotionMagicSetpointImpl(double units) {
-        positionSetpoint = units;
-        Logger.recordOutput(getName() + "/API/setMotionMagicSetpointImp/Units", units);
-        io.setMotionMagicSetpoint(units);
-    }
+  protected void setMotionMagicSetpointImpl(double units) {
+    positionSetpoint = units;
+    Logger.recordOutput(getName() + "/API/setMotionMagicSetpointImp/Units", units);
+    io.setMotionMagicSetpoint(units);
+  }
 
-    protected void setVelocitySetpointImpl(double unitsPerSecond) {
-        Logger.recordOutput(getName() + "/API/setVelocitySetpointImpl/UnitsPerS", unitsPerSecond);
-        io.setVelocitySetpoint(unitsPerSecond);
-    }
+  protected void setVelocitySetpointImpl(double unitsPerSecond) {
+    Logger.recordOutput(getName() + "/API/setVelocitySetpointImpl/UnitsPerS", unitsPerSecond);
+    io.setVelocitySetpoint(unitsPerSecond);
+  }
 
-    public double getCurrentPosition() {
-        return inputs.unitPosition;
-    }
+  public double getCurrentPosition() {
+    return inputs.unitPosition;
+  }
 
-    public double getCurrentVelocity() {
-        return inputs.velocityUnitsPerSecond;
-    }
+  public double getCurrentVelocity() {
+    return inputs.velocityUnitsPerSecond;
+  }
 
-    public double getPositionSetpoint() {
-        return positionSetpoint;
-    }
+  public double getPositionSetpoint() {
+    return positionSetpoint;
+  }
 
-    public Command dutyCycleCommand(DoubleSupplier dutyCycle) {
-        return runEnd(() -> {
-            setOpenLoopDutyCycleImpl(dutyCycle.getAsDouble());
-        }, () -> {
-            setOpenLoopDutyCycleImpl(0.0);
-        }).withName(getName() + " DutyCycleControl");
-    }
+  public Command dutyCycleCommand(DoubleSupplier dutyCycle) {
+    return runEnd(
+            () -> {
+              setOpenLoopDutyCycleImpl(dutyCycle.getAsDouble());
+            },
+            () -> {
+              setOpenLoopDutyCycleImpl(0.0);
+            })
+        .withName(getName() + " DutyCycleControl");
+  }
 
-    public Command velocitySetpointCommand(DoubleSupplier velocitySupplier) {
-        return runEnd(() -> {
-            setVelocitySetpointImpl(velocitySupplier.getAsDouble());
-        }, () -> {
-        }).withName(getName() + " VelocityControl");
-    }
+  public Command velocitySetpointCommand(DoubleSupplier velocitySupplier) {
+    return runEnd(
+            () -> {
+              setVelocitySetpointImpl(velocitySupplier.getAsDouble());
+            },
+            () -> {})
+        .withName(getName() + " VelocityControl");
+  }
 
-    public Command setCoast() {
-        return startEnd(() -> setNeutralModeImpl(NeutralModeValue.Coast),
-                () -> setNeutralModeImpl(NeutralModeValue.Brake)).withName(getName() + "CoastMode")
-                .ignoringDisable(true);
-    }
+  public Command setCoast() {
+    return startEnd(
+            () -> setNeutralModeImpl(NeutralModeValue.Coast),
+            () -> setNeutralModeImpl(NeutralModeValue.Brake))
+        .withName(getName() + "CoastMode")
+        .ignoringDisable(true);
+  }
 
-    public Command positionSetpointCommand(DoubleSupplier unitSupplier) {
-        return runEnd(() -> {
-            setPositionSetpointImpl(unitSupplier.getAsDouble());
-        }, () -> {
-        }).withName(getName() + " positionSetpointCommand");
-    }
+  public Command positionSetpointCommand(DoubleSupplier unitSupplier) {
+    return runEnd(
+            () -> {
+              setPositionSetpointImpl(unitSupplier.getAsDouble());
+            },
+            () -> {})
+        .withName(getName() + " positionSetpointCommand");
+  }
 
-    public Command positionSetpointUntilOnTargetCommand(DoubleSupplier unitSupplier, DoubleSupplier epsilon) {
-        return new ParallelDeadlineGroup(new WaitUntilCommand(
-                () -> Util.epsilonEquals(unitSupplier.getAsDouble(), inputs.unitPosition, epsilon.getAsDouble())),
-                positionSetpointCommand(unitSupplier));
-    }
+  public Command positionSetpointUntilOnTargetCommand(
+      DoubleSupplier unitSupplier, DoubleSupplier epsilon) {
+    return new ParallelDeadlineGroup(
+        new WaitUntilCommand(
+            () ->
+                Util.epsilonEquals(
+                    unitSupplier.getAsDouble(), inputs.unitPosition, epsilon.getAsDouble())),
+        positionSetpointCommand(unitSupplier));
+  }
 
-    public Command motionMagicSetpointCommand(DoubleSupplier unitSupplier) {
-        return runEnd(() -> {
-            setMotionMagicSetpointImpl(unitSupplier.getAsDouble());
-        }, () -> {
-        }).withName(getName() + " motionMagicSetpointCommand");
-    }
+  public Command motionMagicSetpointCommand(DoubleSupplier unitSupplier) {
+    return runEnd(
+            () -> {
+              setMotionMagicSetpointImpl(unitSupplier.getAsDouble());
+            },
+            () -> {})
+        .withName(getName() + " motionMagicSetpointCommand");
+  }
 
-    protected void setCurrentPositionAsZero() {
-        io.setCurrentPositionAsZero();
-    }
+  protected void setCurrentPositionAsZero() {
+    io.setCurrentPositionAsZero();
+  }
 
-    protected void setCurrentPosition(double positionUnits) {
-        io.setCurrentPosition(positionUnits);
-    }
+  protected void setCurrentPosition(double positionUnits) {
+    io.setCurrentPosition(positionUnits);
+  }
 
-    // TODO: get the actual values for this
-    // public Command waitForElevatorPosition(DoubleSupplier targetPosition) {
-    // return new WaitUntilCommand(() -> Util.epsilonEquals(inputs.unitPosition,
-    // targetPosition.getAsDouble(),
-    // ElevatorConstants.kElevatorPositioningToleranceInches));
-    // }
+  // TODO: get the actual values for this
+  // public Command waitForElevatorPosition(DoubleSupplier targetPosition) {
+  // return new WaitUntilCommand(() -> Util.epsilonEquals(inputs.unitPosition,
+  // targetPosition.getAsDouble(),
+  // ElevatorConstants.kElevatorPositioningToleranceInches));
+  // }
 
-    protected Command withoutLimitsTemporarily() {
-        var prev = new Object() {
-            boolean fwd = false;
-            boolean rev = false;
+  protected Command withoutLimitsTemporarily() {
+    var prev =
+        new Object() {
+          boolean fwd = false;
+          boolean rev = false;
         };
-        return Commands.startEnd(() -> {
-            prev.fwd = conf.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable;
-            prev.rev = conf.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable;
-            io.setEnableSoftLimits(false, false);
-        }, () -> {
-            io.setEnableSoftLimits(prev.fwd, prev.rev);
+    return Commands.startEnd(
+        () -> {
+          prev.fwd = conf.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable;
+          prev.rev = conf.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable;
+          io.setEnableSoftLimits(false, false);
+        },
+        () -> {
+          io.setEnableSoftLimits(prev.fwd, prev.rev);
         });
-    }
-
+  }
 }
