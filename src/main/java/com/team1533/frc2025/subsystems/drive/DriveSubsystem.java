@@ -9,11 +9,8 @@ package com.team1533.frc2025.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -25,13 +22,11 @@ import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
-import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -39,7 +34,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -100,7 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                 this::getChassisSpeeds,
                 this::runVelocity,
                 new PPHolonomicDriveController(
-                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+                        new PIDConstants(0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0)),
                 DriveConstants.PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
@@ -188,6 +182,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
      * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
+        Logger.recordOutput("SwerveStates/AutoSpeeds", speeds);
         // Calculate module setpoints
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
@@ -313,7 +308,8 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         if (Constants.getMode() == Constants.Mode.REAL)
             poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
         else
-            RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
+            RobotContainer.getInstance().driveSimulation
+                    .setSimulationWorldPose(pose.rotateBy(Rotation2d.fromDegrees(180)));
     }
 
     /** Adds a new timestamped vision measurement. */
