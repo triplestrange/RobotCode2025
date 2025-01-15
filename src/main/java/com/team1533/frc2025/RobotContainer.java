@@ -78,7 +78,7 @@ public class RobotContainer {
                         case SIM:
 
                                 driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig,
-                                                new Pose2d(3, 3, Rotation2d.fromDegrees(0)));
+                                                Pose2d.kZero);
                                 SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
 
                                 driveSubsystem = new DriveSubsystem(new GyroIOSim(driveSimulation.getGyroSimulation()),
@@ -139,6 +139,8 @@ public class RobotContainer {
 
                 autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
 
+                autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
+
                 // configure button bindings
                 configureButtonBindings();
 
@@ -160,8 +162,9 @@ public class RobotContainer {
                 if (Constants.getMode() != Constants.Mode.SIM)
                         return;
 
-                driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+                driveSimulation.setSimulationWorldPose(Pose2d.kZero);
                 SimulatedArena.getInstance().resetFieldForAuto();
+                driveSubsystem.setPose();
         }
 
         public void displaySimFieldToAdvantageScope() {

@@ -312,6 +312,15 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                     .setSimulationWorldPose(pose.rotateBy(Rotation2d.fromDegrees(180)));
     }
 
+    /** Resets the current odometry pose. */
+    public void setPose() {
+        if (Constants.getMode() == Constants.Mode.REAL)
+            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), Pose2d.kZero);
+        else
+            RobotContainer.getInstance().driveSimulation
+                    .setSimulationWorldPose(Pose2d.kZero.rotateBy(Rotation2d.fromDegrees(180)));
+    }
+
     /** Adds a new timestamped vision measurement. */
     @Override
     public void accept(
