@@ -94,7 +94,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                 this::getChassisSpeeds,
                 this::runVelocity,
                 new PPHolonomicDriveController(
-                        new PIDConstants(0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0)),
+                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
                 DriveConstants.PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
@@ -309,7 +309,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
             poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
         else
             RobotContainer.getInstance().driveSimulation
-                    .setSimulationWorldPose(pose.rotateBy(Rotation2d.fromDegrees(180)));
+                    .setSimulationWorldPose(pose);
     }
 
     /** Resets the current odometry pose. */

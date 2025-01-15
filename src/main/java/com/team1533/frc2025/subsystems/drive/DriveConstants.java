@@ -55,11 +55,11 @@ public class DriveConstants {
                         .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
                         .withCustomModuleTranslations(getModuleTranslations())
                         .withGyro(COTS.ofPigeon2())
-                        .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36, Inch))
+                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36, Inch))
                         .withSwerveModule(
                                         new SwerveModuleSimulationConfig(
                                                         DCMotor.getKrakenX60Foc(1),
-                                                        DCMotor.getKrakenX60(1),
+                                                        DCMotor.getKrakenX60Foc(1),
                                                         TunerConstants.FrontLeft.DriveMotorGearRatio,
                                                         TunerConstants.FrontLeft.SteerMotorGearRatio,
                                                         Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
