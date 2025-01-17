@@ -35,7 +35,7 @@ public class DriveConstants {
                                                         TunerConstants.BackRight.LocationY)));
 
         // PathPlanner config constants
-        public static final double ROBOT_MASS_KG = 54.4311;
+        public static final double ROBOT_MASS_KG = 61.125;
         public static final double ROBOT_MOI = 6;
         public static final double WHEEL_COF = 1.15;
         public static final RobotConfig PP_CONFIG = new RobotConfig(
@@ -55,7 +55,8 @@ public class DriveConstants {
                         .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
                         .withCustomModuleTranslations(getModuleTranslations())
                         .withGyro(COTS.ofPigeon2())
-                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36, Inch))
+                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36,
+                        // Inch))
                         .withSwerveModule(
                                         new SwerveModuleSimulationConfig(
                                                         DCMotor.getKrakenX60Foc(1),

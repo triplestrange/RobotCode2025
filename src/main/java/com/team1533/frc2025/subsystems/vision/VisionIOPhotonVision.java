@@ -52,6 +52,7 @@ public class VisionIOPhotonVision implements VisionIO {
       // Add pose observation
       if (result.multitagResult.isPresent()) {
         var multitagResult = result.multitagResult.get();
+        var pinholeTagResult = result.targets.get(0);
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
@@ -71,7 +72,8 @@ public class VisionIOPhotonVision implements VisionIO {
         poseObservations.add(
             new PoseObservation(
                 result.getTimestampSeconds(), // Timestamp
-                robotPose, // 3D pose estimate
+                robotPose, // 2D pose estimate
+                0, // height in meters
                 multitagResult.estimatedPose.ambiguity, // Ambiguity
                 multitagResult.fiducialIDsUsed.size(), // Tag count
                 totalTagDistance / result.targets.size(), // Average tag distance

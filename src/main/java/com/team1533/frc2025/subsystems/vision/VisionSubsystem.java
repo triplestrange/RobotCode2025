@@ -67,9 +67,9 @@ public class VisionSubsystem extends SubsystemBase {
 
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+    List<Pose2d> allRobotPoses = new LinkedList<>();
+    List<Pose2d> allRobotPosesAccepted = new LinkedList<>();
+    List<Pose2d> allRobotPosesRejected = new LinkedList<>();
 
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
@@ -78,9 +78,9 @@ public class VisionSubsystem extends SubsystemBase {
 
       // Initialize logging values
       List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
+      List<Pose2d> robotPoses = new LinkedList<>();
+      List<Pose2d> robotPosesAccepted = new LinkedList<>();
+      List<Pose2d> robotPosesRejected = new LinkedList<>();
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
@@ -96,7 +96,7 @@ public class VisionSubsystem extends SubsystemBase {
         boolean rejectPose = observation.tagCount() == 0 // Must have at least one tag
             || (observation.tagCount() == 1
                 && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
-            || Math.abs(observation.pose().getZ()) > maxZError // Must have realistic Z coordinate
+            || Math.abs(observation.z()) > maxZError // Must have realistic Z coordinate
 
             // Must be within the field boundaries
             || observation.pose().getX() < 0.0
@@ -132,7 +132,7 @@ public class VisionSubsystem extends SubsystemBase {
 
         // Send vision observation
         consumer.accept(
-            observation.pose().toPose2d(),
+            observation.pose(),
             observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
