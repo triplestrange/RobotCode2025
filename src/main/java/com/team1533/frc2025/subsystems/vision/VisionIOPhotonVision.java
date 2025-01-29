@@ -42,11 +42,12 @@ public class VisionIOPhotonVision implements VisionIO {
     for (var result : camera.getAllUnreadResults()) {
       // Update latest target observation
       if (result.hasTargets()) {
-        inputs.latestTargetObservation = new TargetObservation(
+        inputs.pinHoleTargetObservation = new TargetObservation(result.getTimestampSeconds(),
+            result.getBestTarget().getBestCameraToTarget().getZ(), result.getBestTarget().getFiducialId(),
             Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
             Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
       } else {
-        inputs.latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
+        inputs.pinHoleTargetObservation = new TargetObservation(0, 0, 0, new Rotation2d(), new Rotation2d());
       }
 
       // Add pose observation
@@ -76,15 +77,14 @@ public class VisionIOPhotonVision implements VisionIO {
                 0, // height in meters
                 multitagResult.estimatedPose.ambiguity, // Ambiguity
                 multitagResult.fiducialIDsUsed.size(), // Tag count
-                totalTagDistance / result.targets.size(), // Average tag distance
-                PoseObservationType.PINHOLE)); // Observation type
+                totalTagDistance / result.targets.size())); // Observation type
       }
     }
 
     // Save pose observations to inputs object
-    inputs.poseObservations = new PoseObservation[poseObservations.size()];
+    inputs.multitagPoseObservations = new PoseObservation[poseObservations.size()];
     for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.poseObservations[i] = poseObservations.get(i);
+      inputs.multitagPoseObservations[i] = poseObservations.get(i);
     }
 
     // Save tag IDs to inputs objects

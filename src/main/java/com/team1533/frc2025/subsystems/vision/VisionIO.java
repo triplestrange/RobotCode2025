@@ -16,20 +16,31 @@ public interface VisionIO {
   @AutoLog
   public static class VisionIOInputs {
     public boolean connected = false;
-    public TargetObservation pinHoleTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
+    public TargetObservation pinHoleTargetObservation = new TargetObservation(0, 0, 0,
+        Rotation2d.kZero,
+        Rotation2d.kZero);
     public PoseObservation[] multitagPoseObservations = new PoseObservation[0];
 
     public int[] tagIds = new int[0];
   }
 
-  /** Represents the angle to a simple target, not used for pose estimation. */
-  public static record TargetObservation(double timestamp, Rotation2d tx, Rotation2d ty, double z) {
+  /**
+   * Represents the angle to a simple target, not used for pose estimation.
+   *
+   * timestamp
+   * z
+   * tagID
+   * tx
+   * ty
+   * yaw
+   */
+  public static record TargetObservation(double timestamp, double z, int tagID, Rotation2d tx, Rotation2d ty) {
   }
 
   /** Represents a robot pose sample used for pose estimation. */
   public static record PoseObservation(
       double timestamp,
-      Pose2d pose,
+      Pose3d pose,
       double z,
       double ambiguity,
       int tagCount,
