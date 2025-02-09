@@ -20,9 +20,16 @@ import com.team1533.frc2025.subsystems.drive.GyroIOSim;
 import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
+import com.team1533.frc2025.subsystems.elevator.Elevator;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj2.command.Command;
+import com.team1533.frc2025.subsystems.elevator.*;
+import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
+import com.team1533.frc2025.command_factory.ElevatorCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +38,7 @@ import lombok.Getter;
 public class RobotContainer {
 
     private final Mode currentMode = Constants.getMode();
+    private final Elevator elevator;
     
     private SwerveDriveSimulation driveSimulation = null;
 
@@ -58,5 +66,13 @@ public class RobotContainer {
     
 
     public RobotContainer(Robot robot) {
+        elevator = new Elevator(new ElevatorIOReal());
+        configureBindings();
+
     }
-}
+    private void configureBindings() {
+        Joystick controller = new Joystick(0);
+        new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevator, 1.5));
+        new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevator, 0.0));
+    }
+ }
