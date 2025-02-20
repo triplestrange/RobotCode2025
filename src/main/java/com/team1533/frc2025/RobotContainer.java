@@ -20,7 +20,7 @@ import com.team1533.frc2025.subsystems.drive.GyroIOSim;
 import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
-import com.team1533.frc2025.subsystems.elevator.Elevator;
+import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
@@ -38,41 +38,51 @@ import lombok.Getter;
 public class RobotContainer {
 
     private final Mode currentMode = Constants.getMode();
-    private final Elevator elevator;
-    
-    private SwerveDriveSimulation driveSimulation = null;
+    private final ElevatorSubsystem elevator;
 
+    private SwerveDriveSimulation driveSimulation = null;
 
     private DriveSubsystem buildDriveSubsystem() {
         if (currentMode == Mode.REAL) {
-            return new DriveSubsystem(new GyroIOPigeon2(), new ModuleIOTalonFXReal(TunerConstants.FrontLeft), new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft), new ModuleIOTalonFXReal(TunerConstants.BackRight));
+            return new DriveSubsystem(new GyroIOPigeon2(), new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+                    new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+                    new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+                    new ModuleIOTalonFXReal(TunerConstants.BackRight));
         }
 
         else if (currentMode == Mode.SIM) {
-            driveSimulation = new SwerveDriveSimulation(DriveSubsystem.mapleSimConfig, new Pose2d(3, 3, Rotation2d.fromDegrees(0)));
+            driveSimulation = new SwerveDriveSimulation(DriveSubsystem.mapleSimConfig,
+                    new Pose2d(3, 3, Rotation2d.fromDegrees(0)));
             SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-            return new DriveSubsystem(new GyroIOSim(driveSimulation.getGyroSimulation()), new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]), new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
-                    new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]), new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]));
+            return new DriveSubsystem(new GyroIOSim(driveSimulation.getGyroSimulation()),
+                    new ModuleIOTalonFXSim(TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+                    new ModuleIOTalonFXSim(TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+                    new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+                    new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]));
         }
 
         else {
-            return new DriveSubsystem(new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
+            return new DriveSubsystem(new GyroIO() {
+            }, new ModuleIO() {
+            }, new ModuleIO() {
+            }, new ModuleIO() {
+            }, new ModuleIO() {
+            });
         }
     }
-    
+
     @Getter
     private final DriveSubsystem driveSubsystem = buildDriveSubsystem();
-    
 
     public RobotContainer(Robot robot) {
-        elevator = new Elevator(new ElevatorIOReal());
+        elevator = new ElevatorSubsystem(new ElevatorIOReal());
         configureBindings();
 
     }
+
     private void configureBindings() {
         Joystick controller = new Joystick(0);
         new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevator, 1.5));
         new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevator, 0.0));
     }
- }
+}

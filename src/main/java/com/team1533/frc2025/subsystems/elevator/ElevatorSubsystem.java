@@ -3,12 +3,12 @@ package com.team1533.frc2025.subsystems.elevator;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-public class Elevator extends SubsystemBase {
+public class ElevatorSubsystem extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIO.ElevatorIOInputs inputs = new ElevatorIO.ElevatorIOInputs();
     private double targetPosition = 0.0;
 
-    public Elevator(ElevatorIO io) {
+    public ElevatorSubsystem(ElevatorIO io) {
         this.io = io;
     }
 
