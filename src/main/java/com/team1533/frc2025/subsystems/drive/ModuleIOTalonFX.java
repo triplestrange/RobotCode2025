@@ -92,14 +92,16 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turnConfig.Slot0 = constants.SteerMotorGains;
     if (Constants.getMode() == Constants.Mode.SIM)
-      turnConfig.Slot0.withKD(0.5).withKS(0); // during simulation, gains are slightly different
+      turnConfig.Slot0.withKD(0).withKS(0); // during simulation, gains are slightly different
 
     turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
     turnConfig.Feedback.FeedbackSensorSource = switch (constants.FeedbackSource) {
       case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;
       case FusedCANcoder -> FeedbackSensorSourceValue.FusedCANcoder;
       case SyncCANcoder -> FeedbackSensorSourceValue.SyncCANcoder;
+      default -> FeedbackSensorSourceValue.FusedCANcoder;
     };
+
     turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicCruiseVelocity = 100.0 / constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
@@ -133,7 +135,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
 
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(
-        DriveSubsystem.ODOMETRY_FREQUENCY, turnAbsolutePosition, drivePosition);
+        DriveConstants.ODOMETRY_FREQUENCY, turnAbsolutePosition, drivePosition);
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         driveVelocity,
