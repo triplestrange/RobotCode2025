@@ -13,6 +13,7 @@ import com.team1533.frc2025.generated.TunerConstants;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 
 public class DriveConstants {
@@ -35,9 +36,10 @@ public class DriveConstants {
                                                         TunerConstants.BackRight.LocationY)));
 
         // PathPlanner config constants
-        public static final double ROBOT_MASS_KG = 54.4311;
-        public static final double ROBOT_MOI = 6;
+        public static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
+        public static final double ROBOT_MOI = 5.645;
         public static final double WHEEL_COF = 1.15;
+        public static final double MAX_STEER_VEL_RAD_PER_SEC = 10;
         public static final RobotConfig PP_CONFIG = new RobotConfig(
                         ROBOT_MASS_KG,
                         ROBOT_MOI,

@@ -51,7 +51,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private void setPositionSetpointImpl(double metersFromBottom, double metersPerSec) {
-        Logger.recordOutput("Elevator/API/setPositionSetpoint/radiansFromCenter", metersFromBottom);
+        Logger.recordOutput("Elevator/API/setPositionSetpoint/metersFromBottom", metersFromBottom);
         Logger.recordOutput("Elevator/API/setPositionSetpoint/metersPerSec", metersPerSec);
         io.setPositionSetpoint(metersFromBottom, metersPerSec);
     }

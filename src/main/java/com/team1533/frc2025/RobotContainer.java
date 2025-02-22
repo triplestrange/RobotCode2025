@@ -166,7 +166,14 @@ public class RobotContainer {
         }
 
         private void configureButtonBindings() {
-                driveController.square().onTrue(elevatorSubsystem.moveElevatorSetpoint(() -> 0.3));
+                driveSubsystem.setDefaultCommand(driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),-driveController.getLeftX(),-driveController.getRightX())));
+                driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
+
+                driveController.square().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0.3, () -> 0));
+                driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
+
+                driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
+
         }
 
         /**

@@ -173,7 +173,7 @@ public class ElevatorIOReal implements ElevatorIO {
     @Override
     public void setPositionSetpoint(double positionMeters, double metersPerSec) {
         leaderTalon.setControl(
-                positionTorqueCurrentFOC.withPosition(positionMeters).withVelocity(metersPerSec));
+                positionTorqueCurrentFOC.withPosition(positionMeters).withVelocity(metersPerSec).withFeedForward(18));
     }
 
     @Override
