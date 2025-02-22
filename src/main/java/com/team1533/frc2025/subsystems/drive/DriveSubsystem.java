@@ -16,7 +16,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
-import com.team1533.frc2025.Constants.Mode;
+import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.util.LocalADStarAK;
@@ -173,7 +173,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         }
 
         // Update gyro alert
-        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.getMode() != Mode.SIM);
+        gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.getRobot() != RobotType.SIMBOT);
     }
 
     /**
@@ -305,7 +305,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
-        if (Constants.getMode() == Constants.Mode.REAL)
+        if (Constants.getRobot() == Constants.RobotType.COMPBOT)
             poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
         else
             RobotContainer.getInstance().driveSimulation
@@ -314,7 +314,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     /** Resets the current odometry pose. */
     public void setPose() {
-        if (Constants.getMode() == Constants.Mode.REAL)
+        if (Constants.getRobot() == Constants.RobotType.COMPBOT)
             poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), Pose2d.kZero);
         else
             RobotContainer.getInstance().driveSimulation

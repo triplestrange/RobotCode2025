@@ -19,6 +19,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.Event;
 import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.drive.DriveConstants;
@@ -37,10 +38,10 @@ import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
-import com.team1533.frc2025.command_factory.ElevatorCommands;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -51,6 +52,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
 
 public class RobotContainer {
+
+        private final CommandPS5Controller driveController = new CommandPS5Controller(0);
 
         @Getter
         private DriveSubsystem driveSubsystem;
@@ -69,8 +72,8 @@ public class RobotContainer {
         public RobotContainer(Robot robot) {
                 instance = this;
 
-                switch (Constants.getMode()) {
-                        case REAL:
+                switch (Constants.getRobot()) {
+                        case COMPBOT:
 
                                 driveSubsystem = new DriveSubsystem(new GyroIOPigeon2(),
                                                 new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
@@ -82,12 +85,11 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0),
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
 
-                                                
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
 
                                 break;
 
-                        case SIM:
+                        case SIMBOT:
 
                                 driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig,
                                                 Pose2d.kZero);
@@ -129,6 +131,9 @@ public class RobotContainer {
                                 }, new VisionIO() {
                                 });
 
+                                elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
+                                });
+
                                 break;
                 }
 
@@ -161,9 +166,7 @@ public class RobotContainer {
         }
 
         private void configureButtonBindings() {
-                Joystick controller = new Joystick(0);
-                new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevatorSubsystem, 1.5));
-                new JoystickButton(controller, 1).onTrue(ElevatorCommands.moveToPosition(elevatorSubsystem, 0.0));
+                driveController.square().onTrue(elevatorSubsystem.moveElevatorSetpoint(() -> 0.3));
         }
 
         /**
@@ -176,7 +179,7 @@ public class RobotContainer {
         }
 
         public void resetSimulationField() {
-                if (Constants.getMode() != Constants.Mode.SIM)
+                if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
                 driveSimulation.setSimulationWorldPose(Pose2d.kZero);
@@ -185,7 +188,7 @@ public class RobotContainer {
         }
 
         public void displaySimFieldToAdvantageScope() {
-                if (Constants.getMode() != Constants.Mode.SIM)
+                if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
                 Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());

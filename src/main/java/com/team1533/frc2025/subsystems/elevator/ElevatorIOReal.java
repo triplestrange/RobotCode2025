@@ -9,8 +9,10 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.team1533.frc2025.subsystems.elevator.ElevatorConstants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.units.measure.Angle;
@@ -26,6 +28,7 @@ public class ElevatorIOReal implements ElevatorIO {
     private final TalonFX followerTalon;
 
     private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
+    private final DutyCycleOut dutyCycleOutControl = new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
@@ -55,14 +58,15 @@ public class ElevatorIOReal implements ElevatorIO {
     public ElevatorIOReal() {
         timeSinceReset = new Timer();
 
-        leaderTalon = new TalonFX(ElevatorConstants.leaderTalonCanID, "*");
-        followerTalon = new TalonFX(ElevatorConstants.followerTalonCanID, "*");
+        leaderTalon = new TalonFX(ElevatorConstants.leaderTalonCanID, ElevatorConstants.canBUS);
+        followerTalon = new TalonFX(ElevatorConstants.followerTalonCanID, ElevatorConstants.canBUS);
         followerTalon.setControl(new Follower(ElevatorConstants.leaderTalonCanID, true));
 
         // Leader motor configs
         config.Slot0.kP = ElevatorConstants.gains.kP();
         config.Slot0.kI = ElevatorConstants.gains.kI();
         config.Slot0.kD = ElevatorConstants.gains.kD();
+        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
         config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
         config.MotorOutput.Inverted = ElevatorConstants.leaderInverted
@@ -114,6 +118,9 @@ public class ElevatorIOReal implements ElevatorIO {
         leaderTalon.optimizeBusUtilization(0, 1.0);
         followerTalon.optimizeBusUtilization(0, 1.0);
 
+        voltageOut.EnableFOC = true;
+        dutyCycleOutControl.EnableFOC = true;
+
     }
 
     @Override
@@ -121,7 +128,7 @@ public class ElevatorIOReal implements ElevatorIO {
         inputs.leaderConnected = BaseStatusSignal.refreshAll(leaderPositionSignal, leaderVelocitySignal,
                 leaderVoltsSignal, leaderCurrentStatorSignal, leaderCurrentSupplySignal, elevatorAccelerationSignal,
                 elevatorPositionSignal, elevatorVelocitySignal, leaderTemperatureSignal).isOK();
-        inputs.leaderVelocityRadPerSec = leaderVelocitySignal.getValueAsDouble();
+        inputs.leaderVelocityRotPerSec = leaderVelocitySignal.getValueAsDouble();
         inputs.leaderAppliedVolts = leaderVoltsSignal.getValueAsDouble();
         inputs.leaderCurrentAmps = leaderCurrentSupplySignal.getValueAsDouble();
         inputs.leaderStatorAmps = leaderCurrentStatorSignal.getValueAsDouble();
@@ -132,14 +139,14 @@ public class ElevatorIOReal implements ElevatorIO {
                 followerVelocitySignal,
                 followerVoltsSignal, followerCurrentStatorSignal, followerCurrentSupplySignal,
                 followerTemperatureSignal).isOK();
-        inputs.followerVelocityRadPerSec = followerVelocitySignal.getValueAsDouble();
+        inputs.followerVelocityRotPerSec = followerVelocitySignal.getValueAsDouble();
         inputs.followerAppliedVolts = followerVoltsSignal.getValueAsDouble();
         inputs.followerCurrentAmps = followerCurrentSupplySignal.getValueAsDouble();
         inputs.followerStatorAmps = followerCurrentStatorSignal.getValueAsDouble();
         inputs.followerTempCelc = followerTemperatureSignal.getValueAsDouble();
 
-        inputs.leaderRadPosition = leaderPositionSignal.getValueAsDouble();
-        inputs.followerRadPosition = followerPositionSignal.getValueAsDouble();
+        inputs.leaderRotPosition = leaderPositionSignal.getValueAsDouble();
+        inputs.followerRotPosition = followerPositionSignal.getValueAsDouble();
 
         inputs.secondsSinceReset = timeSinceReset.get();
         inputs.elevatorPosMeters = elevatorPositionSignal.getValueAsDouble();
@@ -154,13 +161,19 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override
+    public void setDutyCycleOut(double output) {
+        leaderTalon.setControl(dutyCycleOutControl.withOutput(output));
+    }
+
+    @Override
     public void setPositionSetpoint(double positionMeters) {
         leaderTalon.setControl(positionTorqueCurrentFOC.withPosition(positionMeters));
     }
 
     @Override
-    public void setPositionSetpoint(double positionMeters, double feedForward) {
-        leaderTalon.setControl(positionTorqueCurrentFOC.withPosition(positionMeters).withFeedForward(feedForward));
+    public void setPositionSetpoint(double positionMeters, double metersPerSec) {
+        leaderTalon.setControl(
+                positionTorqueCurrentFOC.withPosition(positionMeters).withVelocity(metersPerSec));
     }
 
     @Override
@@ -175,10 +188,13 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override
-    public void setPID(double p, double i, double d) {
-        config.Slot0.kP = p;
-        config.Slot0.kI = i;
-        config.Slot0.kD = d;
+    public void setPID(Gains gains) {
+        config.Slot0.kP = gains.kP();
+        config.Slot0.kI = gains.kI();
+        config.Slot0.kD = gains.kD();
+        config.Slot0.kG = gains.ffkG();
+        config.Slot0.kS = gains.ffkS();
+        config.Slot0.kV = gains.ffkV();
         CTREUtil.applyConfiguration(leaderTalon, config);
     }
 

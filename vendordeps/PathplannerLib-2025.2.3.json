@@ -1,13 +1,7 @@
 {
-<<<<<<<< HEAD:vendordeps/PathplannerLib-2025.2.3.json
     "fileName": "PathplannerLib-2025.2.3.json",
     "name": "PathplannerLib",
     "version": "2025.2.3",
-========
-    "fileName": "PathplannerLib.json",
-    "name": "PathplannerLib",
-    "version": "2025.2.1",
->>>>>>>> 0335e7afd0be98e229bde66bffafa07cab1f0d1d:vendordeps/PathplannerLib.json
     "uuid": "1b42324f-17c6-4875-8e77-1c312bc8c786",
     "frcYear": "2025",
     "mavenUrls": [
@@ -18,11 +12,7 @@
         {
             "groupId": "com.pathplanner.lib",
             "artifactId": "PathplannerLib-java",
-<<<<<<<< HEAD:vendordeps/PathplannerLib-2025.2.3.json
             "version": "2025.2.3"
-========
-            "version": "2025.2.1"
->>>>>>>> 0335e7afd0be98e229bde66bffafa07cab1f0d1d:vendordeps/PathplannerLib.json
         }
     ],
     "jniDependencies": [],
@@ -30,11 +20,7 @@
         {
             "groupId": "com.pathplanner.lib",
             "artifactId": "PathplannerLib-cpp",
-<<<<<<<< HEAD:vendordeps/PathplannerLib-2025.2.3.json
             "version": "2025.2.3",
-========
-            "version": "2025.2.1",
->>>>>>>> 0335e7afd0be98e229bde66bffafa07cab1f0d1d:vendordeps/PathplannerLib.json
             "libName": "PathplannerLib",
             "headerClassifier": "headers",
             "sharedLibrary": false,
