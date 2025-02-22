@@ -21,6 +21,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.frc2025.subsystems.arm.ArmIO;
+import com.team1533.frc2025.subsystems.arm.ArmIOReal;
+import com.team1533.frc2025.subsystems.arm.ArmIOSim;
+import com.team1533.frc2025.subsystems.arm.ArmSubsystem;
 import com.team1533.frc2025.subsystems.drive.DriveConstants;
 import com.team1533.frc2025.subsystems.drive.DriveSubsystem;
 import com.team1533.frc2025.subsystems.drive.GyroIO;
@@ -49,7 +53,8 @@ public class RobotContainer {
         private DriveSubsystem driveSubsystem;
         @Getter
         private VisionSubsystem visionSubsystem;
-
+        @Getter
+        private ArmSubsystem armSubsystem;
         private final LoggedDashboardChooser<Command> autoChooser;
 
         public SwerveDriveSimulation driveSimulation = null;
@@ -60,8 +65,8 @@ public class RobotContainer {
         public RobotContainer(Robot robot) {
                 instance = this;
 
-                switch (Constants.getMode()) {
-                        case REAL:
+                switch (Constants.getRobot()) {
+                        case COMPBOT:
 
                                 driveSubsystem = new DriveSubsystem(new GyroIOPigeon2(),
                                                 new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
@@ -73,9 +78,11 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0),
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
 
+                                armSubsystem = new ArmSubsystem(new ArmIOReal());
+
                                 break;
 
-                        case SIM:
+                        case SIMBOT:
 
                                 driveSimulation = new SwerveDriveSimulation(DriveConstants.mapleSimConfig,
                                                 Pose2d.kZero);
@@ -99,6 +106,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(
                                                                 camera1Name, robotToCamera1,
                                                                 driveSimulation::getSimulatedDriveTrainPose));
+                                armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 break;
 
@@ -113,6 +121,10 @@ public class RobotContainer {
 
                                 visionSubsystem = new VisionSubsystem(driveSubsystem, new VisionIO() {
                                 }, new VisionIO() {
+                                });
+
+                                armSubsystem = new ArmSubsystem(new ArmIO() {
+
                                 });
 
                                 break;
@@ -159,7 +171,7 @@ public class RobotContainer {
         }
 
         public void resetSimulationField() {
-                if (Constants.getMode() != Constants.Mode.SIM)
+                if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
                 driveSimulation.setSimulationWorldPose(Pose2d.kZero);
@@ -168,7 +180,7 @@ public class RobotContainer {
         }
 
         public void displaySimFieldToAdvantageScope() {
-                if (Constants.getMode() != Constants.Mode.SIM)
+                if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
                 Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());

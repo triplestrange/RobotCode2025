@@ -1,9 +1,11 @@
 package com.team1533.frc2025.subsystems.arm;
 
+import org.littletonrobotics.junction.AutoLog;
+
 import com.team1533.frc2025.Constants.Gains;
 
 public interface ArmIO {
-
+    @AutoLog
     class ArmIOInputs {
         public boolean leaderConnected = false;
         public double leaderVelocityRotPerSec = 0.0;
@@ -19,14 +21,15 @@ public interface ArmIO {
         public double followerStatorAmps = 0.0;
         public double followerTempCelc = 0.0;
 
+        public boolean absoluteEncoderConnected = true;
+        public double absoluteEncoderPositionRots = 0.0;
+        public double relativeEncoderPositionRots = 0.0;
+
         public double leaderRotPosition = 0.0;
         public double followerRotPosition = 0.0;
 
-        public double secondsSinceReset = 0.0;
-
-        public double elevatorPosMeters = 0.0;
-        public double elevatorVelMetersPerSecond = 0.0;
-        public double elevatorAccelMetersPerSecondPerSecond = 0.0;
+        public double armVelMetersPerSecond = 0.0;
+        public double armAccelMetersPerSecondPerSecond = 0.0;
 
     }
 
@@ -40,10 +43,10 @@ public interface ArmIO {
 
     }
 
-    default void setPositionSetpoint(double positionMeters) {
+    default void setPositionSetpoint(double positionRotation) {
     }
 
-    default void setPositionSetpoint(double positionMeters, double metersPerSec) {
+    default void setPositionSetpoint(double positionRotation, double rotationsPerSec) {
     }
 
     default void setCurrentSetpoint(double amps) {
