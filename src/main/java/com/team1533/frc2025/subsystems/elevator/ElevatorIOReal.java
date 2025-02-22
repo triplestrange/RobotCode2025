@@ -24,8 +24,8 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
 
 public class ElevatorIOReal implements ElevatorIO {
-    private final TalonFX leaderTalon;
-    private final TalonFX followerTalon;
+    protected final TalonFX leaderTalon;
+    protected final TalonFX followerTalon;
 
     private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
     private final DutyCycleOut dutyCycleOutControl = new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);

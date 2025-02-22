@@ -79,7 +79,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public Command waitForPosition(DoubleSupplier metersFromBottom, double toleranceMeters) {
         return new WaitUntilCommand(() -> {
             return Math.abs(getCurrentPosition() - metersFromBottom.getAsDouble()) < toleranceMeters;
-        }).withName("Hood wait for position");
+        }).withName("Elevator wait for position");
     }
 
     public double getCurrentPositionRotations() {
