@@ -313,20 +313,15 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
-        if (Constants.getRobot() == Constants.RobotType.COMPBOT)
-            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-        else
-            RobotContainer.getInstance().driveSimulation
-                    .setSimulationWorldPose(pose);
+        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        if (Constants.getMode() == Constants.Mode.SIMBOT) {
+            RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
+        }
     }
 
     /** Resets the current odometry pose. */
     public void setPose() {
-        if (Constants.getRobot() == Constants.RobotType.COMPBOT)
-            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), Pose2d.kZero);
-        else
-            RobotContainer.getInstance().driveSimulation
-                    .setSimulationWorldPose(Pose2d.kZero.rotateBy(Rotation2d.fromDegrees(180)));
+        setPose(Pose2d.kZero);
     }
 
     /** Adds a new timestamped vision measurement. */
