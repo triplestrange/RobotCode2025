@@ -314,7 +314,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
-        if (Constants.getMode() == Constants.Mode.SIMBOT) {
+        if (Constants.getRobot() == Constants.RobotType.SIMBOT) {
             RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
         }
     }
