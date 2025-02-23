@@ -21,28 +21,10 @@ public class Constants {
         return robotType;
     }
 
-    public static Mode getMode() {
-        return switch (robotType) {
-            case DEVBOT, COMPBOT -> RobotBase.isReal() ? Mode.REAL : Mode.REPLAY;
-            case SIMBOT -> Mode.SIM;
-        };
-    }
-
-    public enum Mode {
-        /** Running on a real robot. */
-        REAL,
-
-        /** Running a physics simulator. */
-        SIM,
-
-        /** Replaying from a log file. */
-        REPLAY
-    }
-
     public enum RobotType {
         SIMBOT,
-        DEVBOT,
-        COMPBOT
+        COMPBOT,
+        REPLAY
     }
 
     public static boolean disableHAL = false;

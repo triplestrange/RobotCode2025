@@ -51,8 +51,8 @@ public class Robot extends LoggedRobot {
 
     // Set a metadata value
 
-    switch (Constants.getMode()) {
-      case REAL:
+    switch (Constants.getRobot()) {
+      case COMPBOT:
         // Running on a real robot, log to a USB stick ("/U/logs")
         try {
           Logger.addDataReceiver(new WPILOGWriter());
@@ -68,11 +68,11 @@ public class Robot extends LoggedRobot {
         }
         break;
 
-      case SIM:
+      case SIMBOT:
         // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
         break;
-
+      // TODO: fix replay case
       case REPLAY:
         // Replaying a log, set up replay source
         setUseTiming(false); // Run as fast as possible
