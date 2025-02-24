@@ -51,7 +51,7 @@ public class ElevatorIOSim extends ElevatorIOReal {
                 .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
                         mechanismSim.getEncoderPosition(), mechanismSim.getEncoderVelocity())
                 .baseUnitMagnitude();
-        ;
+
         Logger.recordOutput("Elevator/Sim/SimulatorVoltage", simVoltage);
 
         double timestamp = RobotTime.getTimestampSeconds();
