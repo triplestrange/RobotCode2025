@@ -11,7 +11,6 @@ import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.DriveFeedforwards;
@@ -61,9 +60,10 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     private final SysIdRoutine sysId;
     private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
-            private SwerveSetpoint setpoint;
+    private SwerveSetpoint setpoint;
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
-    private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG, DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
+    private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG,
+            DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
@@ -343,15 +343,19 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     public double getMaxAngularSpeedRadPerSec() {
         return getMaxLinearSpeedMetersPerSec() / DriveConstants.DRIVE_BASE_RADIUS;
     }
+
     public void teleopControl(double driveX, double driveY, double rotate) {
         double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05);
         double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05);
-        double speedR = 6*MathUtil.applyDeadband(rotate, 0.05);
-        setpoint = generator.generateSetpoint(setpoint, ChassisSpeeds.fromFieldRelativeSpeeds(speedX,speedY,speedR,getRotation()), Constants.loopPeriodSecs);
+        double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
+        setpoint = generator.generateSetpoint(setpoint,
+                ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation()), Constants.loopPeriodSecs);
         Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
         runVelocity(setpoint.robotRelativeSpeeds());
     }
+
     public void teleopResetRotation() {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), new Pose2d(getPose().getX(),getPose().getY(),Rotation2d.fromDegrees(0)));
+        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(),
+                new Pose2d(getPose().getX(), getPose().getY(), Rotation2d.fromDegrees(0)));
     }
 }
