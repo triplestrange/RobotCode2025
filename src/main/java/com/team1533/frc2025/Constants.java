@@ -23,8 +23,8 @@ public class Constants {
 
     public enum RobotType {
         SIMBOT,
-        REPLAY,
-        COMPBOT
+        COMPBOT,
+        REPLAY
     }
 
     public static boolean disableHAL = false;

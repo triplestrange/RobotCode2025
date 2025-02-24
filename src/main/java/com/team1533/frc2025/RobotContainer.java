@@ -19,6 +19,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.events.Event;
 import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
@@ -33,11 +34,19 @@ import com.team1533.frc2025.subsystems.drive.GyroIOSim;
 import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
+import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
+
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
+import com.team1533.frc2025.subsystems.elevator.*;
+import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -49,12 +58,17 @@ import lombok.Getter;
 
 public class RobotContainer {
 
+        private final CommandPS5Controller driveController = new CommandPS5Controller(0);
+
         @Getter
         private DriveSubsystem driveSubsystem;
         @Getter
         private VisionSubsystem visionSubsystem;
         @Getter
         private ArmSubsystem armSubsystem;
+  @Getter
+        private ElevatorSubsystem elevatorSubsystem;
+
         private final LoggedDashboardChooser<Command> autoChooser;
 
         public SwerveDriveSimulation driveSimulation = null;
@@ -79,6 +93,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
 
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
+                                elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
 
                                 break;
 
@@ -108,6 +123,8 @@ public class RobotContainer {
                                                                 driveSimulation::getSimulatedDriveTrainPose));
                                 armSubsystem = new ArmSubsystem(new ArmIOSim());
 
+                                elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
+
                                 break;
 
                         default:
@@ -125,6 +142,8 @@ public class RobotContainer {
 
                                 armSubsystem = new ArmSubsystem(new ArmIO() {
 
+
+                                elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
                                 });
 
                                 break;
@@ -159,6 +178,16 @@ public class RobotContainer {
         }
 
         private void configureButtonBindings() {
+                driveSubsystem.setDefaultCommand(
+                                driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
+                                                -driveController.getLeftX(), -driveController.getRightX())));
+                driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
+
+                driveController.square().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0.3, () -> 0));
+                driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
+
+                driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
+
         }
 
         /**
@@ -191,5 +220,4 @@ public class RobotContainer {
                                 "FieldSimulation/Algae",
                                 SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
         }
-
 }
