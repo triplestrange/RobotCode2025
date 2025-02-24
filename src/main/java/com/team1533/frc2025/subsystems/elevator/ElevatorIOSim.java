@@ -28,7 +28,7 @@ public class ElevatorIOSim extends ElevatorIOReal {
     private Notifier simNotifier = null;
 
     private double simPeriodSeconds = 0.005;
-    
+
     public ElevatorIOSim() {
         simNotifier = new Notifier(() -> {
             updateSimState();
@@ -54,10 +54,6 @@ public class ElevatorIOSim extends ElevatorIOReal {
                 .baseUnitMagnitude();
 
         Logger.recordOutput("Elevator/Sim/SimulatorVoltage", simVoltage);
-
-        double timestamp = RobotTime.getTimestampSeconds();
-        mechanismSim.update(Microseconds.of(timestamp - lastUpdateTimestamp));
-        lastUpdateTimestamp = timestamp;
 
         double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
         Logger.recordOutput("Elevator/Sim/SimulatorPositionMeters", simPositionMeters);
