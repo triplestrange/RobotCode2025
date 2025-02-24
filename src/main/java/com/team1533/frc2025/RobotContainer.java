@@ -31,10 +31,7 @@ import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
-import com.team1533.frc2025.subsystems.pivot.PivotIO;
-import com.team1533.frc2025.subsystems.pivot.PivotIOReal;
-import com.team1533.frc2025.subsystems.pivot.PivotIOSim;
-import com.team1533.frc2025.subsystems.pivot.PivotSubsystem;
+
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -65,8 +62,6 @@ public class RobotContainer {
         private VisionSubsystem visionSubsystem;
         @Getter
         private ElevatorSubsystem elevatorSubsystem;
-        @Getter
-        private PivotSubsystem pivotSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -92,8 +87,6 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
-
-                                pivotSubsystem = new PivotSubsystem(new PivotIOReal());
 
                                 break;
 
@@ -124,8 +117,6 @@ public class RobotContainer {
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
 
-                                pivotSubsystem = new PivotSubsystem(new PivotIOSim());
-
                                 break;
 
                         default:
@@ -142,9 +133,6 @@ public class RobotContainer {
                                 });
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
-                                });
-
-                                pivotSubsystem = new PivotSubsystem(new PivotIO() {      
                                 });
 
                                 break;
@@ -179,10 +167,10 @@ public class RobotContainer {
         }
 
         private void configureButtonBindings() {
-                driveSubsystem.setDefaultCommand(driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),-driveController.getLeftX(),-driveController.getRightX())));
+                driveSubsystem.setDefaultCommand(
+                                driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
+                                                -driveController.getLeftX(), -driveController.getRightX())));
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
-
-                pivotSubsystem.setDefaultCommand(pivotSubsystem.run(() -> pivotSubsystem.setDutyCycleOut((driveController.getL2Axis()-driveController.getR2Axis())/20)));
 
                 driveController.square().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0.3, () -> 0));
                 driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
