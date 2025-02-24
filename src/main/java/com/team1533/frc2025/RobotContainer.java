@@ -22,6 +22,10 @@ import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.Event;
 import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.frc2025.subsystems.arm.ArmIO;
+import com.team1533.frc2025.subsystems.arm.ArmIOReal;
+import com.team1533.frc2025.subsystems.arm.ArmIOSim;
+import com.team1533.frc2025.subsystems.arm.ArmSubsystem;
 import com.team1533.frc2025.subsystems.drive.DriveConstants;
 import com.team1533.frc2025.subsystems.drive.DriveSubsystem;
 import com.team1533.frc2025.subsystems.drive.GyroIO;
@@ -61,6 +65,8 @@ public class RobotContainer {
         @Getter
         private VisionSubsystem visionSubsystem;
         @Getter
+        private ArmSubsystem armSubsystem;
+  @Getter
         private ElevatorSubsystem elevatorSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
@@ -86,6 +92,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0),
                                                 new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
 
+                                armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
 
                                 break;
@@ -114,6 +121,7 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(
                                                                 camera1Name, robotToCamera1,
                                                                 driveSimulation::getSimulatedDriveTrainPose));
+                                armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
 
@@ -131,6 +139,9 @@ public class RobotContainer {
                                 visionSubsystem = new VisionSubsystem(driveSubsystem, new VisionIO() {
                                 }, new VisionIO() {
                                 });
+
+                                armSubsystem = new ArmSubsystem(new ArmIO() {
+
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
                                 });
