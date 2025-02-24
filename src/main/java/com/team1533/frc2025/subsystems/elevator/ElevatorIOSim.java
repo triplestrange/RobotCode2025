@@ -48,6 +48,19 @@ public class ElevatorIOSim extends ElevatorIOReal {
         mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
         Logger.recordOutput("Elevator/Sim/TalonMotorVoltage", simState.getMotorVoltage());
 
+        double simVoltage = mechanismSim.useMotorController(controller)
+                .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
+                        mechanismSim.getEncoderPosition(), mechanismSim.getEncoderVelocity())
+                .baseUnitMagnitude();
+
+        Logger.recordOutput("Elevator/Sim/SimulatorVoltage", simVoltage);
+
+        double timestamp = RobotTime.getTimestampSeconds();
+        mechanismSim.update(Microseconds.of(timestamp - lastUpdateTimestamp));
+        lastUpdateTimestamp = timestamp;
+
+        double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
+        Logger.recordOutput("Elevator/Sim/SimulatorPositionMeters", simPositionMeters);
         mechanismSim.update(Seconds.of(simPeriodSeconds));
         Logger.recordOutput("Elevator/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 

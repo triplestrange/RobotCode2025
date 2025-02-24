@@ -14,6 +14,7 @@ public class ElevatorConstants {
     public static final double drumCircumferenceMeters = 24 * 0.005;
     public static final double reduction = 4.0 / drumCircumferenceMeters;
     public static final double frictionVoltage = 0.25;
+    public static final double kElevatorPositioningToleranceInches = 0.01;
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

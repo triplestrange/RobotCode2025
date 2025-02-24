@@ -9,68 +9,78 @@ package com.team1533.lib.subsystems;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
+import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
 import com.team1533.lib.time.RobotTime;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Microseconds;
+import static edu.wpi.first.units.Units.Radian;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.motorsims.MapleMotorSim;
+import org.ironmaple.simulation.motorsims.SimMotorConfigs;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 import org.littletonrobotics.junction.Logger;
 
 public class SimTalonFXIO extends TalonFXIO {
-  protected DCMotorSim sim;
+  final GenericMotorController controller = new GenericMotorController(DCMotor.getKrakenX60Foc(1));
+  final SimMotorConfigs configMaple;
+  final MapleMotorSim mechanismSim;
+
   private Notifier simNotifier = null;
   private double lastUpdateTimestamp = 0.0;
 
   public SimTalonFXIO(ServoMotorSubsystemConfig config) {
     super(config);
 
-    sim =
-        new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(
-                DCMotor.getKrakenX60(1), config.momentOfInertia, 1.0 / config.unitToRotorRatio),
-            DCMotor.getKrakenX60Foc(1),
-            0);
+    configMaple = new SimMotorConfigs(DCMotor.getKrakenX60Foc(1), config.unitToRotorRatio,
+        KilogramSquareMeters.of(config.momentOfInertia), Volts.of(0.25));
+    mechanismSim = new MapleMotorSim(configMaple);
 
     // Assume that config is correct (which it might not be)
-    talon.getSimState().Orientation =
-        (config.fxConfig.MotorOutput.Inverted == InvertedValue.Clockwise_Positive)
-            ? ChassisReference.Clockwise_Positive
-            : ChassisReference.CounterClockwise_Positive;
+    talon.getSimState().Orientation = (config.fxConfig.MotorOutput.Inverted == InvertedValue.Clockwise_Positive)
+        ? ChassisReference.Clockwise_Positive
+        : ChassisReference.CounterClockwise_Positive;
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
-    simNotifier =
-        new Notifier(
-            () -> {
-              updateSimState();
-            });
+    simNotifier = new Notifier(
+        () -> {
+          updateSimState();
+        });
     simNotifier.startPeriodic(0.005);
   }
 
-  protected double addFriction(double motorVoltage, double frictionVoltage) {
-    if (Math.abs(motorVoltage) < frictionVoltage) {
-      motorVoltage = 0.0;
-    } else if (motorVoltage > 0.0) {
-      motorVoltage -= frictionVoltage;
-    } else {
-      motorVoltage += frictionVoltage;
-    }
-    return motorVoltage;
+  @Override
+  public void updateInputs(MotorInputs inputs) {
+    super.updateInputs(inputs);
   }
 
   protected void updateSimState() {
     var simState = talon.getSimState();
-    double simVoltage = addFriction(simState.getMotorVoltage(), 0.25);
+    simState.setSupplyVoltage(12.0);
+    mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
 
-    sim.setInput(simVoltage);
+    double simVoltage = mechanismSim.useMotorController(controller)
+        .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
+            mechanismSim.getEncoderPosition(), mechanismSim.getEncoderVelocity())
+        .baseUnitMagnitude();
+
     Logger.recordOutput(config.name + "/Sim/SimulatorVoltage", simVoltage);
 
     double timestamp = RobotTime.getTimestampSeconds();
-    sim.update(timestamp - lastUpdateTimestamp);
+    mechanismSim.update(Microseconds.of(timestamp - lastUpdateTimestamp));
     lastUpdateTimestamp = timestamp;
 
     // Find current state of sim in radians from 0 point
-    double simPositionRads = sim.getAngularPositionRad();
+    double simPositionRads = mechanismSim.getAngularPosition().in(Radian);
     Logger.recordOutput(config.name + "/Sim/SimulatorPositionRadians", simPositionRads);
 
     // Mutate rotor position
@@ -79,10 +89,9 @@ public class SimTalonFXIO extends TalonFXIO {
     Logger.recordOutput(config.name + "/Sim/setRawRotorPosition", rotorPosition);
 
     // Mutate rotor vel
-    double rotorVel =
-        Units.radiansToRotations(sim.getAngularVelocityRadPerSec()) / config.unitToRotorRatio;
+    double rotorVel = mechanismSim.getVelocity().baseUnitMagnitude() / config.unitToRotorRatio;
     simState.setRotorVelocity(rotorVel);
     Logger.recordOutput(
-        config.name + "/Sim/SimulatorVelocityRadS", sim.getAngularVelocityRadPerSec());
+        config.name + "/Sim/SimulatorVelocityRadS", mechanismSim.getVelocity().in(RadiansPerSecond));
   }
 }
