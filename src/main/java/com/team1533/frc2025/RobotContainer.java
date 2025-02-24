@@ -14,6 +14,7 @@ import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCame
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -187,6 +188,8 @@ public class RobotContainer {
                 driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
 
                 driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
+
+                elevatorSubsystem.setDefaultCommand(elevatorSubsystem.run(() -> elevatorSubsystem.setDutyCycleOut((driveController.getR2Axis()-driveController.getL2Axis())/2)));
 
         }
 

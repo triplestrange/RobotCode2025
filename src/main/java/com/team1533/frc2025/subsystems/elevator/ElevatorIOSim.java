@@ -1,15 +1,15 @@
 package com.team1533.frc2025.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Microseconds;
+import static edu.wpi.first.units.Units.Revolutions;
+import static edu.wpi.first.units.Units.RevolutionsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import org.ironmaple.simulation.motorsims.MapleMotorSim;
 import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 import org.littletonrobotics.junction.Logger;
-
-import com.team1533.lib.time.RobotTime;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -21,19 +21,19 @@ public class ElevatorIOSim extends ElevatorIOReal {
     final MomentOfInertia m = KilogramSquareMeters
             .of(Math.pow(ElevatorConstants.drumCircumferenceMeters / (2.0 * Math.PI), 2) * (1. / 16.) * 9.4);
     final Voltage v = Volts.of(ElevatorConstants.frictionVoltage);
-    final SimMotorConfigs config = new SimMotorConfigs(DCMotor.getKrakenX60Foc(2), ElevatorConstants.reduction, m,
+    final SimMotorConfigs config = new SimMotorConfigs(DCMotor.getKrakenX60Foc(2), 1, m,
             v);
     final MapleMotorSim mechanismSim = new MapleMotorSim(config);
 
     private Notifier simNotifier = null;
 
-    private double lastUpdateTimestamp;
-
+    private double simPeriodSeconds = 0.005;
+    
     public ElevatorIOSim() {
         simNotifier = new Notifier(() -> {
             updateSimState();
         });
-        simNotifier.startPeriodic(0.005);
+        simNotifier.startPeriodic(simPeriodSeconds);
     }
 
     @Override
@@ -46,6 +46,7 @@ public class ElevatorIOSim extends ElevatorIOReal {
 
         simState.setSupplyVoltage(12.0);
         mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
+        Logger.recordOutput("Elevator/Sim/TalonMotorVoltage", simState.getMotorVoltage());
 
         double simVoltage = mechanismSim.useMotorController(controller)
                 .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
@@ -60,14 +61,15 @@ public class ElevatorIOSim extends ElevatorIOReal {
 
         double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
         Logger.recordOutput("Elevator/Sim/SimulatorPositionMeters", simPositionMeters);
+        mechanismSim.update(Seconds.of(simPeriodSeconds));
+        Logger.recordOutput("Elevator/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 
-        double rotorPosition = simPositionMeters / ElevatorConstants.reduction;
+        double rotorPosition = mechanismSim.getAngularPosition().in(Revolutions);
         simState.setRawRotorPosition(rotorPosition);
-        Logger.recordOutput("Elevator/Sim/setRawRotorPosition", rotorPosition);
+        Logger.recordOutput("Elevator/Sim/RawRotorPosition", rotorPosition);
 
-        double rotorVel = mechanismSim.getVelocity().baseUnitMagnitude()
-                / ElevatorConstants.reduction;
+        double rotorVel = mechanismSim.getVelocity().in(RevolutionsPerSecond);
         simState.setRotorVelocity(rotorVel);
-        Logger.recordOutput("Elevator/Sim/SimulatorVelocityRadS", mechanismSim.getVelocity().baseUnitMagnitude());
+        Logger.recordOutput("Elevator/Sim/SimulatorVelocityRPS", rotorVel);
     }
 }

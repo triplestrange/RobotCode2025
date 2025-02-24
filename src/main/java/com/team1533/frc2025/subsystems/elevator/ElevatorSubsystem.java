@@ -56,7 +56,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         io.setPositionSetpoint(metersFromBottom, metersPerSec);
     }
 
-    private void setDutyCycleOut(double percentOutput) {
+    public void setDutyCycleOut(double percentOutput) {
         io.setDutyCycleOut(percentOutput);
     }
 
