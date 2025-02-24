@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Second;
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
-import com.team1533.frc2025.subsystems.elevator.ElevatorConstants.Gains;
+import com.team1533.frc2025.Constants.Gains;
 
 import edu.wpi.first.units.AngularVelocityUnit;
 import edu.wpi.first.units.measure.Angle;

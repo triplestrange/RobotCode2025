@@ -66,7 +66,7 @@ public class RobotContainer {
         private VisionSubsystem visionSubsystem;
         @Getter
         private ArmSubsystem armSubsystem;
-  @Getter
+        @Getter
         private ElevatorSubsystem elevatorSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
@@ -141,7 +141,7 @@ public class RobotContainer {
                                 });
 
                                 armSubsystem = new ArmSubsystem(new ArmIO() {
-
+                                });
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
                                 });

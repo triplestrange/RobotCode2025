@@ -12,7 +12,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.team1533.frc2025.subsystems.elevator.ElevatorConstants.Gains;
+import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.units.measure.Angle;

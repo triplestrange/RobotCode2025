@@ -2,6 +2,7 @@ package com.team1533.frc2025.subsystems.elevator;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.Constants.Gains;
 
 public class ElevatorConstants {
     public static final int leaderTalonCanID = 23;
@@ -19,9 +20,5 @@ public class ElevatorConstants {
         case COMPBOT -> new Gains(750, 0.0, 75, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
     };
-
-    public record Gains(
-            double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {
-    }
 
 }
