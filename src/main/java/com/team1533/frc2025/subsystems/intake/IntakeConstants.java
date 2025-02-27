@@ -20,15 +20,13 @@ public class IntakeConstants {
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(750, 0.0, 75, 0, 0.0, 0.0, 0);
+        case COMPBOT -> new Gains(0, 0.0, 0, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
     };
 
     public static final ServoMotorSubsystemConfig config = new ServoMotorSubsystemConfig();
     static {
         // Feedback Configs
-        config.fxConfig.Feedback.FeedbackRemoteSensorID = intakeCC.getDeviceNumber();
-        config.fxConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         config.fxConfig.Feedback.RotorToSensorRatio = rotorToSensorRatio;
         config.fxConfig.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
 
