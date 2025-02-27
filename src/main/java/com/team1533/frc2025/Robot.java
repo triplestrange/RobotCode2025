@@ -7,7 +7,6 @@
 
 package com.team1533.frc2025;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotController;
