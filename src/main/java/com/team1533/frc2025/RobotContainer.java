@@ -14,14 +14,10 @@ import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCame
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.events.Event;
-import com.pathplanner.lib.path.EventMarker;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
 import com.team1533.frc2025.subsystems.arm.ArmIOReal;
@@ -42,17 +38,17 @@ import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.event.EventLoop;
+import com.team1533.frc2025.subsystems.wrist.WristIO;
+import com.team1533.frc2025.subsystems.wrist.WristIOReal;
+import com.team1533.frc2025.subsystems.wrist.WristIOSim;
+import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
@@ -69,6 +65,8 @@ public class RobotContainer {
         private ArmSubsystem armSubsystem;
         @Getter
         private ElevatorSubsystem elevatorSubsystem;
+        @Getter
+        private WristSubsystem wristSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -95,6 +93,7 @@ public class RobotContainer {
 
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
+                                wristSubsystem = new WristSubsystem(new WristIOReal());
 
                                 break;
 
@@ -126,6 +125,8 @@ public class RobotContainer {
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
 
+                                wristSubsystem = new WristSubsystem(new WristIOSim());
+
                                 break;
 
                         default:
@@ -145,6 +146,10 @@ public class RobotContainer {
                                 });
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
+                                });
+
+                                wristSubsystem = new WristSubsystem(new WristIO() {
+
                                 });
 
                                 break;
@@ -189,7 +194,8 @@ public class RobotContainer {
 
                 driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
 
-                elevatorSubsystem.setDefaultCommand(elevatorSubsystem.run(() -> elevatorSubsystem.setDutyCycleOut((driveController.getR2Axis()-driveController.getL2Axis())/2)));
+                elevatorSubsystem.setDefaultCommand(elevatorSubsystem.run(() -> elevatorSubsystem
+                                .setDutyCycleOut((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
 
         }
 
