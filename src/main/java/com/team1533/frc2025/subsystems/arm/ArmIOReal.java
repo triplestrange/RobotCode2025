@@ -55,6 +55,7 @@ public class ArmIOReal implements ArmIO {
 
     private final StatusSignal<Angle> encoderAbsolutePositionRotations;
     private final StatusSignal<Angle> encoderRelativePositionRotations;
+    private final StatusSignal<Angle> fusedCanCoderRotations;
 
     private final StatusSignal<AngularVelocity> armVelocitySignal;
     private final StatusSignal<AngularAcceleration> armAccelerationSignal;
@@ -79,19 +80,20 @@ public class ArmIOReal implements ArmIO {
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.Feedback.SensorToMechanismRatio = ArmConstants.reduction;
-
+        
         config.Feedback.FeedbackRemoteSensorID = pivotEncoder.getDeviceID();
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         config.Feedback.SensorToMechanismRatio = 1.0;
         config.Feedback.RotorToSensorRatio = ArmConstants.reduction;
 
         // Cancoder configs
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0;
-        encoderConfig.MagnetSensor.MagnetOffset = 0;
-        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
+        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = ArmConstants.absEncoderDiscontinuity;
+        encoderConfig.MagnetSensor.MagnetOffset = ArmConstants.absEncoderOffset;
+        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
         // Base Status Signals
+        fusedCanCoderRotations = leaderTalon.getPosition();
+
         leaderPositionSignal = leaderTalon.getRotorPosition();
         leaderVelocitySignal = leaderTalon.getRotorVelocity();
         leaderVoltsSignal = leaderTalon.getMotorVoltage();
@@ -112,9 +114,11 @@ public class ArmIOReal implements ArmIO {
         armAccelerationSignal = leaderTalon.getAcceleration();
 
         CTREUtil.applyConfiguration(leaderTalon, config);
+        CTREUtil.applyConfiguration(pivotEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
                 100,
+                fusedCanCoderRotations, 
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
@@ -145,7 +149,10 @@ public class ArmIOReal implements ArmIO {
     public void updateInputs(ArmIOInputs inputs) {
         inputs.leaderConnected = BaseStatusSignal.refreshAll(leaderPositionSignal, leaderVelocitySignal,
                 leaderVoltsSignal, leaderCurrentStatorSignal, leaderCurrentSupplySignal,
-                armVelocitySignal, armAccelerationSignal, leaderTemperatureSignal).isOK();
+                armVelocitySignal, armAccelerationSignal, leaderTemperatureSignal, fusedCanCoderRotations).isOK();
+        
+        inputs.FusedCANcoderPositionRots = fusedCanCoderRotations.getValueAsDouble();
+
         inputs.leaderVelocityRotPerSec = leaderVelocitySignal.getValueAsDouble();
         inputs.leaderAppliedVolts = leaderVoltsSignal.getValueAsDouble();
         inputs.leaderCurrentAmps = leaderCurrentSupplySignal.getValueAsDouble();

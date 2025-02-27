@@ -24,6 +24,7 @@ public interface ArmIO {
         public boolean absoluteEncoderConnected = true;
         public double absoluteEncoderPositionRots = 0.0;
         public double relativeEncoderPositionRots = 0.0;
+        public double FusedCANcoderPositionRots = 0.0;
 
         public double leaderRotPosition = 0.0;
         public double followerRotPosition = 0.0;
