@@ -17,8 +17,10 @@ public interface WristIO {
         public boolean absoluteEncoderConnected = true;
         public double absoluteEncoderPositionRots = 0.0;
         public double relativeEncoderPositionRots = 0.0;
+        public double FusedCANcoderPositionRots = 0.0;
 
         public double leaderRotPosition = 0.0;
+
 
         public double wristVelMetersPerSecond = 0.0;
         public double wristAccelMetersPerSecondPerSecond = 0.0;
@@ -42,6 +44,9 @@ public interface WristIO {
     }
 
     default void setCurrentSetpoint(double amps) {
+    }
+
+    default void setMotionMagicSetpoint(double positionRotations)   {
     }
 
     default void setBrakeMode(boolean enabled) {
