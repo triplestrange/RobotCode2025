@@ -19,7 +19,7 @@ public class WristConstants {
     public static final double torqueCurrentLimit = 80;
     public static final double statorCurrentLimit = 80;
     public static final double supplyCurrentLimit = 40;
-    public static final double supplyCurrentLowerLimit = 40;
+    public static final double supplyCurrentLowerLimit = 30;
     public static final double supplyCurrentLowerLimitTime = 1;
 
     public static final double motionMagicCruiseVelocity = 1;
