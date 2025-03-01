@@ -91,10 +91,4 @@ public class ArmSubsystem extends SubsystemBase {
     public double getCurrentPositionRotations() {
         return inputs.leaderRotPosition;
     }
-
-    // TODO: implememt
-    public void resetZeroPoint() {
-
-    }
-
 }

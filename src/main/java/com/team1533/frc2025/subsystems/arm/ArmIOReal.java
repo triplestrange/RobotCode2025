@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -38,6 +39,7 @@ public class ArmIOReal implements ArmIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
+    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -74,8 +76,8 @@ public class ArmIOReal implements ArmIO {
         config.Slot0.kI = ArmConstants.gains.kI();
         config.Slot0.kD = ArmConstants.gains.kD();
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
-        config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
+        config.TorqueCurrent.PeakForwardTorqueCurrent = ArmConstants.torqueCurrentLimit;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -ArmConstants.torqueCurrentLimit;
         config.MotorOutput.Inverted = ArmConstants.leaderInverted
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
@@ -83,8 +85,20 @@ public class ArmIOReal implements ArmIO {
         
         config.Feedback.FeedbackRemoteSensorID = pivotEncoder.getDeviceID();
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        config.Feedback.SensorToMechanismRatio = 1.0;
+        config.Feedback.SensorToMechanismRatio = ArmConstants.SensorToMechanismRatio;
         config.Feedback.RotorToSensorRatio = ArmConstants.reduction;
+
+        config.CurrentLimits.StatorCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimit = ArmConstants.statorCurrentLimit;
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
+        config.CurrentLimits.SupplyCurrentLowerLimit = ArmConstants.supplyCurrentLowerLimit;
+        config.CurrentLimits.SupplyCurrentLowerTime = ArmConstants.supplyCurrentLowerLimitTime;
+
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ArmConstants.forwardSoftLimitThreshold;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ArmConstants.reverseSoftLimitThreshold;
 
         // Cancoder configs
         encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = ArmConstants.absEncoderDiscontinuity;
@@ -201,6 +215,11 @@ public class ArmIOReal implements ArmIO {
     public void setPositionSetpoint(double positionRotations, double rotationsPerSec) {
         leaderTalon.setControl(
                 positionTorqueCurrentFOC.withPosition(positionRotations).withVelocity(rotationsPerSec));
+    }
+
+    @Override
+    public void setMotionMagicSetpoint(double positionRotations)    {
+        leaderTalon.setControl(motionMagicTorqueCurrentFOC.withPosition(positionRotations));
     }
 
     @Override

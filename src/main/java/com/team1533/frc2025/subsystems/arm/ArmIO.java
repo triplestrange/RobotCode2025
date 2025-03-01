@@ -56,6 +56,9 @@ public interface ArmIO {
     default void setBrakeMode(boolean enabled) {
     }
 
+    default void setMotionMagicSetpoint(double positionRotations)   {
+    }
+
     default void setPID(Gains gains) {
     }
 

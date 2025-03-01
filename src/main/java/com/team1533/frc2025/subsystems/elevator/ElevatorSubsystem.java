@@ -9,7 +9,6 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.team1533.frc2025.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 import com.team1533.lib.time.RobotTime;
 
 public class ElevatorSubsystem extends SubsystemBase {

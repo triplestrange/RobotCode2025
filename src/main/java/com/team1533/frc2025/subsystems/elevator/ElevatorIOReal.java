@@ -6,6 +6,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -32,6 +33,7 @@ public class ElevatorIOReal implements ElevatorIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
+    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -54,6 +56,7 @@ public class ElevatorIOReal implements ElevatorIO {
     private final TalonFXConfiguration config = new TalonFXConfiguration();
 
     private final Timer timeSinceReset;
+    
 
     public ElevatorIOReal() {
         timeSinceReset = new Timer();
@@ -67,13 +70,29 @@ public class ElevatorIOReal implements ElevatorIO {
         config.Slot0.kI = ElevatorConstants.gains.kI();
         config.Slot0.kD = ElevatorConstants.gains.kD();
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.TorqueCurrent.PeakForwardTorqueCurrent = 80.0;
-        config.TorqueCurrent.PeakReverseTorqueCurrent = -80.0;
+        config.TorqueCurrent.PeakForwardTorqueCurrent = ElevatorConstants.torqueCurrentLimit;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -ElevatorConstants.torqueCurrentLimit;
         config.MotorOutput.Inverted = ElevatorConstants.leaderInverted
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Feedback.SensorToMechanismRatio = ElevatorConstants.reduction;
+
+        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.supplyCurrentLimit;
+        config.CurrentLimits.StatorCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimit = ElevatorConstants.statorCurrentLimit;
+        config.CurrentLimits.SupplyCurrentLowerLimit = ElevatorConstants.supplyCurrentLowerLimit;
+        config.CurrentLimits.SupplyCurrentLowerTime = ElevatorConstants.supplyCurrentLowerLimitTime;
+
+        config.MotionMagic.MotionMagicCruiseVelocity = ElevatorConstants.motionMagicCruiseVelocity;
+        config.MotionMagic.MotionMagicAcceleration = ElevatorConstants.motionMagicAcceleration;
+        config.MotionMagic.MotionMagicJerk = ElevatorConstants.motionMagicJerk;
+
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ElevatorConstants.forwardSoftLimitThreshold;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ElevatorConstants.reverseSoftLimitThreshold;
 
         // Base Status Signals
         leaderPositionSignal = leaderTalon.getRotorPosition();
@@ -179,6 +198,11 @@ public class ElevatorIOReal implements ElevatorIO {
     @Override
     public void setCurrentSetpoint(double amps) {
         leaderTalon.setControl(currentControl.withOutput(amps));
+    }
+
+    @Override
+    public void setMotionMagicSetpoint(double positionRotations)    {
+        leaderTalon.setControl(motionMagicTorqueCurrentFOC.withPosition(positionRotations));
     }
 
     @Override
