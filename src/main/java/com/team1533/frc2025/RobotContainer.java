@@ -187,15 +187,18 @@ public class RobotContainer {
                 driveSubsystem.setDefaultCommand(
                                 driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
                                                 -driveController.getLeftX(), -driveController.getRightX())));
-                driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
+                                                
+                driveController.create().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                driveController.square().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0.3, () -> 0));
-                driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
+                driveController.square().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.3));
+                driveController.circle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0));
 
-                driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
+                driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.5));
 
-                elevatorSubsystem.setDefaultCommand(elevatorSubsystem.run(() -> elevatorSubsystem
-                                .setDutyCycleOut((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+                wristSubsystem.setDefaultCommand(wristSubsystem
+                                .manualDutyCycle(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+
+
 
         }
 

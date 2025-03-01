@@ -69,6 +69,11 @@ public class ElevatorIOReal implements ElevatorIO {
         config.Slot0.kP = ElevatorConstants.gains.kP();
         config.Slot0.kI = ElevatorConstants.gains.kI();
         config.Slot0.kD = ElevatorConstants.gains.kD();
+        config.Slot0.kA = ElevatorConstants.gains.ffkA();
+        config.Slot0.kG = ElevatorConstants.gains.ffkG();
+        config.Slot0.kS = ElevatorConstants.gains.ffkS();
+        config.Slot0.kV = ElevatorConstants.gains.ffkV();
+
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
         config.TorqueCurrent.PeakForwardTorqueCurrent = ElevatorConstants.torqueCurrentLimit;
         config.TorqueCurrent.PeakReverseTorqueCurrent = -ElevatorConstants.torqueCurrentLimit;

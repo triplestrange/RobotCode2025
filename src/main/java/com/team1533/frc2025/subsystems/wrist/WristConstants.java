@@ -4,15 +4,14 @@ import com.team1533.frc2025.Constants.Gains;
 import com.team1533.frc2025.Constants;
 
 public class WristConstants {
-    public static final int leaderTalonCanID = 231;
-    public static final int wristEncoderCanID = 340;
-    public static final int pivotEncoderCanID =  23247;
+    public static final int leaderTalonCanID = 25;
+    public static final int wristEncoderCanID = 28;
 
     public static final String canBUS = "rio";
 
-    public static final boolean leaderInverted = true;
+    public static final boolean leaderInverted = false;
 
-    public static final double reduction = 1;
+    public static final double reduction = (30./12.) * 2 * (64./14.);
     public static final double SensorToMechanismRatio = 1.0;
     public static final double frictionVoltage = 0.25;
 
@@ -27,8 +26,8 @@ public class WristConstants {
     public static final double motionMagicJerk = 1;
 
     
-    public static final double absEncoderOffset = -0.177246;
-    public static final double absEncoderDiscontinuity = 0.8;
+    public static final double absEncoderOffset = 0.875;
+    public static final double absEncoderDiscontinuity = 0.9;
 
     public static final double reverseSoftLimitThreshold = 0;
     public static final double forwardSoftLimitThreshold = 0;

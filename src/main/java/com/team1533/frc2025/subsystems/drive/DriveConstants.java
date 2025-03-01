@@ -39,7 +39,7 @@ public class DriveConstants {
         public static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
         public static final double ROBOT_MOI = 5.645;
         public static final double WHEEL_COF = 1.15;
-        public static final double MAX_STEER_VEL_RAD_PER_SEC = 10;
+        public static final double MAX_STEER_VEL_RAD_PER_SEC = 2 * Math.PI;
         public static final RobotConfig PP_CONFIG = new RobotConfig(
                         ROBOT_MASS_KG,
                         ROBOT_MOI,

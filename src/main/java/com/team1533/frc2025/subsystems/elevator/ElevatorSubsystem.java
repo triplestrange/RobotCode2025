@@ -55,7 +55,12 @@ public class ElevatorSubsystem extends SubsystemBase {
         io.setPositionSetpoint(metersFromBottom, metersPerSec);
     }
 
-    public void setDutyCycleOut(double percentOutput) {
+    private void setMotionMagicSetpointImpl(double metersFromBottom)   {
+        Logger.recordOutput("Elevator/API/setPositionSetpoint/metersFromBottom", metersFromBottom);
+        io.setMotionMagicSetpoint(metersFromBottom);    
+    }
+
+    private void setDutyCycleOut(double percentOutput) {
         io.setDutyCycleOut(percentOutput);
     }
 
@@ -66,6 +71,14 @@ public class ElevatorSubsystem extends SubsystemBase {
             elevatorSetpointMeters = setpoint;
         }).withName("Elevator positionSetpointCommand");
     }
+
+    public Command motionMagicPositionCommand(DoubleSupplier metersFromBottom) {
+        return run(() -> {
+            double setpoint = metersFromBottom.getAsDouble();
+            setMotionMagicSetpointImpl(setpoint);
+            elevatorSetpointMeters = setpoint;
+        }).withName("Elevator Motion Magic Setpoint Command");
+    } 
 
     public double getSetpoint() {
         return elevatorSetpointMeters;

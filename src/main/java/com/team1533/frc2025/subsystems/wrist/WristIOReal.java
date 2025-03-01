@@ -68,7 +68,11 @@ public class WristIOReal implements WristIO {
         config.Slot0.kP = WristConstants.gains.kP();
         config.Slot0.kI = WristConstants.gains.kI();
         config.Slot0.kD = WristConstants.gains.kD();
-        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+        config.Slot0.kA = WristConstants.gains.ffkA();
+        config.Slot0.kG = WristConstants.gains.ffkG();
+        config.Slot0.kS = WristConstants.gains.ffkS();
+        config.Slot0.kV = WristConstants.gains.ffkV();
+
         config.TorqueCurrent.PeakForwardTorqueCurrent = WristConstants.torqueCurrentLimit;
         config.TorqueCurrent.PeakReverseTorqueCurrent = -WristConstants.torqueCurrentLimit;
         config.MotorOutput.Inverted = WristConstants.leaderInverted

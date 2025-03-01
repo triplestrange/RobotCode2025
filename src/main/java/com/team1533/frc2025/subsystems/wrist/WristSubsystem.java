@@ -50,12 +50,22 @@ public class WristSubsystem extends SubsystemBase {
                 () -> setDutyCycleOut(0.0)).withName("Wrist DutyCycleControl");
     }
 
+    public Command manualDutyCycle(DoubleSupplier percentOutput) {
+        return run(
+                () -> setDutyCycleOut(percentOutput.getAsDouble()));    
+            }
+
     private void setPositionSetpointImpl(double rotationsFromHorizontal, double rotationsPerSec) {
         Logger.recordOutput("Wrist/API/setPositionSetpoint/rotationsFromHorizontal",
                 rotationsFromHorizontal);
         Logger.recordOutput("Wrist/API/setPositionSetpoint/rotationsPerSec",
                 rotationsPerSec);
         io.setPositionSetpoint(rotationsFromHorizontal, rotationsPerSec);
+    }
+
+    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal)   {
+        Logger.recordOutput("Wrist/API/setPositionSetpoint/rotationsFromHorizontal", rotationsFromHorizontal);
+        io.setMotionMagicSetpoint(rotationsFromHorizontal);    
     }
 
     private void setDutyCycleOut(double percentOutput) {
@@ -69,6 +79,15 @@ public class WristSubsystem extends SubsystemBase {
             wristSetpointRotations = setpoint;
         }).withName("Wrist positionSetpointCommand");
     }
+
+    public Command motionMagicPositionCommand(DoubleSupplier rotationsFromHorizontal) {
+        return run(() -> {
+            double setpoint = rotationsFromHorizontal.getAsDouble();
+            setMotionMagicSetpointImpl(setpoint);
+            wristSetpointRotations = setpoint;
+        }).withName("Wrist Motion Magic Setpoint Command");
+    } 
+
 
     public double getSetpoint() {
         return wristSetpointRotations;
