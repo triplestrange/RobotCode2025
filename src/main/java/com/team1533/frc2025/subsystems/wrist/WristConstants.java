@@ -21,12 +21,12 @@ public class WristConstants {
     public static final double supplyCurrentLowerLimit = 30;
     public static final double supplyCurrentLowerLimitTime = 1;
 
-    public static final double motionMagicCruiseVelocity = 1;
+    public static final double motionMagicCruiseVelocity = 3.9;
     public static final double motionMagicAcceleration = 1;
     public static final double motionMagicJerk = 1;
 
     
-    public static final double absEncoderOffset = 0.875;
+    public static final double absEncoderOffset = 0.875 - 0.005859375;
     public static final double absEncoderDiscontinuity = 0.9;
 
     public static final double reverseSoftLimitThreshold = 0;
@@ -34,7 +34,7 @@ public class WristConstants {
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(0, 0.0, 0, 0, 0.0, 0.0, 0);
+        case COMPBOT -> new Gains(60, 0.0, 1, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
     };
 

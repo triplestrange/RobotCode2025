@@ -94,18 +94,18 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public double getCurrentPosition() {
-        return inputs.absoluteEncoderPositionRots;
+        return inputs.FusedCANcoderPositionRots;
     }
 
-    // public Command waitForPosition(DoubleSupplier rotationsFromHorizontal,
-    // double
-    // toleranceRotations) {
-    // return new WaitUntilCommand(() -> {
-    // return Math.abs(getCurrentPosition() -
-    // rotationsFromHorizontal.getAsDouble())
-    // < toleranceMeters;
-    // }).withName("Wrist wait for position");
-    // }
+    public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {
+        return new WaitUntilCommand(() -> {
+            return Math.abs(getCurrentPosition() - rotationsFromHorizontal.getAsDouble()) < toleranceRotations;
+        }).withName("Wrist wait for position");
+    }
+
+    public Command waitForSetpoint(double toleranceRotations) {
+        return waitForPosition(this::getSetpoint, toleranceRotations);
+    }
 
     public double getCurrentPositionRotations() {
         return inputs.leaderRotPosition;

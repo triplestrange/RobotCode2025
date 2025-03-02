@@ -94,6 +94,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         }).withName("Elevator wait for position");
     }
 
+    public Command waitForSetpoint(double toleranceMeters) {
+        return waitForPosition(this::getSetpoint, toleranceMeters);
+    }
+
     public double getCurrentPositionRotations() {
         return inputs.leaderRotPosition;
     }

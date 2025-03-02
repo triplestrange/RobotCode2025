@@ -9,6 +9,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -20,6 +21,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
@@ -40,7 +42,7 @@ public class WristIOReal implements WristIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withEnableFOC(true).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -148,6 +150,7 @@ public class WristIOReal implements WristIO {
 
         voltageOut.EnableFOC = true;
         dutyCycleOutControl.EnableFOC = true;
+        motionMagicVoltage.EnableFOC = true;
 
     }
 
@@ -201,7 +204,7 @@ public class WristIOReal implements WristIO {
     }
     @Override
     public void setMotionMagicSetpoint(double positionRotations)    {
-        leaderTalon.setControl(motionMagicTorqueCurrentFOC.withPosition(positionRotations));
+        leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 
     @Override

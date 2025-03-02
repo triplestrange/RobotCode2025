@@ -8,7 +8,7 @@ import com.team1533.lib.drivers.CANDeviceId;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
 public class IntakeConstants {
-    public static final CANDeviceId intakeTalon = new CANDeviceId(04334, "rio");
+    public static final CANDeviceId intakeTalon = new CANDeviceId(26, "rio");
     public static final CANDeviceId intakeCC = new CANDeviceId(342, "rio");
 
     public static final boolean leaderInverted = true;

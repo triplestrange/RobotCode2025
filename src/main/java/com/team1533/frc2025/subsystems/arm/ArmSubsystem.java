@@ -50,12 +50,22 @@ public class ArmSubsystem extends SubsystemBase {
                 () -> setDutyCycleOut(0.0)).withName("Arm DutyCycleControl");
     }
 
+    public Command manualDutyCycle(DoubleSupplier percentOutput) {
+        return run(
+                () -> setDutyCycleOut(percentOutput.getAsDouble()));    
+            }
+
     private void setPositionSetpointImpl(double rotationsFromHorizontal, double rotationsPerSec) {
         Logger.recordOutput("Arm/API/setPositionSetpoint/rotationsFromHorizontal",
                 rotationsFromHorizontal);
         Logger.recordOutput("Arm/API/setPositionSetpoint/rotationsPerSec",
                 rotationsPerSec);
         io.setPositionSetpoint(rotationsFromHorizontal, rotationsPerSec);
+    }
+
+    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal)   {
+        Logger.recordOutput("Arm/API/setPositionSetpoint/rotationsFromHorizontal", rotationsFromHorizontal);
+        io.setMotionMagicSetpoint(rotationsFromHorizontal);    
     }
 
     private void setDutyCycleOut(double percentOutput) {
@@ -70,6 +80,14 @@ public class ArmSubsystem extends SubsystemBase {
         }).withName("Arm positionSetpointCommand");
     }
 
+    public Command motionMagicPositionCommand(DoubleSupplier rotationsFromHorizontal) {
+        return run(() -> {
+            double setpoint = rotationsFromHorizontal.getAsDouble();
+            setMotionMagicSetpointImpl(setpoint);
+            armSetpointRotations = setpoint;
+        }).withName("Arm Motion Magic Setpoint Command");
+    } 
+
     public double getSetpoint() {
         return armSetpointRotations;
     }
@@ -78,15 +96,15 @@ public class ArmSubsystem extends SubsystemBase {
         return inputs.absoluteEncoderPositionRots;
     }
 
-    // public Command waitForPosition(DoubleSupplier rotationsFromHorizontal,
-    // double
-    // toleranceRotations) {
-    // return new WaitUntilCommand(() -> {
-    // return Math.abs(getCurrentPosition() -
-    // rotationsFromHorizontal.getAsDouble())
-    // < toleranceMeters;
-    // }).withName("Arm wait for position");
-    // }
+    public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {
+        return new WaitUntilCommand(() -> {
+            return Math.abs(getCurrentPosition() - rotationsFromHorizontal.getAsDouble()) < toleranceRotations;
+        }).withName("Arm wait for position");
+    }
+
+    public Command waitForSetpoint(double toleranceRotations) {
+        return waitForPosition(this::getSetpoint, toleranceRotations);
+    }
 
     public double getCurrentPositionRotations() {
         return inputs.leaderRotPosition;

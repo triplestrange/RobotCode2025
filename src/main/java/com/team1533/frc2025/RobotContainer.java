@@ -32,7 +32,8 @@ import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
-
+import com.team1533.frc2025.subsystems.intake.IntakeConstants;
+import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -46,9 +47,13 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
+import com.team1533.lib.subsystems.MotorIO;
+import com.team1533.lib.subsystems.SimTalonFXIO;
+import com.team1533.lib.subsystems.TalonFXIO;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
@@ -67,6 +72,8 @@ public class RobotContainer {
         private ElevatorSubsystem elevatorSubsystem;
         @Getter
         private WristSubsystem wristSubsystem;
+        @Getter
+        private IntakeSubsystem intakeSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -94,6 +101,7 @@ public class RobotContainer {
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config, new TalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -126,6 +134,8 @@ public class RobotContainer {
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
 
                                 wristSubsystem = new WristSubsystem(new WristIOSim());
+
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config, new SimTalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -190,15 +200,26 @@ public class RobotContainer {
                                                 
                 driveController.create().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                driveController.square().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.3));
-                driveController.circle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0));
-
                 driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.5));
+                driveController.circle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
+                driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0));
 
-                wristSubsystem.setDefaultCommand(wristSubsystem
-                                .manualDutyCycle(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+                driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0));
+                driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.195));
+                driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.25));
 
+                driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(3)));
+                driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
 
+                intakeSubsystem.setDefaultCommand(intakeSubsystem
+                                .dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+
+                
+
+                // L4:
+                // a 0.195
+                // e 1.058
+                // w 0.337
 
         }
 

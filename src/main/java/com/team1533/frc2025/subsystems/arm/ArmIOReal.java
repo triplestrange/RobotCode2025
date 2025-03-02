@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.team1533.frc2025.Constants.Gains;
+import com.team1533.frc2025.subsystems.wrist.WristConstants;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.units.measure.Angle;
@@ -39,7 +41,7 @@ public class ArmIOReal implements ArmIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -94,10 +96,14 @@ public class ArmIOReal implements ArmIO {
         config.CurrentLimits.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
         config.CurrentLimits.SupplyCurrentLowerLimit = ArmConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = ArmConstants.supplyCurrentLowerLimitTime;
+        
+        config.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.motionMagicCruiseVelocity;
+        config.MotionMagic.MotionMagicAcceleration = ArmConstants.motionMagicAcceleration;
+        config.MotionMagic.MotionMagicJerk = ArmConstants.motionMagicJerk;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ArmConstants.forwardSoftLimitThreshold;
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ArmConstants.reverseSoftLimitThreshold;
 
         // Cancoder configs
@@ -219,7 +225,7 @@ public class ArmIOReal implements ArmIO {
 
     @Override
     public void setMotionMagicSetpoint(double positionRotations)    {
-        leaderTalon.setControl(motionMagicTorqueCurrentFOC.withPosition(positionRotations));
+        leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 
     @Override
