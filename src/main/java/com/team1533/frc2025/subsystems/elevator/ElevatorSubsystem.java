@@ -1,10 +1,14 @@
 package com.team1533.frc2025.subsystems.elevator;
 
+import edu.wpi.first.math.MathUsageId;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -19,12 +23,24 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public ElevatorSubsystem(final ElevatorIO io) {
         this.io = io;
+        setTeleopDefaultCommand();
     }
 
     public void setTeleopDefaultCommand() {
-        this.setDefaultCommand(run(() -> {
-            setPositionSetpointImpl(elevatorSetpointMeters, 0.0);
-        }).withName("Hood Maintain Setpoint (default)"));
+        this.setDefaultCommand(holdSetpointCommand()
+        .withName("Elevator Maintain Setpoint (default)"));
+    }
+
+    public Command holdSetpointCommand() {
+        return run(() -> {
+            setMotionMagicSetpointImpl(elevatorSetpointMeters);
+        }).withName("Elevator Maintain Setpoint");
+    }
+    
+    public Command setSetpointHere() {
+        return runOnce(
+            () -> { elevatorSetpointMeters = getCurrentPosition(); }
+            ).withName("Elevator Set Setpoint Here");
     }
 
     @Override
@@ -33,6 +49,10 @@ public class ElevatorSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
         io.updateInputs(inputs);
+
+        if (DriverStation.isDisabled()) {
+            elevatorSetpointMeters = getCurrentPosition();
+        }
 
         Logger.recordOutput("Elevator/latencyPeriodicSec", RobotTime.getTimestampSeconds() - timestamp);
     }
@@ -96,6 +116,10 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public Command waitForSetpoint(double toleranceMeters) {
         return waitForPosition(this::getSetpoint, toleranceMeters);
+    }
+
+    public BooleanSupplier atSetpoint(double toleranceMeters) {
+        return () -> MathUtil.isNear(getCurrentPosition(), getSetpoint(), toleranceMeters);
     }
 
     public double getCurrentPositionRotations() {

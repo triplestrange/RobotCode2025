@@ -18,6 +18,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.team1533.frc2025.commands.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
 import com.team1533.frc2025.subsystems.arm.ArmIOReal;
@@ -200,16 +201,33 @@ public class RobotContainer {
                                                 
                 driveController.create().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.5));
-                driveController.circle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
-                driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0));
+                //driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.71));
+                driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
+                //driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.1));
 
-                driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0));
-                driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.195));
-                driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.25));
+                //driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0));
+                //driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.195));
+                //driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.25));
+                //driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.15));
 
-                driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(3)));
-                driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
+                driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
+                driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() -> -0.2));
+
+                //L4 Automation
+                driveController.square().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.1, 0.337));
+
+                //Feeder Automation
+                driveController.circle().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+                
+                driveController.PS().onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere()).alongWith(wristSubsystem.setSetpointHere()));
+                
+                driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
+                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+
+                //driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(1.5)));
+                //driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
 
                 intakeSubsystem.setDefaultCommand(intakeSubsystem
                                 .dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));

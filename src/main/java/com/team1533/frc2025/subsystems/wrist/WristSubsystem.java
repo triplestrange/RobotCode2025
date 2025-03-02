@@ -1,11 +1,14 @@
 package com.team1533.frc2025.subsystems.wrist;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.team1533.lib.time.RobotTime;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
@@ -19,12 +22,24 @@ public class WristSubsystem extends SubsystemBase {
 
     public WristSubsystem(final WristIO io) {
         this.io = io;
+        setTeleopDefaultCommand();
     }
 
     public void setTeleopDefaultCommand() {
-        this.setDefaultCommand(run(() -> {
-            setPositionSetpointImpl(wristSetpointRotations, 0.0);
-        }).withName("Wrist Maintain Setpoint (default)"));
+        this.setDefaultCommand(holdSetpointCommand()
+        .withName("Wrist Maintain Setpoint (default)"));
+    }
+
+    public Command holdSetpointCommand() {
+        return run(() -> {
+            setMotionMagicSetpointImpl(wristSetpointRotations);
+        }).withName("Wrist Maintain Setpoint");
+    }
+
+    public Command setSetpointHere() {
+        return runOnce(
+            () -> { wristSetpointRotations = getCurrentPosition(); }
+            ).withName("Wrist Set Setpoint Here");
     }
 
     @Override
@@ -33,6 +48,10 @@ public class WristSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Wrist", inputs);
         io.updateInputs(inputs);
+
+         if (DriverStation.isDisabled()) {
+            wristSetpointRotations = getCurrentPosition();
+        }
 
         Logger.recordOutput("Wrist/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
@@ -105,6 +124,10 @@ public class WristSubsystem extends SubsystemBase {
 
     public Command waitForSetpoint(double toleranceRotations) {
         return waitForPosition(this::getSetpoint, toleranceRotations);
+    }
+
+    public BooleanSupplier atSetpoint(double toleranceRotations) {
+        return () -> MathUtil.isNear(getCurrentPosition(), getSetpoint(), toleranceRotations);
     }
 
     public double getCurrentPositionRotations() {

@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -34,6 +35,7 @@ public class ElevatorIOReal implements ElevatorIO {
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
     private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -144,6 +146,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
         voltageOut.EnableFOC = true;
         dutyCycleOutControl.EnableFOC = true;
+        motionMagicVoltage.EnableFOC = true;
 
     }
 
@@ -207,7 +210,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
     @Override
     public void setMotionMagicSetpoint(double positionRotations)    {
-        leaderTalon.setControl(motionMagicTorqueCurrentFOC.withPosition(positionRotations));
+        leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 
     @Override

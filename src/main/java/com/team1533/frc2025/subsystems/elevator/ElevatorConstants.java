@@ -22,9 +22,9 @@ public class ElevatorConstants {
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;
 
-    public static final double motionMagicCruiseVelocity = 2.75;
+    public static final double motionMagicCruiseVelocity = 2;
     public static final double motionMagicAcceleration = 10;
-    public static final double motionMagicJerk = 5;
+    public static final double motionMagicJerk = 20;
 
     
     public static final double reverseSoftLimitThreshold = 0;
@@ -33,7 +33,8 @@ public class ElevatorConstants {
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(750, 0.0, 75, 22, 0.0, 0.0, 0);
+        //case COMPBOT -> new Gains(750, 0.0, 75, 22, 0.0, 0.0, 0);
+        case COMPBOT -> new Gains(100, 0.0, 0, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
     };
 

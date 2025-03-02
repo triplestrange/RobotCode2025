@@ -23,8 +23,8 @@ public class ArmConstants {
 
 
     public static final double motionMagicCruiseVelocity = 1;
-    public static final double motionMagicAcceleration = 1;
-    public static final double motionMagicJerk = 1;
+    public static final double motionMagicAcceleration = 2;
+    public static final double motionMagicJerk = 10;
 
 
     public static final double absEncoderOffset = -0.177246;

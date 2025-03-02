@@ -45,6 +45,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -345,8 +346,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     }
 
     public void teleopControl(double driveX, double driveY, double rotate) {
-        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05);
-        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05);
+        double magnitude = Math.hypot(driveX, driveY);
+        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)*magnitude;
+        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)*magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
         setpoint = generator.generateSetpoint(setpoint,
                 ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation()), Constants.loopPeriodSecs);
