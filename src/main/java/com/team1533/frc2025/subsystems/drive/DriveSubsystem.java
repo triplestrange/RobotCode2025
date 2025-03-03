@@ -22,6 +22,7 @@ import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
+import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -350,6 +351,12 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)*magnitude;
         double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)*magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
+
+        if (AllianceFlipUtil.shouldFlip()) {
+            speedX = -speedX;
+            speedY = -speedY;
+        }
+
         setpoint = generator.generateSetpoint(setpoint,
                 ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation()), Constants.loopPeriodSecs);
         Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
@@ -358,6 +365,6 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     public void teleopResetRotation() {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(),
-                new Pose2d(getPose().getX(), getPose().getY(), Rotation2d.fromDegrees(0)));
+                new Pose2d(getPose().getX(), getPose().getY(), AllianceFlipUtil.apply(Rotation2d.fromDegrees(0))));
     }
 }
