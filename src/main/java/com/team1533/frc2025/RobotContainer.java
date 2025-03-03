@@ -32,7 +32,6 @@ import com.team1533.frc2025.subsystems.drive.GyroIOSim;
 import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
-import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
 import com.team1533.frc2025.subsystems.intake.IntakeConstants;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
@@ -47,7 +46,6 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import com.team1533.frc2025.subsystems.elevator.*;
-import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
 import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
@@ -194,45 +192,79 @@ public class RobotContainer {
 
         }
 
+        //Button Binds
         private void configureButtonBindings() {
-                driveSubsystem.setDefaultCommand(
-                                driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
+
+                //Swerve Drive
+                driveSubsystem.setDefaultCommand(driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
                                                 -driveController.getLeftX(), -driveController.getRightX())));
                                                 
-                driveController.create().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
+                //Gyro Rotation Reset                
+                driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
+
+                //L4 Automation
+                driveController.triangle().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337));
+
+                //L3 Automation
+                driveController.circle().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15690501111, 0.387106, 0.22888200277));
+                
+                //L2 Automation
+                driveController.cross().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.10403465833, 0.086995, 0.17601165));
+                
+                //Feeder Automation
+                driveController.square().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+                
+                //Climb Prep
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+                
+                //Climb Sequence
+                driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence
+                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0.3556, 0.1));
+
+                //Intake
+                driveController.L1().whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
+
+                //Outtake
+                driveController.R1().whileTrue(intakeSubsystem.dutyCycleCommand(()-> -0.2));
+                
+                //Arm E-Stop
+                driveController.PS().onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere()).alongWith(wristSubsystem.setSetpointHere()));
+                
+
+                //arm manual
+
+                // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
+                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() -> -0.2));
+
+                //intake triggers
+
+                // intakeSubsystem.setDefaultCommand(intakeSubsystem
+                //                 .dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+
+
+
+                //Old Stuff
+
+                //driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
+                //(armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+
+                //driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(1.5)));
+                //driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
+
 
                 //driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.71));
-                driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
+                //driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
                 //driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.1));
 
                 //driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0));
                 //driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.195));
                 //driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.25));
                 //driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.15));
-
-                driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
-                driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() -> -0.2));
-
-                //L4 Automation
-                driveController.square().onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.1, 0.337));
-
-                //Feeder Automation
-                driveController.circle().onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
-                
-                driveController.PS().onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere()).alongWith(wristSubsystem.setSetpointHere()));
-                
-                driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
-                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
-
-                //driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(1.5)));
-                //driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
-
-                intakeSubsystem.setDefaultCommand(intakeSubsystem
-                                .dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
-
-                
 
                 // L4:
                 // a 0.195
