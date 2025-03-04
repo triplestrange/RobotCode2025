@@ -52,6 +52,7 @@ import com.team1533.lib.subsystems.TalonFXIO;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -124,10 +125,11 @@ public class RobotContainer {
                                                 driveSubsystem,
                                                 new VisionIOPhotonVisionSim(
                                                                 camera0Name, robotToCamera0,
-                                                                driveSimulation::getSimulatedDriveTrainPose),
-                                                new VisionIOPhotonVisionSim(
-                                                                camera1Name, robotToCamera1,
-                                                                driveSimulation::getSimulatedDriveTrainPose));
+                                                                driveSimulation::getSimulatedDriveTrainPose)
+                                                // new VisionIOPhotonVisionSim(
+                                                //                 camera1Name, robotToCamera1,
+                                                //                 driveSimulation::getSimulatedDriveTrainPose)
+                                                );
                                 armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
@@ -286,9 +288,8 @@ public class RobotContainer {
                 if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
-                driveSimulation.setSimulationWorldPose(Pose2d.kZero);
                 SimulatedArena.getInstance().resetFieldForAuto();
-                driveSubsystem.setPose();
+                driveSubsystem.setPose(new Pose2d(2, 2, Rotation2d.kZero));
         }
 
         public void displaySimFieldToAdvantageScope() {
