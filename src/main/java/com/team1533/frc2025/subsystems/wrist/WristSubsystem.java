@@ -64,7 +64,7 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public Command runDutyCycle(DoubleSupplier percentOutput) {
-        return startEnd(
+        return runEnd(
                 () -> setDutyCycleOut(percentOutput.getAsDouble()),
                 () -> setDutyCycleOut(0.0)).withName("Wrist DutyCycleControl");
     }

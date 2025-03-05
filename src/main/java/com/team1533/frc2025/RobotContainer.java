@@ -282,9 +282,24 @@ public class RobotContainer {
                 //Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(()-> -0.5));
 
-                
-        //Operator Binds
+                //Operator Manual Arm Override
+                new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
+                        .whileTrue(armSubsystem.runDutyCycle(() -> operatorController.getLeftY()));
 
+                //Operator Manual Wrist Override        
+                new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
+                        .whileTrue(wristSubsystem.runDutyCycle(() -> operatorController.getRightY()));
+
+        // //Operator Binds
+
+        //         //Manual Arm Control
+        //         operatorController.getLeftY
+
+        //         //Manual Elevator Control
+        //         operatorController
+        //         elevatorSubsystem.setDefaultCommand(intakeSubsystem.dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+                
+                
                 //arm manual
 
                 // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));

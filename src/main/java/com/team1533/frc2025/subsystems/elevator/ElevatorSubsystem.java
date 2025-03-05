@@ -64,7 +64,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command runDutyCycle(DoubleSupplier percentOutput) {
-        return startEnd(
+        return runEnd(
                 () -> setDutyCycleOut(percentOutput.getAsDouble()),
                 () -> setDutyCycleOut(0.0)).withName("Elevator DutyCycleControl");
     }
