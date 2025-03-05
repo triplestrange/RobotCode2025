@@ -20,7 +20,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.team1533.frc2025.commands.SuperStructureCommandFactory;
+import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
 import com.team1533.frc2025.subsystems.arm.ArmIOReal;
@@ -71,10 +71,8 @@ public class RobotContainer {
         @AutoLogOutput
         boolean algaeMode;
 
-        Trigger inCoralMode = new
-        Trigger(() -> !algaeMode);
-        Trigger inAlgaeMode = new 
-        Trigger(() -> algaeMode);
+        Trigger inCoralMode = new Trigger(() -> !algaeMode);
+        Trigger inAlgaeMode = new Trigger(() -> algaeMode);
 
         @Getter
         private DriveSubsystem driveSubsystem;
@@ -101,7 +99,7 @@ public class RobotContainer {
 
                 switch (Constants.getRobot()) {
                         case COMPBOT:
-                                
+
                                 driveSubsystem = new DriveSubsystem(new GyroIOPigeon2(),
                                                 new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
                                                 new ModuleIOTalonFXReal(TunerConstants.FrontRight),
@@ -115,7 +113,8 @@ public class RobotContainer {
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
-                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config, new TalonFXIO(IntakeConstants.config));
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
+                                                new TalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -140,17 +139,18 @@ public class RobotContainer {
                                                 new VisionIOPhotonVisionSim(
                                                                 camera0Name, robotToCamera0,
                                                                 driveSimulation::getSimulatedDriveTrainPose)
-                                                // new VisionIOPhotonVisionSim(
-                                                //                 camera1Name, robotToCamera1,
-                                                //                 driveSimulation::getSimulatedDriveTrainPose)
-                                                );
+                                // new VisionIOPhotonVisionSim(
+                                // camera1Name, robotToCamera1,
+                                // driveSimulation::getSimulatedDriveTrainPose)
+                                );
                                 armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
 
                                 wristSubsystem = new WristSubsystem(new WristIOSim());
 
-                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config, new SimTalonFXIO(IntakeConstants.config));
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
+                                                new SimTalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -208,79 +208,83 @@ public class RobotContainer {
 
         }
 
-        //Button Binds
+        // Button Binds
         private void configureButtonBindings() {
 
-        //Driver Binds
+                // Driver Binds
 
-                //Mode Toggle
+                // Mode Toggle
                 driveController.R3().onTrue(Commands.runOnce(() -> algaeMode = !algaeMode));
 
-                //Arm Stop
-                driveController.PS().onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere()).alongWith(wristSubsystem.setSetpointHere()));
+                // Arm Stop
+                driveController.PS()
+                                .onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere())
+                                                .alongWith(wristSubsystem.setSetpointHere()));
 
-                //Swerve Drive
-                driveSubsystem.setDefaultCommand(driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
+                // Swerve Drive
+                driveSubsystem.setDefaultCommand(
+                                driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
                                                 -driveController.getLeftX(), -driveController.getRightX())));
-                                                
-                //Gyro Rotation Reset                
+
+                // Gyro Rotation Reset
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                //Climb Prep
-                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
-                
-                //Climb Sequence
-                driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0.3556, 0.1));
+                // Climb Prep
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
 
-                //L4 Coral Automation
-                driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337));
+                // Climb Sequence
+                driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0, 0.3556, 0.1));
 
-                //L3 Coral Automation
-                driveController.circle().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15690501111, 0.387106, 0.22888200277));
-                
-                //L2 Coral Automation
-                driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.10403465833, 0.086995, 0.17601165));
-                
-                //L1 Coral Automation
-                driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+                // L4 Coral Automation
+                driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337));
 
-                //Coral Feeder Automation
-                driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
-        
-                //Coral Intake
+                // L3 Coral Automation
+                driveController.circle().and(inCoralMode)
+                                .onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem, elevatorSubsystem,
+                                                wristSubsystem, 0.15690501111, 0.387106, 0.22888200277));
+
+                // L2 Coral Automation
+                driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0.10403465833, 0.086995, 0.17601165));
+
+                // L1 Coral Automation
+                driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+
+                // Coral Feeder Automation
+                driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+
+                // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-                //Coral Outtake
-                driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(()-> -0.2));
-                
-                //Processor Algae
-                driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
-                
-                //Low Reef Algae
-                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                // Coral Outtake
+                driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
 
-                //High Reef Algae
-                driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                // Processor Algae
+                driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
 
-                //Barge Algae
-                driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset
-                                (armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                // Low Reef Algae
+                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0, 0, 0));
 
-                //Algae Intake
+                // High Reef Algae
+                driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // Barge Algae
+                driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // Algae Intake
                 driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.75));
 
-                //Algae Outtake
-                driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(()-> -0.5));
+                // Algae Outtake
+                driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
@@ -303,32 +307,40 @@ public class RobotContainer {
                 //arm manual
 
                 // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
-                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() -> -0.2));
+                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() ->
+                // -0.2));
 
-                //intake triggers
+                // intake triggers
 
                 // intakeSubsystem.setDefaultCommand(intakeSubsystem
-                //                 .dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+                // .dutyCycleCommand(() -> ((driveController.getR2Axis() -
+                // driveController.getL2Axis()) / 2)));
 
+                // Old Stuff
 
+                // driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
+                // (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
 
-                //Old Stuff
+                // driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()
+                // -> Units.inchesToMeters(1.5)));
+                // driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()->
+                // 1.058));
 
-                //driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
-                //(armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+                // driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.71));
+                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.337));
+                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.1));
 
-                //driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(() -> Units.inchesToMeters(1.5)));
-                //driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()-> 1.058));
-
-
-                //driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.71));
-                //driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.337));
-                //driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(() -> 0.1));
-
-                //driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0));
-                //driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.195));
-                //driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.25));
-                //driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(() -> 0.15));
+                // driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0));
+                // driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0.195));
+                // driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() ->
+                // 0.25));
+                // driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0.15));
 
                 // L4:
                 // a 0.195
