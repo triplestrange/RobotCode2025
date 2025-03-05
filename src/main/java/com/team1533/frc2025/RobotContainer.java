@@ -35,6 +35,9 @@ import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.intake.IntakeConstants;
+import com.team1533.frc2025.subsystems.intake.IntakeIO;
+import com.team1533.frc2025.subsystems.intake.IntakeIOReal;
+import com.team1533.frc2025.subsystems.intake.IntakeIOSim;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
@@ -113,8 +116,7 @@ public class RobotContainer {
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
-                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
-                                                new TalonFXIO(IntakeConstants.config));
+                                intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());
 
                                 break;
 
@@ -149,8 +151,7 @@ public class RobotContainer {
 
                                 wristSubsystem = new WristSubsystem(new WristIOSim());
 
-                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
-                                                new SimTalonFXIO(IntakeConstants.config));
+                                intakeSubsystem = new IntakeSubsystem(new IntakeIOSim());
 
                                 break;
 
@@ -176,6 +177,10 @@ public class RobotContainer {
                                 wristSubsystem = new WristSubsystem(new WristIO() {
 
                                 });
+
+                                intakeSubsystem = new IntakeSubsystem(new IntakeIO() {
+                                        
+                                })
 
                                 break;
                 }
