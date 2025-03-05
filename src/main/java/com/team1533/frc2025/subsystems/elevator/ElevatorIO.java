@@ -59,6 +59,9 @@ public interface ElevatorIO {
     default void setCurrentSetpoint(double amps) {
     }
 
+    default void setMotionMagicSetpoint(double positionRotations)   {
+    }
+
     default void setBrakeMode(boolean enabled) {
     }
 

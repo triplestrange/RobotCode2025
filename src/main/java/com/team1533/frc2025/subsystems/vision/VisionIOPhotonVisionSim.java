@@ -44,6 +44,10 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     var cameraProperties = new SimCameraProperties();
     cameraSim = new PhotonCameraSim(camera, cameraProperties);
     visionSim.addCamera(cameraSim, robotToCamera);
+
+    cameraSim.enableRawStream(true);
+    cameraSim.enableProcessedStream(true);
+    cameraSim.enableDrawWireframe(true);
   }
 
   @Override

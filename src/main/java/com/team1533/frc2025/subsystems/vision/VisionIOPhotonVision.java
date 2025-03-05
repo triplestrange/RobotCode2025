@@ -7,14 +7,32 @@
 
 package com.team1533.frc2025.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+
+import static com.team1533.frc2025.subsystems.vision.VisionConstants.aprilTagLayout;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import org.ejml.dense.row.decomposition.hessenberg.TridiagonalDecompositionHouseholderOrig_FDRM;
 import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import com.pathplanner.lib.config.RobotConfig;
+import com.team1533.frc2025.RobotContainer;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
@@ -42,18 +60,56 @@ public class VisionIOPhotonVision implements VisionIO {
     for (var result : camera.getAllUnreadResults()) {
       // Update latest target observation
       if (result.hasTargets()) {
-        inputs.pinHoleTargetObservation = new TargetObservation(result.getTimestampSeconds(),
-            result.getBestTarget().getBestCameraToTarget().getZ(), result.getBestTarget().getFiducialId(),
+        inputs.latestTargetObservation = new TargetObservation(
             Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
             Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+
+        for (var target : result.targets) {
+          // Pinhole model using sensed tag distance instead of height difference
+
+          Optional<Pose3d> tagPose = VisionConstants.aprilTagLayout.getTagPose(target.fiducialId);
+          double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
+
+          if (tagPose.isEmpty() || tagPose.get().getZ() > Units.inchesToMeters(18) || tagDistance > 2) continue;
+          
+          // calculate direction vector using pitch/yaw
+          Translation3d cameraToTag = new Translation3d(1, -Math.tan(Math.toRadians(target.getYaw())), Math.tan(Math.toRadians(target.getPitch())));
+          // rescale to measured tag distance
+          cameraToTag = cameraToTag.times(tagDistance / cameraToTag.getNorm());
+          
+          Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
+          robotToTag = robotToTag.plus(robotToCamera.getTranslation());
+
+
+          Rotation2d robotRotation = RobotContainer.getInstance().getDriveSubsystem().getRotation();
+          // rotate to field coordinates
+          Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
+          Translation2d fieldToRobot = tagPose.get().getTranslation().toTranslation2d().minus(robotToTagFC);
+          
+          Pose3d robotPose = new Pose3d(new Translation3d(fieldToRobot), new Rotation3d(robotRotation));
+
+          poseObservations.add(
+            new PoseObservation(
+                result.getTimestampSeconds(), // Timestamp
+                robotPose, // 3D pose estimate
+                0, // Ambiguity
+                1, // Tag count
+                tagDistance, // Average tag distance
+                PoseObservationType.PINHOLE)); // Observation type
+          
+          tagIds.add((short) target.fiducialId);
+
+        }
       } else {
-        inputs.pinHoleTargetObservation = new TargetObservation(0, 0, 0, new Rotation2d(), new Rotation2d());
+        inputs.latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
       }
 
-      // Add pose observation
+      
+
+      // Multitag
+      /*
       if (result.multitagResult.isPresent()) {
         var multitagResult = result.multitagResult.get();
-        var pinholeTagResult = result.targets.get(0);
 
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
@@ -73,18 +129,19 @@ public class VisionIOPhotonVision implements VisionIO {
         poseObservations.add(
             new PoseObservation(
                 result.getTimestampSeconds(), // Timestamp
-                robotPose, // 2D pose estimate
-                0, // height in meters
+                robotPose, // 3D pose estimate
                 multitagResult.estimatedPose.ambiguity, // Ambiguity
                 multitagResult.fiducialIDsUsed.size(), // Tag count
-                totalTagDistance / result.targets.size())); // Observation type
+                totalTagDistance / result.targets.size(), // Average tag distance
+                PoseObservationType.SOLVE_PNP)); // Observation type
       }
+      */
     }
 
     // Save pose observations to inputs object
-    inputs.multitagPoseObservations = new PoseObservation[poseObservations.size()];
+    inputs.poseObservations = new PoseObservation[poseObservations.size()];
     for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.multitagPoseObservations[i] = poseObservations.get(i);
+      inputs.poseObservations[i] = poseObservations.get(i);
     }
 
     // Save tag IDs to inputs objects

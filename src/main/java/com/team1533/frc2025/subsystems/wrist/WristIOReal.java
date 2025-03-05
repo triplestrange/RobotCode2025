@@ -1,4 +1,6 @@
-package com.team1533.frc2025.subsystems.arm;
+package com.team1533.frc2025.subsystems.wrist;
+
+import java.rmi.ConnectIOException;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -19,8 +21,8 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.team1533.frc2025.Constants.Gains;
-import com.team1533.frc2025.subsystems.wrist.WristConstants;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.units.measure.Angle;
@@ -31,17 +33,16 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
 
-public class ArmIOReal implements ArmIO {
+public class WristIOReal implements WristIO {
     protected final TalonFX leaderTalon;
-    protected final TalonFX followerTalon;
-    protected final CANcoder pivotEncoder;
+    protected final CANcoder wristEncoder;
 
     private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
     private final DutyCycleOut dutyCycleOutControl = new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withEnableFOC(true).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -50,70 +51,66 @@ public class ArmIOReal implements ArmIO {
     private final StatusSignal<Current> leaderCurrentSupplySignal;
     private final StatusSignal<Temperature> leaderTemperatureSignal;
 
-    private final StatusSignal<Angle> followerPositionSignal;
-    private final StatusSignal<AngularVelocity> followerVelocitySignal;
-    private final StatusSignal<Voltage> followerVoltsSignal;
-    private final StatusSignal<Current> followerCurrentStatorSignal;
-    private final StatusSignal<Current> followerCurrentSupplySignal;
-    private final StatusSignal<Temperature> followerTemperatureSignal;
-
     private final StatusSignal<Angle> encoderAbsolutePositionRotations;
     private final StatusSignal<Angle> encoderRelativePositionRotations;
-    private final StatusSignal<Angle> fusedCanCoderRotations;
 
-    private final StatusSignal<AngularVelocity> armVelocitySignal;
-    private final StatusSignal<AngularAcceleration> armAccelerationSignal;
+    private final StatusSignal<Angle> fusedCancoderSignal;
+
+    private final StatusSignal<AngularVelocity> wristVelocitySignal;
+    private final StatusSignal<AngularAcceleration> wristAccelerationSignal;
 
     private final TalonFXConfiguration config = new TalonFXConfiguration();
     private final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
-    public ArmIOReal() {
-        leaderTalon = new TalonFX(ArmConstants.leaderTalonCanID, ArmConstants.canBUS);
-        followerTalon = new TalonFX(ArmConstants.followerTalonCanID, ArmConstants.canBUS);
-        followerTalon.setControl(new Follower(ArmConstants.leaderTalonCanID, true));
-        pivotEncoder = new CANcoder(ArmConstants.pivotEncoderCanID, ArmConstants.canBUS);
+    public WristIOReal() {
+        leaderTalon = new TalonFX(WristConstants.leaderTalonCanID, WristConstants.canBUS);
+        wristEncoder = new CANcoder(WristConstants.wristEncoderCanID, WristConstants.canBUS);
 
         // Leader motor configs
-        config.Slot0.kP = ArmConstants.gains.kP();
-        config.Slot0.kI = ArmConstants.gains.kI();
-        config.Slot0.kD = ArmConstants.gains.kD();
-        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        config.TorqueCurrent.PeakForwardTorqueCurrent = ArmConstants.torqueCurrentLimit;
-        config.TorqueCurrent.PeakReverseTorqueCurrent = -ArmConstants.torqueCurrentLimit;
-        config.MotorOutput.Inverted = ArmConstants.leaderInverted
+        config.Slot0.kP = WristConstants.gains.kP();
+        config.Slot0.kI = WristConstants.gains.kI();
+        config.Slot0.kD = WristConstants.gains.kD();
+        config.Slot0.kA = WristConstants.gains.ffkA();
+        config.Slot0.kG = WristConstants.gains.ffkG();
+        config.Slot0.kS = WristConstants.gains.ffkS();
+        config.Slot0.kV = WristConstants.gains.ffkV();
+
+        config.TorqueCurrent.PeakForwardTorqueCurrent = WristConstants.torqueCurrentLimit;
+        config.TorqueCurrent.PeakReverseTorqueCurrent = -WristConstants.torqueCurrentLimit;
+        config.MotorOutput.Inverted = WristConstants.leaderInverted
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        
-        config.Feedback.FeedbackRemoteSensorID = pivotEncoder.getDeviceID();
+        config.Feedback.SensorToMechanismRatio = WristConstants.reduction;
+
+        config.Feedback.FeedbackRemoteSensorID = wristEncoder.getDeviceID();
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        config.Feedback.SensorToMechanismRatio = ArmConstants.SensorToMechanismRatio;
-        config.Feedback.RotorToSensorRatio = ArmConstants.reduction;
+        config.Feedback.SensorToMechanismRatio = WristConstants.SensorToMechanismRatio;
+        config.Feedback.RotorToSensorRatio = WristConstants.reduction;
 
+        config.CurrentLimits.StatorCurrentLimit = WristConstants.statorCurrentLimit;
         config.CurrentLimits.StatorCurrentLimitEnable = false;
-        config.CurrentLimits.StatorCurrentLimit = ArmConstants.statorCurrentLimit;
+        config.CurrentLimits.SupplyCurrentLimit = WristConstants.supplyCurrentLimit;
         config.CurrentLimits.SupplyCurrentLimitEnable = false;
-        config.CurrentLimits.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
-        config.CurrentLimits.SupplyCurrentLowerLimit = ArmConstants.supplyCurrentLowerLimit;
-        config.CurrentLimits.SupplyCurrentLowerTime = ArmConstants.supplyCurrentLowerLimitTime;
+        config.CurrentLimits.SupplyCurrentLowerLimit = WristConstants.supplyCurrentLowerLimit;
+        config.CurrentLimits.SupplyCurrentLowerTime = WristConstants.supplyCurrentLowerLimitTime;
         
-        config.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.motionMagicCruiseVelocity;
-        config.MotionMagic.MotionMagicAcceleration = ArmConstants.motionMagicAcceleration;
-        config.MotionMagic.MotionMagicJerk = ArmConstants.motionMagicJerk;
+        config.MotionMagic.MotionMagicCruiseVelocity = WristConstants.motionMagicCruiseVelocity;
+        config.MotionMagic.MotionMagicAcceleration = WristConstants.motionMagicAcceleration;
+        config.MotionMagic.MotionMagicJerk = WristConstants.motionMagicJerk;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ArmConstants.forwardSoftLimitThreshold;
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = ArmConstants.reverseSoftLimitThreshold;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.forwardSoftLimitThreshold;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.reverseSoftLimitThreshold;
+        
 
         // Cancoder configs
-        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = ArmConstants.absEncoderDiscontinuity;
-        encoderConfig.MagnetSensor.MagnetOffset = ArmConstants.absEncoderOffset;
-        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = WristConstants.absEncoderDiscontinuity;
+        encoderConfig.MagnetSensor.MagnetOffset = WristConstants.absEncoderOffset;
+        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
         // Base Status Signals
-        fusedCanCoderRotations = leaderTalon.getPosition();
-
         leaderPositionSignal = leaderTalon.getRotorPosition();
         leaderVelocitySignal = leaderTalon.getRotorVelocity();
         leaderVoltsSignal = leaderTalon.getMotorVoltage();
@@ -121,85 +118,63 @@ public class ArmIOReal implements ArmIO {
         leaderCurrentSupplySignal = leaderTalon.getSupplyCurrent();
         leaderTemperatureSignal = leaderTalon.getDeviceTemp();
 
-        followerPositionSignal = followerTalon.getRotorPosition();
-        followerVelocitySignal = followerTalon.getRotorVelocity();
-        followerVoltsSignal = followerTalon.getMotorVoltage();
-        followerCurrentStatorSignal = followerTalon.getStatorCurrent();
-        followerCurrentSupplySignal = followerTalon.getSupplyCurrent();
-        followerTemperatureSignal = followerTalon.getDeviceTemp();
+        encoderAbsolutePositionRotations = wristEncoder.getAbsolutePosition();
+        encoderRelativePositionRotations = wristEncoder.getPosition();
+        wristVelocitySignal = leaderTalon.getVelocity();
+        wristAccelerationSignal = leaderTalon.getAcceleration();
 
-        encoderAbsolutePositionRotations = pivotEncoder.getAbsolutePosition();
-        encoderRelativePositionRotations = pivotEncoder.getPosition();
-        armVelocitySignal = leaderTalon.getVelocity();
-        armAccelerationSignal = leaderTalon.getAcceleration();
+        fusedCancoderSignal = leaderTalon.getPosition();
+
+
 
         CTREUtil.applyConfiguration(leaderTalon, config);
-        CTREUtil.applyConfiguration(pivotEncoder, encoderConfig);
+        CTREUtil.applyConfiguration(wristEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
                 100,
-                fusedCanCoderRotations, 
+                fusedCancoderSignal,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
                 leaderCurrentStatorSignal,
                 leaderCurrentSupplySignal,
                 leaderTemperatureSignal,
-                followerPositionSignal,
-                followerVelocitySignal,
-                followerVoltsSignal,
-                followerCurrentStatorSignal,
-                followerCurrentSupplySignal,
-                followerTemperatureSignal,
                 encoderAbsolutePositionRotations,
                 encoderRelativePositionRotations,
-                armVelocitySignal,
-                armAccelerationSignal);
+                wristVelocitySignal,
+                wristAccelerationSignal);
 
         // Optimize bus utilization
         leaderTalon.optimizeBusUtilization(0, 1.0);
-        followerTalon.optimizeBusUtilization(0, 1.0);
+        wristEncoder.optimizeBusUtilization(0, 1.0);
 
         voltageOut.EnableFOC = true;
         dutyCycleOutControl.EnableFOC = true;
+        motionMagicVoltage.EnableFOC = true;
 
     }
 
     @Override
-    public void updateInputs(ArmIOInputs inputs) {
+    public void updateInputs(WristIOInputs inputs) {
         inputs.leaderConnected = BaseStatusSignal.refreshAll(leaderPositionSignal, leaderVelocitySignal,
                 leaderVoltsSignal, leaderCurrentStatorSignal, leaderCurrentSupplySignal,
-                armVelocitySignal, armAccelerationSignal, leaderTemperatureSignal, fusedCanCoderRotations).isOK();
-        
-        inputs.FusedCANcoderPositionRots = fusedCanCoderRotations.getValueAsDouble();
-
+                wristVelocitySignal, wristAccelerationSignal, leaderTemperatureSignal, fusedCancoderSignal).isOK();
         inputs.leaderVelocityRotPerSec = leaderVelocitySignal.getValueAsDouble();
         inputs.leaderAppliedVolts = leaderVoltsSignal.getValueAsDouble();
         inputs.leaderCurrentAmps = leaderCurrentSupplySignal.getValueAsDouble();
         inputs.leaderStatorAmps = leaderCurrentStatorSignal.getValueAsDouble();
         inputs.leaderTempCelc = leaderTemperatureSignal.getValueAsDouble();
-
-        inputs.followerConnected = BaseStatusSignal.refreshAll(
-                followerPositionSignal,
-                followerVelocitySignal,
-                followerVoltsSignal, followerCurrentStatorSignal, followerCurrentSupplySignal,
-                followerTemperatureSignal).isOK();
-        inputs.followerVelocityRotPerSec = followerVelocitySignal.getValueAsDouble();
-        inputs.followerAppliedVolts = followerVoltsSignal.getValueAsDouble();
-        inputs.followerCurrentAmps = followerCurrentSupplySignal.getValueAsDouble();
-        inputs.followerStatorAmps = followerCurrentStatorSignal.getValueAsDouble();
-        inputs.followerTempCelc = followerTemperatureSignal.getValueAsDouble();
+        inputs.FusedCANcoderPositionRots = fusedCancoderSignal.getValueAsDouble();
 
         inputs.absoluteEncoderConnected = BaseStatusSignal
                 .refreshAll(encoderAbsolutePositionRotations, encoderRelativePositionRotations).isOK();
 
         inputs.leaderRotPosition = leaderPositionSignal.getValueAsDouble();
-        inputs.followerRotPosition = followerPositionSignal.getValueAsDouble();
 
         inputs.absoluteEncoderPositionRots = encoderAbsolutePositionRotations.getValueAsDouble();
         inputs.relativeEncoderPositionRots = encoderRelativePositionRotations.getValueAsDouble();
-        inputs.armVelMetersPerSecond = armVelocitySignal.getValueAsDouble();
-        inputs.armAccelMetersPerSecondPerSecond = armAccelerationSignal.getValueAsDouble();
+        inputs.wristVelMetersPerSecond = wristVelocitySignal.getValueAsDouble();
+        inputs.wristAccelMetersPerSecondPerSecond = wristAccelerationSignal.getValueAsDouble();
     }
 
     @Override
@@ -224,19 +199,17 @@ public class ArmIOReal implements ArmIO {
     }
 
     @Override
+    public void setCurrentSetpoint(double amps) {
+        leaderTalon.setControl(currentControl.withOutput(amps));
+    }
+    @Override
     public void setMotionMagicSetpoint(double positionRotations)    {
         leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 
     @Override
-    public void setCurrentSetpoint(double amps) {
-        leaderTalon.setControl(currentControl.withOutput(amps));
-    }
-
-    @Override
     public void setBrakeMode(boolean enabled) {
         leaderTalon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
-        followerTalon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
     }
 
     @Override

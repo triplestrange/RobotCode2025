@@ -58,10 +58,9 @@ public class TalonFXIO implements MotorIO {
     currentStatorSignal = talon.getStatorCurrent();
     currentSupplySignal = talon.getSupplyCurrent();
 
-    signals =
-        new BaseStatusSignal[] {
-          positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
-        };
+    signals = new BaseStatusSignal[] {
+        positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
+    };
 
     CTREUtil.tryUntilOK(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(50.0, signals), talon.getDeviceID());
@@ -81,7 +80,7 @@ public class TalonFXIO implements MotorIO {
   }
 
   @Override
-  public void readInputs(MotorInputs inputs) {
+  public void updateInputs(MotorInputs inputs) {
     BaseStatusSignal.refreshAll(signals);
 
     inputs.unitPosition = rotorToUnits(positionSignal.getValueAsDouble());

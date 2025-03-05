@@ -10,7 +10,7 @@ package com.team1533.lib.subsystems;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public interface MotorIO {
-  void readInputs(MotorInputs inputs);
+  void updateInputs(MotorInputs inputs);
 
   void setOpenLoopDutyCycle(double dutyCycle);
 

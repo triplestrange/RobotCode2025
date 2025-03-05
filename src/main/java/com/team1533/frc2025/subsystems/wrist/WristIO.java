@@ -1,12 +1,12 @@
-package com.team1533.frc2025.subsystems.arm;
+package com.team1533.frc2025.subsystems.wrist;
 
 import org.littletonrobotics.junction.AutoLog;
 
 import com.team1533.frc2025.Constants.Gains;
 
-public interface ArmIO {
+public interface WristIO {
     @AutoLog
-    class ArmIOInputs {
+    class WristIOInputs {
         public boolean leaderConnected = false;
         public double leaderVelocityRotPerSec = 0.0;
         public double leaderAppliedVolts = 0.0;
@@ -14,27 +14,20 @@ public interface ArmIO {
         public double leaderStatorAmps = 0.0;
         public double leaderTempCelc = 0.0;
 
-        public boolean followerConnected = false;
-        public double followerVelocityRotPerSec = 0.0;
-        public double followerAppliedVolts = 0.0;
-        public double followerCurrentAmps = 0.0;
-        public double followerStatorAmps = 0.0;
-        public double followerTempCelc = 0.0;
-
         public boolean absoluteEncoderConnected = true;
         public double absoluteEncoderPositionRots = 0.0;
         public double relativeEncoderPositionRots = 0.0;
         public double FusedCANcoderPositionRots = 0.0;
 
         public double leaderRotPosition = 0.0;
-        public double followerRotPosition = 0.0;
 
-        public double armVelMetersPerSecond = 0.0;
-        public double armAccelMetersPerSecondPerSecond = 0.0;
+
+        public double wristVelMetersPerSecond = 0.0;
+        public double wristAccelMetersPerSecondPerSecond = 0.0;
 
     }
 
-    default void updateInputs(ArmIOInputs inputs) {
+    default void updateInputs(WristIOInputs inputs) {
     }
 
     default void runVolts(double volts) {
@@ -53,10 +46,10 @@ public interface ArmIO {
     default void setCurrentSetpoint(double amps) {
     }
 
-    default void setBrakeMode(boolean enabled) {
+    default void setMotionMagicSetpoint(double positionRotations)   {
     }
 
-    default void setMotionMagicSetpoint(double positionRotations)   {
+    default void setBrakeMode(boolean enabled) {
     }
 
     default void setPID(Gains gains) {

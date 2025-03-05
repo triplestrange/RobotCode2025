@@ -11,16 +11,16 @@ import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera0Name
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera1Name;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera0;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera1;
+import static edu.wpi.first.units.Units.Newton;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.events.Event;
-import com.pathplanner.lib.path.EventMarker;
+import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
 import com.team1533.frc2025.subsystems.arm.ArmIOReal;
@@ -34,31 +34,45 @@ import com.team1533.frc2025.subsystems.drive.GyroIOSim;
 import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
-import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
-
+import com.team1533.frc2025.subsystems.intake.IntakeConstants;
+import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.event.EventLoop;
+import com.team1533.frc2025.subsystems.wrist.WristIO;
+import com.team1533.frc2025.subsystems.wrist.WristIOReal;
+import com.team1533.frc2025.subsystems.wrist.WristIOSim;
+import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import com.team1533.frc2025.subsystems.elevator.*;
-import com.team1533.frc2025.subsystems.elevator.ElevatorIOReal;
+import com.team1533.lib.subsystems.MotorIO;
+import com.team1533.lib.subsystems.SimTalonFXIO;
+import com.team1533.lib.subsystems.TalonFXIO;
 import com.team1533.lib.swerve.DriveCharacterizer;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
 
 public class RobotContainer {
 
         private final CommandPS5Controller driveController = new CommandPS5Controller(0);
+        private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
+
+        @AutoLogOutput
+        boolean algaeMode;
+
+        Trigger inCoralMode = new Trigger(() -> !algaeMode);
+        Trigger inAlgaeMode = new Trigger(() -> algaeMode);
 
         @Getter
         private DriveSubsystem driveSubsystem;
@@ -68,6 +82,10 @@ public class RobotContainer {
         private ArmSubsystem armSubsystem;
         @Getter
         private ElevatorSubsystem elevatorSubsystem;
+        @Getter
+        private WristSubsystem wristSubsystem;
+        @Getter
+        private IntakeSubsystem intakeSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -94,6 +112,9 @@ public class RobotContainer {
 
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
+                                wristSubsystem = new WristSubsystem(new WristIOReal());
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
+                                                new TalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -117,13 +138,19 @@ public class RobotContainer {
                                                 driveSubsystem,
                                                 new VisionIOPhotonVisionSim(
                                                                 camera0Name, robotToCamera0,
-                                                                driveSimulation::getSimulatedDriveTrainPose),
-                                                new VisionIOPhotonVisionSim(
-                                                                camera1Name, robotToCamera1,
-                                                                driveSimulation::getSimulatedDriveTrainPose));
+                                                                driveSimulation::getSimulatedDriveTrainPose)
+                                // new VisionIOPhotonVisionSim(
+                                // camera1Name, robotToCamera1,
+                                // driveSimulation::getSimulatedDriveTrainPose)
+                                );
                                 armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
+
+                                wristSubsystem = new WristSubsystem(new WristIOSim());
+
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
+                                                new SimTalonFXIO(IntakeConstants.config));
 
                                 break;
 
@@ -144,6 +171,10 @@ public class RobotContainer {
                                 });
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
+                                });
+
+                                wristSubsystem = new WristSubsystem(new WristIO() {
+
                                 });
 
                                 break;
@@ -177,16 +208,128 @@ public class RobotContainer {
 
         }
 
+        // Button Binds
         private void configureButtonBindings() {
+
+                // Driver Binds
+
+                // Mode Toggle
+                driveController.R3().onTrue(Commands.runOnce(() -> algaeMode = !algaeMode));
+
+                // Arm Stop
+                driveController.PS()
+                                .onTrue(armSubsystem.setSetpointHere().alongWith(elevatorSubsystem.setSetpointHere())
+                                                .alongWith(wristSubsystem.setSetpointHere()));
+
+                // Swerve Drive
                 driveSubsystem.setDefaultCommand(
                                 driveSubsystem.run(() -> driveSubsystem.teleopControl(-driveController.getLeftY(),
                                                 -driveController.getLeftX(), -driveController.getRightX())));
+
+                // Gyro Rotation Reset
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                driveController.square().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0.3, () -> 0));
-                driveController.circle().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 0, () -> 0));
+                // Climb Prep
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
 
-                driveController.cross().onTrue(elevatorSubsystem.positionSetpointCommand(() -> 1, () -> 0));
+                // Climb Sequence
+                driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0, 0.3556, 0.1));
+
+                // L4 Coral Automation
+                driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337));
+
+                // L3 Coral Automation
+                driveController.circle().and(inCoralMode)
+                                .onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem, elevatorSubsystem,
+                                                wristSubsystem, 0.15690501111, 0.387106, 0.22888200277));
+
+                // L2 Coral Automation
+                driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0.10403465833, 0.086995, 0.17601165));
+
+                // L1 Coral Automation
+                driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+
+                // Coral Feeder Automation
+                driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+
+                // Coral Intake
+                driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
+
+                // Coral Outtake
+                driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
+
+                // Processor Algae
+                driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // Low Reef Algae
+                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
+                                elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // High Reef Algae
+                driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // Barge Algae
+                driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+
+                // Algae Intake
+                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.75));
+
+                // Algae Outtake
+                driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.5));
+
+                // Operator Binds
+
+                // arm manual
+
+                // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
+                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() ->
+                // -0.2));
+
+                // intake triggers
+
+                // intakeSubsystem.setDefaultCommand(intakeSubsystem
+                // .dutyCycleCommand(() -> ((driveController.getR2Axis() -
+                // driveController.getL2Axis()) / 2)));
+
+                // Old Stuff
+
+                // driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
+                // (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+
+                // driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()
+                // -> Units.inchesToMeters(1.5)));
+                // driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()->
+                // 1.058));
+
+                // driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.71));
+                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.337));
+                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
+                // -> 0.1));
+
+                // driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0));
+                // driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0.195));
+                // driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() ->
+                // 0.25));
+                // driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(()
+                // -> 0.15));
+
+                // L4:
+                // a 0.195
+                // e 1.058
+                // w 0.337
 
         }
 
@@ -203,9 +346,8 @@ public class RobotContainer {
                 if (Constants.getRobot() != Constants.RobotType.SIMBOT)
                         return;
 
-                driveSimulation.setSimulationWorldPose(Pose2d.kZero);
                 SimulatedArena.getInstance().resetFieldForAuto();
-                driveSubsystem.setPose();
+                driveSubsystem.setPose(new Pose2d(2, 2, Rotation2d.kZero));
         }
 
         public void displaySimFieldToAdvantageScope() {
