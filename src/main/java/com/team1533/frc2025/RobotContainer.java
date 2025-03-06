@@ -203,7 +203,9 @@ public class RobotContainer {
 
                 autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
 
-                // configure button bindings
+                autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
+
+                // configure buetton bindings
                 configureButtonBindings();
 
         }
