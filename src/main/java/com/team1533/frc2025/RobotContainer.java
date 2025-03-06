@@ -296,6 +296,11 @@ public class RobotContainer {
                 new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
                         .whileTrue(wristSubsystem.runDutyCycle(() -> operatorController.getRightY()));
 
+                //Operator Manual Elevator Override
+                new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
+                        .whileTrue(elevatorSubsystem.runDutyCycle(() -> ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
+
+        
         // //Operator Binds
 
         //         //Manual Arm Control
