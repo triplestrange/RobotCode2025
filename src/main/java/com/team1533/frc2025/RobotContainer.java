@@ -244,11 +244,11 @@ public class RobotContainer {
                 // L3 Coral Automation
                 driveController.circle().and(inCoralMode)
                                 .onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem, elevatorSubsystem,
-                                                wristSubsystem, 0.15690501111, 0.387106, 0.22888200277));
+                                                wristSubsystem, 0.16, 0.387106, 0.22));
 
                 // L2 Coral Automation
                 driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
-                                elevatorSubsystem, wristSubsystem, 0.10403465833, 0.086995, 0.17601165));
+                                elevatorSubsystem, wristSubsystem, 0.1, 0.086995, 0.145));
 
                 // L1 Coral Automation
                 driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
@@ -256,7 +256,7 @@ public class RobotContainer {
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.0445, 0.71));
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.044, 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -274,17 +274,17 @@ public class RobotContainer {
 
                 // High Reef Algae
                 driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.18, 0.48, 0.52));
 
                 // Barge Algae
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.24, 1.07, 0.3));
 
                 // Algae Intake
-                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.75));
+                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 // Algae Outtake
-                driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.5));
+                driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
