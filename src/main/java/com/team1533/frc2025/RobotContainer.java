@@ -182,31 +182,33 @@ public class RobotContainer {
                 }
 
                 NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
-                        .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337).asProxy());
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337)
+                                .asProxy());
 
                 NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(5));
 
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
-                        .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.06, 0.71).asProxy());
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.06, 0.71)
+                                .asProxy());
 
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
                 // Set up SysId routines
-                autoChooser.addOption("Drive Wheel Radius Characterization",
-                                DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
-                autoChooser.addOption("Drive Simple FF Characterization",
-                                DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
-                autoChooser.addOption(
-                                "Drive SysId (Quasistatic Forward)",
-                                driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-                autoChooser.addOption(
-                                "Drive SysId (Quasistatic Reverse)",
-                                driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-                autoChooser.addOption("Drive SysId (Dynamic Forward)",
-                                driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
-                autoChooser.addOption("Drive SysId (Dynamic Reverse)",
-                                driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                // autoChooser.addOption("Drive Wheel Radius Characterization",
+                // DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
+                // autoChooser.addOption("Drive Simple FF Characterization",
+                // DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
+                // autoChooser.addOption(
+                // "Drive SysId (Quasistatic Forward)",
+                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                // autoChooser.addOption(
+                // "Drive SysId (Quasistatic Reverse)",
+                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                // autoChooser.addOption("Drive SysId (Dynamic Forward)",
+                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                // autoChooser.addOption("Drive SysId (Dynamic Reverse)",
+                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
                 autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
 
@@ -292,38 +294,39 @@ public class RobotContainer {
                 // Barge Algae
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.24, 1.07, 0.3));
-                
-                
+
                 // Algae Intake
-                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
+                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75))
+                                .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-                //Operator Manual Arm Override
+                // Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-                        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
+                                .whileTrue(armSubsystem.runDutyCycle(() -> 0.3 * operatorController.getLeftY()));
 
-                //Operator Manual Wrist Override        
+                // Operator Manual Wrist Override
                 new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-                        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
+                                .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()));
 
-                //Operator Manual Elevator Override
-                new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
-                        .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
+                // Operator Manual Elevator Override
+                new Trigger(() -> Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2) > 0.1)
+                                .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25
+                                                * ((operatorController.getR2Axis() - operatorController.getL2Axis())
+                                                                / 2)));
 
-        
-        // //Operator Binds
+                // //Operator Binds
 
-        //         //Manual Arm Control
-        //         operatorController.getLeftY
+                // //Manual Arm Control
+                // operatorController.getLeftY
 
-        //         //Manual Elevator Control
-        //         operatorController
-        //         elevatorSubsystem.setDefaultCommand(intakeSubsystem.dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
-                
-                
-                //arm manual
+                // //Manual Elevator Control
+                // operatorController
+                // elevatorSubsystem.setDefaultCommand(intakeSubsystem.dutyCycleCommand(() ->
+                // ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
+
+                // arm manual
 
                 // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
                 // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() ->
