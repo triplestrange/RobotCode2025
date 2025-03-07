@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
@@ -180,6 +181,14 @@ public class RobotContainer {
                                 break;
                 }
 
+                NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
+                        .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.205, 1.07, 0.337).asProxy());
+
+                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(5));
+
+                NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
+                        .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.06, 0.71).asProxy());
+
                 // Set up auto routines
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -204,6 +213,8 @@ public class RobotContainer {
                 autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
 
                 autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
+
+                autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Middle"));
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -233,11 +244,11 @@ public class RobotContainer {
 
                 // Climb Prep
                 driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
-                                elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
+                                elevatorSubsystem, wristSubsystem, 0.24, 0, 0.5));
 
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence(armSubsystem,
-                                elevatorSubsystem, wristSubsystem, 0, 0.3556, 0.1));
+                                elevatorSubsystem, wristSubsystem));
 
                 // L4 Coral Automation
                 driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
@@ -258,7 +269,7 @@ public class RobotContainer {
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.044, 0.71));
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.15, 0.06, 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -268,11 +279,11 @@ public class RobotContainer {
 
                 // Processor Algae
                 driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                                .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.08, 0.1, 0.5));
 
                 // Low Reef Algae
                 driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset(armSubsystem,
-                                elevatorSubsystem, wristSubsystem, 0, 0, 0));
+                                elevatorSubsystem, wristSubsystem, 0.155, 0.055, 0.455));
 
                 // High Reef Algae
                 driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
@@ -281,7 +292,8 @@ public class RobotContainer {
                 // Barge Algae
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset(armSubsystem, elevatorSubsystem, wristSubsystem, 0.24, 1.07, 0.3));
-
+                
+                
                 // Algae Intake
                 driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
@@ -290,15 +302,15 @@ public class RobotContainer {
 
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-                        .whileTrue(armSubsystem.runDutyCycle(() -> operatorController.getLeftY()));
+                        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
 
                 //Operator Manual Wrist Override        
                 new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-                        .whileTrue(wristSubsystem.runDutyCycle(() -> operatorController.getRightY()));
+                        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
 
                 //Operator Manual Elevator Override
                 new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
-                        .whileTrue(elevatorSubsystem.runDutyCycle(() -> ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
+                        .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
 
         
         // //Operator Binds

@@ -89,6 +89,7 @@ public class WristSubsystem extends SubsystemBase {
 
     private void setDutyCycleOut(double percentOutput) {
         io.setDutyCycleOut(percentOutput);
+        wristSetpointRotations = getCurrentPosition();
     }
 
     public Command positionSetpointCommand(DoubleSupplier rotationsFromHorizontal, DoubleSupplier rotationsPerSec) {

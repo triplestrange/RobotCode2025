@@ -24,13 +24,13 @@ public class SuperStructureCommandFactory {
 
     // Climb Sequence?
 
-    public static Command climbSequence(ArmSubsystem arm, ElevatorSubsystem elevator, WristSubsystem wrist,
-            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+    public static Command climbSequence(ArmSubsystem arm, ElevatorSubsystem elevator, WristSubsystem wrist) {
 
-        return new SequentialCommandGroup(
-                moveArmOnly(arm, elevator, wrist, armSetpointRotations).until(arm.atSetpoint(.03)),
-                moveWristOnly(arm, elevator, wrist, wristSetpointRotations).until(wrist.atSetpoint(.02)),
-                moveElevatorOnly(arm, elevator, wrist, elevatorSetpointMeters).until(elevator.atSetpoint(.02)));
+        return new ParallelCommandGroup(
+                arm.motionMagicPositionCommand(() -> 0),
+                wrist.motionMagicPositionCommand(() -> 0.1),
+                elevator.holdSetpointCommand());
+        }
 
         // return new SequentialCommandGroup(
         // moveArmOnly(arm, elevator, wrist,
@@ -44,7 +44,6 @@ public class SuperStructureCommandFactory {
         // moveArmOnly(arm, elevator, wrist,
         // armSetpointRotations).withDeadline(Commands.waitSeconds(3))
         // );
-    }
 
     public static Command moveArmOnly(ArmSubsystem arm, ElevatorSubsystem elevator, WristSubsystem wrist,
             double armSetpointRotations) {
