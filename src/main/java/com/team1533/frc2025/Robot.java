@@ -9,8 +9,13 @@ package com.team1533.frc2025;
 
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
+
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
@@ -39,6 +44,13 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private int i;
+
+  
+  // temp for catawba bc we lowkey need this please forgive me jonah
+
+  private final DigitalInput bannerLaser = new DigitalInput(0);
+
+  private final Debouncer bannerDebouncer = new Debouncer(0.20, DebounceType.kRising);
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -122,6 +134,7 @@ public class Robot extends LoggedRobot {
     if (i % 10 == 0) {
     }
     i++;
+    SmartDashboard.putBoolean("hasReef", bannerDebouncer.calculate(bannerLaser.get()));
 
     // Switch thread to high priority to improve loop timing
     Threads.setCurrentThreadPriority(true, 99);

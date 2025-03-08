@@ -60,6 +60,7 @@ import com.team1533.lib.swerve.DriveCharacterizer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -70,6 +71,7 @@ public class RobotContainer {
 
         private final CommandPS5Controller driveController = new CommandPS5Controller(0);
         private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
+
 
         @AutoLogOutput @Getter
         private boolean algaeMode = false;
