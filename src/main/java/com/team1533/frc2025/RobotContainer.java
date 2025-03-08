@@ -51,6 +51,8 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.lib.subsystems.MotorIO;
@@ -196,7 +198,8 @@ public class RobotContainer {
                         .genericPreset( 0.15, 0.06, 0.71).asProxy());
 
                 // Set up auto routines
-                autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+                // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+                autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
                 // Set up SysId routines
                 // autoChooser.addOption("Drive Wheel Radius Characterization",
@@ -220,7 +223,9 @@ public class RobotContainer {
 
                 // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
 
-                autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Middle"));
+                autoChooser.addDefaultOption("None", Commands.none());
+
+                autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -233,7 +238,7 @@ public class RobotContainer {
                 // Driver Binds
 
                 // Mode Toggle
-                driveController.R3().onTrue(Commands.runOnce(() -> algaeMode = !algaeMode));
+                driveController.R3().whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
 
                 // Arm Stop
                 driveController.PS()
@@ -269,6 +274,8 @@ public class RobotContainer {
                 driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset( 0.15, 0.0445, 0.71));
 
+                // Zero Preset
+
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset( 0.15, 0.045, 0.71));
@@ -301,9 +308,9 @@ public class RobotContainer {
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
                 // Auto Align Arm Neutral Pos
-                driveController.L2().onTrue(SuperStructureCommandFactory
+                driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
                                 .genericPreset(0.21, 0.045, 0.22));
-                driveController.R2().onTrue(SuperStructureCommandFactory
+                driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
                                 .genericPreset(0.21, 0.045, 0.22));
 
                 // Auto Align Options
@@ -339,7 +346,7 @@ public class RobotContainer {
          * @return the command to run in autonomous
          */
         public Command getAutonomousCommand() {
-                return SuperStructureCommandFactory.zeroElevator().andThen(autoChooser.get());
+                return autoChooser.get();
         }
 
         public void resetSimulationField() {

@@ -43,12 +43,14 @@ public class AlignController {
 
         boolean override = !RobotContainer.getInstance().isLeft() ||!RobotContainer.getInstance().isRight();
 
-        if (current.getTranslation().getDistance(target.getTranslation()) < 0.35 || override)   {
+        // if (current.getTranslation().getDistance(target.getTranslation()) < -1000 || override)   {
+        if (override)   {
             MathUtil.clamp(skewed.vxMetersPerSecond = pidTranslationController.calculate(current.getX(), target.getX()), -1., 1.);
             MathUtil.clamp(skewed.vyMetersPerSecond = pidTranslationController.calculate(current.getY(), target.getY()), -1., 1.);
         }
 
-        if (current.getTranslation().getDistance(target.getTranslation()) < 1.5 || override)  {
+        // if (current.getTranslation().getDistance(target.getTranslation()) < -1000 || override)  {
+        if (override)  {
             skewed.omegaRadiansPerSecond = headingController.update();
         }
         
