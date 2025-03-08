@@ -6,7 +6,6 @@
 // the root directory of this project.
 
 package com.team1533.frc2025.subsystems.vision;
-
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -15,8 +14,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 public class VisionConstants {
-        // AprilTag layout
-        public static AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+        
 
         // Camera names, must match names configured on coprocessor
         public static String camera0Name = "Reef_Camera";

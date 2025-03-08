@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -22,6 +21,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.photonvision.PhotonCamera;
+
+import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
 
 /** IO implementation for real PhotonVision hardware. */
@@ -57,7 +58,7 @@ public class VisionIOPhotonVision implements VisionIO {
         for (var target : result.targets) {
           // Pinhole model using sensed tag distance instead of height difference
 
-          Optional<Pose3d> tagPose = VisionConstants.aprilTagLayout.getTagPose(target.fiducialId);
+          Optional<Pose3d> tagPose = Constants.aprilTagLayout.getTagPose(target.fiducialId);
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
           if (tagPose.isEmpty())

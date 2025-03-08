@@ -19,6 +19,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
+import com.fasterxml.jackson.databind.Module.SetupContext;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
@@ -63,17 +64,22 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
+import lombok.Setter;
 
 public class RobotContainer {
 
         private final CommandPS5Controller driveController = new CommandPS5Controller(0);
         private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
-        @AutoLogOutput
-        boolean algaeMode = false;
+        @AutoLogOutput @Getter
+        private boolean algaeMode = false;
+        @Getter @AutoLogOutput @Setter
+        private boolean left = true;
+        @Getter @AutoLogOutput @Setter
+        private boolean right = true;
 
-        Trigger inCoralMode = new Trigger(() -> !algaeMode);
-        Trigger inAlgaeMode = new Trigger(() -> algaeMode);
+        private Trigger inCoralMode = new Trigger(() -> !algaeMode);
+        private Trigger inAlgaeMode = new Trigger(() -> algaeMode);
 
         @Getter
         private DriveSubsystem driveSubsystem;
@@ -293,6 +299,12 @@ public class RobotContainer {
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
+                // Auto Align Options
+                driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
+                driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
+                
+
+
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
                         .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
@@ -306,61 +318,6 @@ public class RobotContainer {
                         .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
 
                 operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
-
-        
-        // //Operator Binds
-
-        //         //Manual Arm Control
-        //         operatorController.getLeftY
-
-        //         //Manual Elevator Control
-        //         operatorController
-        //         elevatorSubsystem.setDefaultCommand(intakeSubsystem.dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
-                
-                
-                //arm manual
-
-                // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
-                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() ->
-                // -0.2));
-
-                // intake triggers
-
-                // intakeSubsystem.setDefaultCommand(intakeSubsystem
-                // .dutyCycleCommand(() -> ((driveController.getR2Axis() -
-                // driveController.getL2Axis()) / 2)));
-
-                // Old Stuff
-
-                // driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
-                // (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
-
-                // driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()
-                // -> Units.inchesToMeters(1.5)));
-                // driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()->
-                // 1.058));
-
-                // driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.71));
-                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.337));
-                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.1));
-
-                // driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0));
-                // driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0.195));
-                // driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() ->
-                // 0.25));
-                // driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0.15));
-
-                // L4:
-                // a 0.195
-                // e 1.058
-                // w 0.337
-
         }
 
         /**

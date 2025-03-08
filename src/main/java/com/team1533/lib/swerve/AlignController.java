@@ -2,37 +2,53 @@ package com.team1533.lib.swerve;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import com.team1533.lib.swerve.HeadingController.HeadingControllerState;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class AlignController {
 
-    private ChassisSpeeds input = new ChassisSpeeds();
-    @AutoLogOutput
-    private ChassisSpeeds skewed = new ChassisSpeeds();
-
     private Pose2d target = Pose2d.kZero;
     private Pose2d current = Pose2d.kZero;
+    private final Supplier<Pose2d> currentSupplier;
 
-    private ProfiledPIDController pidController;
+    private PIDController pidTranslationController;
+    private HeadingController headingController;
 
-    public AlignController(double kP) {
-
+    public AlignController(double kTranslationP, double kdt, Supplier<Pose2d> current) {
+        pidTranslationController = new PIDController(kTranslationP, 0, 0, kdt);
+        headingController = new HeadingController();
+        this.currentSupplier = current;
     }
 
     public void setTarget(Pose2d target) {
-
+        this.target = target;
+        headingController.setGoal(target.getRotation());
+        headingController.setM_HeadingControllerState(HeadingControllerState.SNAP);
+        Logger.recordOutput("AlignController/Target", this.target);
     }
 
-    public void setTarget(Supplier<Pose2d> targetSupplier) {
+// must be called periodically
+    public ChassisSpeeds update(ChassisSpeeds input) {
+        current = currentSupplier.get();
+        ChassisSpeeds skewed = new ChassisSpeeds();
+        if (current.getTranslation().getDistance(target.getTranslation()) < 0.35)   {
+            MathUtil.clamp(skewed.vxMetersPerSecond = pidTranslationController.calculate(current.getX(), target.getX()), -1., 1.);
+            MathUtil.clamp(skewed.vyMetersPerSecond = pidTranslationController.calculate(current.getY(), target.getY()), -1., 1.);
+        }
 
-    }
+        if (current.getTranslation().getDistance(target.getTranslation()) < 1.5)  {
+            skewed.omegaRadiansPerSecond = headingController.update();
+        }
+        
+        Logger.recordOutput("AlignController/SkewedSpeeds", skewed);
 
-    public ChassisSpeeds update() {
-
+        return input.plus(ChassisSpeeds.fromFieldRelativeSpeeds(skewed, current.getRotation())); 
     }
 
 }

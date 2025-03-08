@@ -1,13 +1,17 @@
 package com.team1533.frc2025;
 
-import java.time.LocalDate;
-
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.Alert.AlertType;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import lombok.RequiredArgsConstructor;
 
 public class Constants {
@@ -16,6 +20,9 @@ public class Constants {
     public static final double kSimDt = 0.001;
     private static RobotType robotType = RobotType.SIMBOT;
     public static final boolean tuningMode = false;
+
+    // AprilTag layout
+    public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
     public static RobotType getRobot() {
         if (!disableHAL && RobotBase.isReal() && robotType == RobotType.SIMBOT) {
@@ -50,41 +57,36 @@ public class Constants {
             double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {
     }
 
+    public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
+
+
     @RequiredArgsConstructor
-    public enum FieldLocation {
-        FEEDER_LEFT_LEFT(new Pose2d()),
-        FEEDER_LEFT_RIGHT(new Pose2d()),
-        FEEDER_RIGHT_RIGHT(new Pose2d()),
-        FEEDER_RIGHT_LEFT(new Pose2d()),
-        REEF_17(new Pose2d()),
-        REEF_18(new Pose2d()),
-        REEF_19(new Pose2d()),
-        REEF_20(new Pose2d()),
-        REEF_21(new Pose2d()),
-        REEF_22(new Pose2d()),
-        BARGE_LEFT(new Pose2d()),
-        BARGE_MIDDLE(new Pose2d()),
-        BARGE_RIGHT(new Pose2d()),
-        REEF_OFFSET(new Pose2d());
+    public enum ReefLocations {
+        REEF_17(aprilTagLayout.getTagPose(17).get().toPose2d()),
+        REEF_18(aprilTagLayout.getTagPose(18).get().toPose2d()),
+        REEF_19(aprilTagLayout.getTagPose(19).get().toPose2d()),
+        REEF_20(aprilTagLayout.getTagPose(20).get().toPose2d()),
+        REEF_21(aprilTagLayout.getTagPose(21).get().toPose2d()),
+        REEF_22(aprilTagLayout.getTagPose(22).get().toPose2d());
 
         private final Pose2d pose;
 
         public Pose2d getPose2dFlipped() {
-            return AllianceFlipUtil.apply(pose);
+            return AllianceFlipUtil.apply(new Pose2d(pose.getTranslation().plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())), pose.getRotation().plus(Rotation2d.k180deg)));
         }
 
-        public Pose2d getPose2dReef(FieldLocation location, boolean isleft) {
+        public Pose2d getPose2dReef(boolean isleft) {
             if (isleft)
-                return new Pose2d(
-                        location.getPose2dFlipped().getTranslation()
-                                .plus(REEF_OFFSET.getPose2dFlipped().getTranslation()
-                                        .rotateBy(location.getPose2dFlipped().getRotation())),
-                        location.getPose2dFlipped().getRotation());
-            return new Pose2d(
-                    location.getPose2dFlipped().getTranslation()
-                            .minus(REEF_OFFSET.getPose2dFlipped().getTranslation()
-                                    .rotateBy(location.getPose2dFlipped().getRotation())),
-                    location.getPose2dFlipped().getRotation());
+                return AllianceFlipUtil.apply(new Pose2d(
+                        pose.getTranslation()
+                                .plus(REEF_OFFSET.getTranslation().rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
+                                .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
+                        pose.getRotation().plus(Rotation2d.k180deg)));
+                        return AllianceFlipUtil.apply(new Pose2d(
+                            pose.getTranslation()
+                                    .minus(REEF_OFFSET.getTranslation().rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
+                                    .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
+                            pose.getRotation().plus(Rotation2d.k180deg)));
         }
     }
 }

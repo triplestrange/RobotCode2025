@@ -9,6 +9,7 @@ package com.team1533.frc2025.subsystems.vision;
 
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.*;
 
+import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -84,7 +85,7 @@ public class VisionSubsystem extends SubsystemBase {
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = aprilTagLayout.getTagPose(tagId);
+        var tagPose = Constants.aprilTagLayout.getTagPose(tagId);
         if (tagPose.isPresent()) {
           tagPoses.add(tagPose.get());
         }
@@ -100,9 +101,9 @@ public class VisionSubsystem extends SubsystemBase {
 
             // Must be within the field boundaries
             || observation.pose().getX() < 0.0
-            || observation.pose().getX() > aprilTagLayout.getFieldLength()
+            || observation.pose().getX() > Constants.aprilTagLayout.getFieldLength()
             || observation.pose().getY() < 0.0
-            || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+            || observation.pose().getY() > Constants.aprilTagLayout.getFieldWidth();
 
         // Add pose to log
         robotPoses.add(observation.pose());
