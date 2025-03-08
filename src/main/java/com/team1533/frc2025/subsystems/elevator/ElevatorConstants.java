@@ -16,19 +16,22 @@ public class ElevatorConstants {
     public static final double frictionVoltage = 0.25;
     public static final double kElevatorPositioningToleranceInches = 0.1;
 
-    public static final double torqueCurrentLimit = 80;
-    public static final double statorCurrentLimit = 80;
+    public static final double torqueCurrentLimit = 120;
+    public static final double statorCurrentLimit = 120;
     public static final double supplyCurrentLimit = 60;
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;
 
     public static final double motionMagicCruiseVelocity = 2;
-    public static final double motionMagicAcceleration = 10;
-    public static final double motionMagicJerk = 20;
+    public static final double motionMagicAcceleration = 18;
+    public static final double motionMagicJerk = 60;
+
 
     
     public static final double reverseSoftLimitThreshold = 0;
-    public static final double forwardSoftLimitThreshold = 0;
+    public static final double forwardSoftLimitThreshold = 1.07;
+
+    public static final double blockedCurrent = 100;
 
 
     public static final Gains gains = switch (Constants.getRobot()) {

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import org.dyn4j.Epsilon;
 import org.littletonrobotics.junction.Logger;
 
 import com.team1533.lib.time.RobotTime;
@@ -64,7 +65,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command runDutyCycle(DoubleSupplier percentOutput) {
-        return startEnd(
+        return runEnd(
                 () -> setDutyCycleOut(percentOutput.getAsDouble()),
                 () -> setDutyCycleOut(0.0)).withName("Elevator DutyCycleControl");
     }
@@ -82,6 +83,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     private void setDutyCycleOut(double percentOutput) {
         io.setDutyCycleOut(percentOutput);
+        elevatorSetpointMeters = getCurrentPosition();
     }
 
     public Command positionSetpointCommand(DoubleSupplier metersFromBottom, DoubleSupplier metersPerSec) {
@@ -126,8 +128,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         return inputs.leaderRotPosition;
     }
 
-    // TODO: implememt
-    public void resetZeroPoint() {
-
+    public Command resetZeroPoint() {
+        
+        return runEnd((() -> io.setDutyCycleOutIgnoreLimits()), () -> {
+            io.zero();
+            elevatorSetpointMeters = 0;
+        }).until(() -> (inputs.leaderStatorAmps > ElevatorConstants.blockedCurrent && MathUtil.isNear(0, inputs.leaderVelocityRotPerSec, 0.1))).withName("Elevator Zero Command");
     }
 }

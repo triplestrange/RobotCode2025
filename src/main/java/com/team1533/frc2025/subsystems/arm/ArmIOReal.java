@@ -90,9 +90,9 @@ public class ArmIOReal implements ArmIO {
         config.Feedback.SensorToMechanismRatio = ArmConstants.SensorToMechanismRatio;
         config.Feedback.RotorToSensorRatio = ArmConstants.reduction;
 
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit = ArmConstants.statorCurrentLimit;
-        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
         config.CurrentLimits.SupplyCurrentLowerLimit = ArmConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = ArmConstants.supplyCurrentLowerLimitTime;

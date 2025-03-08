@@ -84,6 +84,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     driveConfig.MotorOutput.Inverted = constants.DriveMotorInverted
         ? InvertedValue.Clockwise_Positive
         : InvertedValue.CounterClockwise_Positive;
+
+    driveConfig.Feedback.SensorToMechanismRatio = 1;
     tryUntilOk(5, () -> driveTalon.getConfigurator().apply(driveConfig, 0.25));
     tryUntilOk(5, () -> driveTalon.setPosition(0.0, 0.25));
 
@@ -102,7 +104,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
       default -> FeedbackSensorSourceValue.FusedCANcoder;
     };
 
-    turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
+    turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;    
     turnConfig.MotionMagic.MotionMagicCruiseVelocity = 100.0 / constants.SteerMotorGearRatio;
     turnConfig.MotionMagic.MotionMagicAcceleration = turnConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
     turnConfig.MotionMagic.MotionMagicExpo_kV = 0.12 * constants.SteerMotorGearRatio;
@@ -128,7 +130,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     driveCurrent = driveTalon.getStatorCurrent();
 
     // Create turn status signals
-    turnAbsolutePosition = cancoder.getAbsolutePosition();
+    turnAbsolutePosition = turnTalon.getPosition();
     turnVelocity = turnTalon.getVelocity();
     turnAppliedVolts = turnTalon.getMotorVoltage();
     turnCurrent = turnTalon.getStatorCurrent();
@@ -144,6 +146,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
         turnVelocity,
         turnAppliedVolts,
         turnCurrent);
+
+    driveTalon.setPosition(0);
     ParentDevice.optimizeBusUtilizationForAll(driveTalon, turnTalon);
   }
 
@@ -197,7 +201,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
         switch (constants.DriveMotorClosedLoopOutput) {
           case Voltage -> velocityVoltageRequest.withVelocity(motorVelocityRotPerSec);
           case TorqueCurrentFOC ->
-            velocityTorqueCurrentRequest.withVelocity(motorVelocityRotPerSec);
+            velocityVoltageRequest.withEnableFOC(true).withVelocity(motorVelocityRotPerSec);
         });
   }
 
@@ -207,7 +211,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
         switch (constants.SteerMotorClosedLoopOutput) {
           case Voltage -> positionVoltageRequest.withPosition(rotation.getRotations());
           case TorqueCurrentFOC ->
-            positionTorqueCurrentRequest.withPosition(rotation.getRotations());
+            positionVoltageRequest.withEnableFOC(true).withPosition(rotation.getRotations());
         });
   }
 }

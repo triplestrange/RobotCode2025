@@ -22,8 +22,8 @@ public interface WristIO {
         public double leaderRotPosition = 0.0;
 
 
-        public double wristVelMetersPerSecond = 0.0;
-        public double wristAccelMetersPerSecondPerSecond = 0.0;
+        public double wristVelRotsPerSecond = 0.0;
+        public double wristAccelRotsPerSecondPerSecond = 0.0;
 
     }
 
