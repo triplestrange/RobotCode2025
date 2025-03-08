@@ -248,7 +248,6 @@ public class RobotContainer {
                 // Climb Prep
                 driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.24, 0, 0.5));
 
-
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
 
@@ -292,18 +291,23 @@ public class RobotContainer {
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset( 0.24, 1.07, 0.3));
                 
-                
                 // Algae Intake
                 driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
+                // Auto Align Arm Neutral Pos
+                driveController.L2().onTrue(SuperStructureCommandFactory
+                                .genericPreset(0.21, 0.045, 0.22));
+                driveController.R2().onTrue(SuperStructureCommandFactory
+                                .genericPreset(0.21, 0.045, 0.22));
+
                 // Auto Align Options
                 driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
                 driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
                 
-
+        //Operator Binds
 
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
@@ -316,7 +320,8 @@ public class RobotContainer {
                 //Operator Manual Elevator Override
                 new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
                         .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
-
+                
+                //Operator Elevator Zero
                 operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
         }
 

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.team1533.frc2025.RobotContainer;
 import com.team1533.lib.swerve.HeadingController.HeadingControllerState;
 
 import edu.wpi.first.math.MathUtil;
@@ -35,14 +36,19 @@ public class AlignController {
 
 // must be called periodically
     public ChassisSpeeds update(ChassisSpeeds input) {
+        if (target.equals(Pose2d.kZero)) return input;
+
         current = currentSupplier.get();
         ChassisSpeeds skewed = new ChassisSpeeds();
-        if (current.getTranslation().getDistance(target.getTranslation()) < 0.35)   {
+
+        boolean override = !RobotContainer.getInstance().isLeft() ||!RobotContainer.getInstance().isRight();
+
+        if (current.getTranslation().getDistance(target.getTranslation()) < 0.35 || override)   {
             MathUtil.clamp(skewed.vxMetersPerSecond = pidTranslationController.calculate(current.getX(), target.getX()), -1., 1.);
             MathUtil.clamp(skewed.vyMetersPerSecond = pidTranslationController.calculate(current.getY(), target.getY()), -1., 1.);
         }
 
-        if (current.getTranslation().getDistance(target.getTranslation()) < 1.5)  {
+        if (current.getTranslation().getDistance(target.getTranslation()) < 1.5 || override)  {
             skewed.omegaRadiansPerSecond = headingController.update();
         }
         

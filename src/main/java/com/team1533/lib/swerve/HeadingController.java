@@ -88,7 +88,7 @@ public class HeadingController {
                 break;
         }
 
-        return MathUtil.clamp(m_PIDController.calculate(RobotContainer.getInstance().getDriveSubsystem().getPose().getRotation().getRotations()), -2,
-                2);
+        return MathUtil.clamp(m_PIDController.calculate(RobotContainer.getInstance().getDriveSubsystem().getPose().getRotation().getRotations()), -10,
+                10);
     }
 }
