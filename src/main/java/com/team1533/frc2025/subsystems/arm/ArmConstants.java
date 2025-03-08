@@ -15,8 +15,8 @@ public class ArmConstants {
     public static final double SensorToMechanismRatio = 1.0;
     public static final double frictionVoltage = 0.25;
 
-    public static final double torqueCurrentLimit = 80;
-    public static final double statorCurrentLimit = 80;
+    public static final double torqueCurrentLimit = 120;
+    public static final double statorCurrentLimit = 120;
     public static final double supplyCurrentLimit = 60;
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;

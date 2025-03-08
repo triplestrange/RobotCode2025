@@ -57,11 +57,10 @@ public class ElevatorIOReal implements ElevatorIO {
 
     private final TalonFXConfiguration config = new TalonFXConfiguration();
 
-    private final Timer timeSinceReset;
+    private boolean hasReset = false;
     
 
     public ElevatorIOReal() {
-        timeSinceReset = new Timer();
 
         leaderTalon = new TalonFX(ElevatorConstants.leaderTalonCanID, ElevatorConstants.canBUS);
         followerTalon = new TalonFX(ElevatorConstants.followerTalonCanID, ElevatorConstants.canBUS);
@@ -85,9 +84,9 @@ public class ElevatorIOReal implements ElevatorIO {
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.Feedback.SensorToMechanismRatio = ElevatorConstants.reduction;
 
-        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = ElevatorConstants.supplyCurrentLimit;
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit = ElevatorConstants.statorCurrentLimit;
         config.CurrentLimits.SupplyCurrentLowerLimit = ElevatorConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = ElevatorConstants.supplyCurrentLowerLimitTime;
@@ -148,6 +147,8 @@ public class ElevatorIOReal implements ElevatorIO {
         dutyCycleOutControl.EnableFOC = true;
         motionMagicVoltage.EnableFOC = true;
 
+        leaderTalon.setPosition(0);
+
     }
 
     @Override
@@ -175,7 +176,7 @@ public class ElevatorIOReal implements ElevatorIO {
         inputs.leaderRotPosition = leaderPositionSignal.getValueAsDouble();
         inputs.followerRotPosition = followerPositionSignal.getValueAsDouble();
 
-        inputs.secondsSinceReset = timeSinceReset.get();
+        inputs.hasZero = hasReset;
         inputs.elevatorPosMeters = elevatorPositionSignal.getValueAsDouble();
         inputs.elevatorVelMetersPerSecond = elevatorVelocitySignal.getValueAsDouble();
         inputs.elevatorAccelMetersPerSecondPerSecond = elevatorAccelerationSignal.getValueAsDouble();
@@ -202,6 +203,11 @@ public class ElevatorIOReal implements ElevatorIO {
         leaderTalon.setControl(
                 positionTorqueCurrentFOC.withPosition(positionMeters).withVelocity(metersPerSec).withFeedForward(18));
     }
+
+    @Override
+    public void setDutyCycleOutIgnoreLimits()   {
+        leaderTalon.setControl(dutyCycleOutControl.withEnableFOC(true).withOutput(-0.25));
+    }   
 
     @Override
     public void setCurrentSetpoint(double amps) {
@@ -231,8 +237,9 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override
-    public void resetTimer() {
-        timeSinceReset.reset();
+    public void zero() {
+        leaderTalon.setPosition(0);
+        hasReset = true;
     }
 
 }
