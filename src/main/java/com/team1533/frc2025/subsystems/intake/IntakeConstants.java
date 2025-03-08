@@ -35,11 +35,11 @@ public class IntakeConstants {
         config.fxConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.fxConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        config.fxConfig.CurrentLimits.StatorCurrentLimit = 1;
-        config.fxConfig.CurrentLimits.StatorCurrentLimitEnable = false;
-        config.fxConfig.CurrentLimits.SupplyCurrentLimit = 1;
-        config.fxConfig.CurrentLimits.SupplyCurrentLimitEnable = false;
-        config.fxConfig.CurrentLimits.SupplyCurrentLowerLimit = 1;
+        config.fxConfig.CurrentLimits.StatorCurrentLimit = 60;
+        config.fxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+        config.fxConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        config.fxConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.fxConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
         config.fxConfig.CurrentLimits.SupplyCurrentLowerTime = 1;
 
         config.name = "intake";

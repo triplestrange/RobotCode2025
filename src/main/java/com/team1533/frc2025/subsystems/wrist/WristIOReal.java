@@ -89,9 +89,9 @@ public class WristIOReal implements WristIO {
         config.Feedback.RotorToSensorRatio = WristConstants.reduction;
 
         config.CurrentLimits.StatorCurrentLimit = WristConstants.statorCurrentLimit;
-        config.CurrentLimits.StatorCurrentLimitEnable = false;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = WristConstants.supplyCurrentLimit;
-        config.CurrentLimits.SupplyCurrentLimitEnable = false;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLowerLimit = WristConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = WristConstants.supplyCurrentLowerLimitTime;
         
@@ -99,9 +99,9 @@ public class WristIOReal implements WristIO {
         config.MotionMagic.MotionMagicAcceleration = WristConstants.motionMagicAcceleration;
         config.MotionMagic.MotionMagicJerk = WristConstants.motionMagicJerk;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.forwardSoftLimitThreshold;
-        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.reverseSoftLimitThreshold;
         
 
@@ -173,8 +173,8 @@ public class WristIOReal implements WristIO {
 
         inputs.absoluteEncoderPositionRots = encoderAbsolutePositionRotations.getValueAsDouble();
         inputs.relativeEncoderPositionRots = encoderRelativePositionRotations.getValueAsDouble();
-        inputs.wristVelMetersPerSecond = wristVelocitySignal.getValueAsDouble();
-        inputs.wristAccelMetersPerSecondPerSecond = wristAccelerationSignal.getValueAsDouble();
+        inputs.wristVelRotsPerSecond = wristVelocitySignal.getValueAsDouble();
+        inputs.wristAccelRotsPerSecondPerSecond = wristAccelerationSignal.getValueAsDouble();
     }
 
     @Override
