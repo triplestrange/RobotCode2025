@@ -190,26 +190,26 @@ public class RobotContainer {
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
                 // Set up SysId routines
-                autoChooser.addOption("Drive Wheel Radius Characterization",
-                                DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
-                autoChooser.addOption("Drive Simple FF Characterization",
-                                DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
-                autoChooser.addOption(
-                                "Drive SysId (Quasistatic Forward)",
-                                driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-                autoChooser.addOption(
-                                "Drive SysId (Quasistatic Reverse)",
-                                driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-                autoChooser.addOption("Drive SysId (Dynamic Forward)",
-                                driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
-                autoChooser.addOption("Drive SysId (Dynamic Reverse)",
-                                driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                // autoChooser.addOption("Drive Wheel Radius Characterization",
+                //                 DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
+                // autoChooser.addOption("Drive Simple FF Characterization",
+                //                 DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
+                // autoChooser.addOption(
+                //                 "Drive SysId (Quasistatic Forward)",
+                //                 driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                // autoChooser.addOption(
+                //                 "Drive SysId (Quasistatic Reverse)",
+                //                 driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                // autoChooser.addOption("Drive SysId (Dynamic Forward)",
+                //                 driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                // autoChooser.addOption("Drive SysId (Dynamic Reverse)",
+                //                 driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-                autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
+                // autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
 
-                autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
+                // autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
 
-                autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
+                // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
 
                 autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Middle"));
 
