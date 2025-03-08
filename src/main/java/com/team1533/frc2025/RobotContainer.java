@@ -50,6 +50,7 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.lib.subsystems.MotorIO;
@@ -308,6 +309,7 @@ public class RobotContainer {
                 // Auto Align Options
                 driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
                 driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
+
                 
         //Operator Binds
 
@@ -325,6 +327,10 @@ public class RobotContainer {
                 
                 //Operator Elevator Zero
                 operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+
+                operatorController.square().onTrue(new InstantCommand(() -> {setRight(false);
+                setLeft(false);}));
+
         }
 
         /**
@@ -333,7 +339,7 @@ public class RobotContainer {
          * @return the command to run in autonomous
          */
         public Command getAutonomousCommand() {
-                return autoChooser.get();
+                return SuperStructureCommandFactory.zeroElevator().andThen(autoChooser.get());
         }
 
         public void resetSimulationField() {
