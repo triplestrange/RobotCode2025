@@ -8,10 +8,8 @@
 package com.team1533.frc2025;
 
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera0Name;
-import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera1Name;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera0;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera1;
-import static edu.wpi.first.units.Units.Newton;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -19,7 +17,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import com.fasterxml.jackson.databind.Module.SetupContext;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
@@ -235,6 +232,8 @@ public class RobotContainer {
 
                 autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
                 autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
+                autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Left 2 Piece"));
+
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -284,6 +283,8 @@ public class RobotContainer {
                                 .genericPreset( 0.15, 0.0445, 0.71));
 
                 // Zero Preset
+                driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset( 0, 0, 0));
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory

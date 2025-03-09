@@ -60,10 +60,10 @@ public class SuperStructureCommandFactory {
 
     public static Command climbSequence() {
 
-        return new ParallelCommandGroup(
+        return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
                 arm.motionMagicPositionCommand(() -> 0),
                 wrist.motionMagicPositionCommand(() -> 0),
-                elevator.motionMagicPositionCommand(() -> 0.4));
+                elevator.motionMagicPositionCommand(() -> 0.4)));
         }
 
         // return new SequentialCommandGroup(
