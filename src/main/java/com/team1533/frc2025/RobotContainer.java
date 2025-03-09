@@ -8,10 +8,8 @@
 package com.team1533.frc2025;
 
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera0Name;
-import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera1Name;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera0;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera1;
-import static edu.wpi.first.units.Units.Newton;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -49,6 +47,9 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 import com.team1533.frc2025.subsystems.elevator.*;
 import com.team1533.lib.subsystems.MotorIO;
@@ -59,21 +60,28 @@ import com.team1533.lib.swerve.DriveCharacterizer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
+import lombok.Setter;
 
 public class RobotContainer {
 
         private final CommandPS5Controller driveController = new CommandPS5Controller(0);
         private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
-        @AutoLogOutput
-        boolean algaeMode = false;
 
-        Trigger inCoralMode = new Trigger(() -> !algaeMode);
-        Trigger inAlgaeMode = new Trigger(() -> algaeMode);
+        @AutoLogOutput @Getter
+        private boolean algaeMode = false;
+        @Getter @AutoLogOutput @Setter
+        private boolean left = true;
+        @Getter @AutoLogOutput @Setter
+        private boolean right = true;
+
+        private Trigger inCoralMode = new Trigger(() -> !algaeMode);
+        private Trigger inAlgaeMode = new Trigger(() -> algaeMode);
 
         @Getter
         private DriveSubsystem driveSubsystem;
@@ -181,13 +189,22 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
                         .genericPreset( 0.205, 1.07, 0.337).asProxy());
 
-                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(5));
+                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
+
+                NamedCommands.registerCommand("Arm Neutral", SuperStructureCommandFactory
+                        .genericPreset( 0.21, 0.4, 0.22).asProxy());
+
+                NamedCommands.registerCommand("Arm Feeder While Moving", SuperStructureCommandFactory
+                        .forcedPos( 0.15, 0.045, 0.71).asProxy());
 
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
-                        .genericPreset( 0.15, 0.06, 0.71).asProxy());
+                        .genericPreset( 0.15, 0.045, 0.71).asProxy());
+
+                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
                 // Set up auto routines
-                autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+                // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+                autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
                 // Set up SysId routines
                 // autoChooser.addOption("Drive Wheel Radius Characterization",
@@ -211,7 +228,12 @@ public class RobotContainer {
 
                 // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
 
-                autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Middle"));
+                autoChooser.addDefaultOption("None", Commands.none());
+
+                autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
+                autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
+                autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Left 2 Piece"));
+
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -224,7 +246,7 @@ public class RobotContainer {
                 // Driver Binds
 
                 // Mode Toggle
-                driveController.R3().onTrue(Commands.runOnce(() -> algaeMode = !algaeMode));
+                driveController.R3().whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
 
                 // Arm Stop
                 driveController.PS()
@@ -240,8 +262,7 @@ public class RobotContainer {
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
                 // Climb Prep
-                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.24, 0, 0.5));
-
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.25, 0, 0.5));
 
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
@@ -260,6 +281,10 @@ public class RobotContainer {
                 // L1 Coral Automation
                 driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset( 0.15, 0.0445, 0.71));
+
+                // Zero Preset
+                driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                                .genericPreset( 0, 0, 0));
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
@@ -286,12 +311,24 @@ public class RobotContainer {
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
                                 .genericPreset( 0.24, 1.07, 0.3));
                 
-                
                 // Algae Intake
                 driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
+
+                // Auto Align Arm Neutral Pos
+                driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
+                                .genericPreset(0.21, 0.045, 0.22));
+                driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
+                                .genericPreset(0.21, 0.045, 0.22));
+
+                // Auto Align Options
+                driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
+                driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
+
+                
+        //Operator Binds
 
                 //Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
@@ -304,62 +341,12 @@ public class RobotContainer {
                 //Operator Manual Elevator Override
                 new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
                         .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
-
+                
+                //Operator Elevator Zero
                 operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
 
-        
-        // //Operator Binds
-
-        //         //Manual Arm Control
-        //         operatorController.getLeftY
-
-        //         //Manual Elevator Control
-        //         operatorController
-        //         elevatorSubsystem.setDefaultCommand(intakeSubsystem.dutyCycleCommand(() -> ((driveController.getR2Axis() - driveController.getL2Axis()) / 2)));
-                
-                
-                //arm manual
-
-                // driveController.povUp().whileTrue(armSubsystem.manualDutyCycle(() -> 0.2));
-                // driveController.povDown().whileTrue(armSubsystem.manualDutyCycle(() ->
-                // -0.2));
-
-                // intake triggers
-
-                // intakeSubsystem.setDefaultCommand(intakeSubsystem
-                // .dutyCycleCommand(() -> ((driveController.getR2Axis() -
-                // driveController.getL2Axis()) / 2)));
-
-                // Old Stuff
-
-                // driveController.L1().onTrue(SuperStructureCommandFactory.genericPreset
-                // (armSubsystem, elevatorSubsystem, wristSubsystem, 0.25, 0, 0.5));
-
-                // driveController.L1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()
-                // -> Units.inchesToMeters(1.5)));
-                // driveController.R1().onTrue(elevatorSubsystem.motionMagicPositionCommand(()->
-                // 1.058));
-
-                // driveController.cross().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.71));
-                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.337));
-                // driveController.triangle().onTrue(wristSubsystem.motionMagicPositionCommand(()
-                // -> 0.1));
-
-                // driveController.povDown().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0));
-                // driveController.povLeft().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0.195));
-                // driveController.povUp().onTrue(armSubsystem.motionMagicPositionCommand(() ->
-                // 0.25));
-                // driveController.povRight().onTrue(armSubsystem.motionMagicPositionCommand(()
-                // -> 0.15));
-
-                // L4:
-                // a 0.195
-                // e 1.058
-                // w 0.337
+                operatorController.square().onTrue(new InstantCommand(() -> {setRight(false);
+                setLeft(false);}));
 
         }
 
