@@ -16,12 +16,33 @@ public class SuperStructureCommandFactory {
         private static final ElevatorSubsystem elevator = RobotContainer.getInstance().getElevatorSubsystem();
         private static final WristSubsystem wrist = RobotContainer.getInstance().getWristSubsystem();
 
+// Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a setpoint
     public static Command genericPreset(
             double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
 
         return new SequentialCommandGroup(
                 moveArmOnly(0.21).until(arm.atSetpoint(.03)),
                 moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
+                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
+                moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
+                moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
+    }
+
+// Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any number within travel distance.
+    public static Command neutralPos(
+            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+
+        return new SequentialCommandGroup(
+                moveArmOnly(0.21).until(arm.atSetpoint(.03)),
+                moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
+                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)));
+    }
+
+// Forced Pos - Immediately Sets the SuperStructure to a setpoint. To be used in auto, ONLY AFTER NEUTRAL POS.
+    public static Command forcedPos(
+            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+
+        return new SequentialCommandGroup(
                 moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
                 moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
                 moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));

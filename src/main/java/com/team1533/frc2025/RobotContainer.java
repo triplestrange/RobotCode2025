@@ -194,8 +194,14 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
 
+                NamedCommands.registerCommand("Arm Neutral", SuperStructureCommandFactory
+                        .genericPreset( 0.21, 0.4, 0.22).asProxy());
+
+                NamedCommands.registerCommand("Arm Feeder While Moving", SuperStructureCommandFactory
+                        .forcedPos( 0.15, 0.045, 0.71).asProxy());
+
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
-                        .genericPreset( 0.15, 0.06, 0.71).asProxy());
+                        .genericPreset( 0.15, 0.045, 0.71).asProxy());
 
                 NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
