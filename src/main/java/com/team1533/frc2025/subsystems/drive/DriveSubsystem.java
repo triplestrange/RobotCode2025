@@ -395,6 +395,13 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)*magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
 
+        //Yuckers Maybe?
+        if(RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
+            speedX *= 0.5;
+            speedY *= 0.5;
+            speedR *= 0.2;
+        }
+
         if (AllianceFlipUtil.shouldFlip()) {
             speedX = -speedX;
             speedY = -speedY;

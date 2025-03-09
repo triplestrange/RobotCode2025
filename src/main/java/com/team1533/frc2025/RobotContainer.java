@@ -286,7 +286,7 @@ public class RobotContainer {
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-                // Coral
+                // Coral Outtake
                 driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
 
                 // Processor Algae
