@@ -18,6 +18,10 @@ import edu.wpi.first.units.measure.Distance;
 
 public class DriveConstants {
 
+        // Wheel Slippage Constants
+        public static final double acceptableSlippageMetersPerSec = 0;
+        public static final double acceptableSlippageRadians = 0; 
+
         // TunerConstants doesn't include these constants, so they are declared locally
         static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
                         ? 250.0
