@@ -42,7 +42,7 @@ public class SuperStructureCommandFactory {
         return new ParallelCommandGroup(
                 arm.motionMagicPositionCommand(() -> 0),
                 wrist.motionMagicPositionCommand(() -> 0),
-                elevator.motionMagicPositionCommand(() -> 0.3));
+                elevator.motionMagicPositionCommand(() -> 0.4));
         }
 
         // return new SequentialCommandGroup(

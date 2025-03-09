@@ -192,10 +192,12 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
                         .genericPreset( 0.205, 1.07, 0.337).asProxy());
 
-                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(5));
+                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
 
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
                         .genericPreset( 0.15, 0.06, 0.71).asProxy());
+
+                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
                 // Set up auto routines
                 // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -226,6 +228,7 @@ public class RobotContainer {
                 autoChooser.addDefaultOption("None", Commands.none());
 
                 autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
+                autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -254,7 +257,7 @@ public class RobotContainer {
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
                 // Climb Prep
-                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.24, 0, 0.5));
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.25, 0, 0.5));
 
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
@@ -283,7 +286,7 @@ public class RobotContainer {
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-                // Coral Outtake
+                // Coral
                 driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
 
                 // Processor Algae
