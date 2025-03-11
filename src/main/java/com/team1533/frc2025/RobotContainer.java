@@ -200,7 +200,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
                         .genericPreset( 0.15, 0.045, 0.71).asProxy());
 
-                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
+                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
 
                 // Set up auto routines
                 // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -233,7 +233,7 @@ public class RobotContainer {
                 autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
                 autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
                 autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Left 2 Piece"));
-
+                autoChooser.addOption("Left 2 Piece", AutoBuilder.buildAuto("Left 2 Piece"));
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -288,7 +288,8 @@ public class RobotContainer {
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.043, 0.71));
+                                .genericPreset( 0.15, 0.043
+                                , 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));

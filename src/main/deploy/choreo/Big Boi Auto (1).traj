@@ -1,5 +1,5 @@
 {
- "name":"Big Boi Auto",
+ "name":"Big Boi Auto (1)",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -27,27 +27,11 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"7.143642425537109 m", "val":7.143642425537109}, "y":{"exp":"6.693357467651367 m", "val":6.693357467651367}, "heading":{"exp":"-2.3854772989914546 rad", "val":-2.3854772989914546}, "intervals":20, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"5.74180793762207 m", "val":5.74180793762207}, "y":{"exp":"6.261266231536865 m", "val":6.261266231536865}, "heading":{"exp":"235 deg", "val":4.101523742186674}, "intervals":84, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"5.126837730407715 m", "val":5.126837730407715}, "y":{"exp":"5.459941387176514 m", "val":5.459941387176514}, "heading":{"exp":"240 deg", "val":4.1887902047863905}, "intervals":18, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"5.022829532623291 m", "val":5.022829532623291}, "y":{"exp":"5.273369789123535 m", "val":5.273369789123535}, "heading":{"exp":"240 deg", "val":4.1887902047863905}, "intervals":24, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"4.019256591796875 m", "val":4.019256591796875}, "y":{"exp":"5.979319095611572 m", "val":5.979319095611572}, "heading":{"exp":"-54 deg", "val":-0.942477796076938}, "intervals":91, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"2.23834228515625 m", "val":2.23834228515625}, "y":{"exp":"6.941460132598877 m", "val":6.941460132598877}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":36, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"1.6606431007385254 m", "val":1.6606431007385254}, "y":{"exp":"7.276898384094238 m", "val":7.276898384094238}, "heading":{"exp":"-54 deg", "val":-0.942477796076938}, "intervals":20, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"2.8626298904418945 m", "val":2.8626298904418945}, "y":{"exp":"6.317172527313232 m", "val":6.317172527313232}, "heading":{"exp":"-60 deg", "val":-1.0471975511965976}, "intervals":14, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"3.47760009765625 m", "val":3.47760009765625}, "y":{"exp":"5.4040350914001465 m", "val":5.4040350914001465}, "heading":{"exp":"-60 deg", "val":-1.0471975511965976}, "intervals":31, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"3.671799421310425 m", "val":3.671799421310425}, "y":{"exp":"5.103464603424072 m", "val":5.103464603424072}, "heading":{"exp":"-1.030376919981514 rad", "val":-1.030376919981514}, "intervals":37, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"4.366833209991455 m", "val":4.366833209991455}, "y":{"exp":"7.203559875488281 m", "val":7.203559875488281}, "heading":{"exp":"2.9607337739165565 rad", "val":2.9607337739165565}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"17.548 m", "val":17.548}, "h":{"exp":"8.052 m", "val":8.052}}}, "enabled":true},
-    {"from":3, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":6, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":5, "to":6, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"1.25 m / s", "val":1.25}}}, "enabled":true},
-    {"from":8, "to":9, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"0.25 m / s", "val":0.25}}}, "enabled":true},
-    {"from":1, "to":3, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"0.25 m / s", "val":0.25}}}, "enabled":true},
-    {"from":4, "to":6, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"0.5 m / s", "val":0.5}}}, "enabled":true},
-    {"from":0, "to":1, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"0 rad / s", "val":0.0}}}, "enabled":true}],
+    {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"17.548 m", "val":17.548}, "h":{"exp":"8.052 m", "val":8.052}}}, "enabled":true}],
   "targetDt":{
    "exp":"0.05 s",
    "val":0.05
@@ -382,8 +366,5 @@
     {"t":14.32654, "x":3.6718, "y":5.10346, "heading":-1.03038, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]}],
   "splits":[0,122,257]
  },
- "events":[
-   {"name":"Score Preload", "from":{"target":3, "targetTimestamp":5.70395, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"Feeder Intake", "from":{"target":6, "targetTimestamp":11.80906, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"Second Score", "from":{"target":9, "targetTimestamp":14.32654, "offset":{"exp":"0 s", "val":0.0}}, "event":null}]
+ "events":[]
 }

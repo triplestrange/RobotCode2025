@@ -72,7 +72,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
     private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG,
             DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
-    private final AlignController alignController = new AlignController(5, Constants.loopPeriodSecs, this::getPose);
+    private final AlignController alignController = new AlignController(10, Constants.loopPeriodSecs, this::getPose);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
