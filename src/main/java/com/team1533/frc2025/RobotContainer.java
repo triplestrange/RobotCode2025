@@ -288,7 +288,7 @@ public class RobotContainer {
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.045, 0.71));
+                                .genericPreset( 0.15, 0.043, 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -319,7 +319,7 @@ public class RobotContainer {
 
                 // Auto Align Arm Neutral Pos
                 driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.21, 0.045, 0.22));
+                                .genericPreset(0.21, 0.043, 0.22));
                 driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
                                 .genericPreset(0.21, 0.045, 0.22));
 
