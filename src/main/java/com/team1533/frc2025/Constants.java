@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 public class Constants {
@@ -22,7 +23,8 @@ public class Constants {
     public static final boolean tuningMode = false;
 
     // AprilTag layout
-    public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+    public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout
+            .loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
     public static RobotType getRobot() {
         if (!disableHAL && RobotBase.isReal() && robotType == RobotType.SIMBOT) {
@@ -57,8 +59,11 @@ public class Constants {
             double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {
     }
 
-    public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
+    public record SuperStructureState(double armGoalRots, double elevGoalMeters, double wristGoalRots) {
 
+    }
+
+    public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
 
     @RequiredArgsConstructor
     public enum ReefLocations {
@@ -72,21 +77,48 @@ public class Constants {
         private final Pose2d pose;
 
         public Pose2d getPose2dFlipped() {
-            return AllianceFlipUtil.apply(new Pose2d(pose.getTranslation().plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())), pose.getRotation().plus(Rotation2d.k180deg)));
+            return AllianceFlipUtil.apply(new Pose2d(
+                    pose.getTranslation()
+                            .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
+                    pose.getRotation().plus(Rotation2d.k180deg)));
         }
 
         public Pose2d getPose2dReef(boolean isleft) {
             if (isleft)
                 return AllianceFlipUtil.apply(new Pose2d(
                         pose.getTranslation()
-                                .plus(REEF_OFFSET.getTranslation().rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
+                                .plus(REEF_OFFSET.getTranslation()
+                                        .rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
                                 .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
                         pose.getRotation().plus(Rotation2d.k180deg)));
-                        return AllianceFlipUtil.apply(new Pose2d(
-                            pose.getTranslation()
-                                    .minus(REEF_OFFSET.getTranslation().rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
-                                    .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
-                            pose.getRotation().plus(Rotation2d.k180deg)));
+            return AllianceFlipUtil.apply(new Pose2d(
+                    pose.getTranslation()
+                            .minus(REEF_OFFSET.getTranslation().rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
+                            .plus(new Translation2d(Units.inchesToMeters(18.375), 0).rotateBy(pose.getRotation())),
+                    pose.getRotation().plus(Rotation2d.k180deg)));
         }
     }
+
+    @RequiredArgsConstructor
+    public enum SuperStructureStates {
+        STOW(new SuperStructureState(0, 0, 0)),
+        L1(),
+        L2(),
+        L3(),
+        L4(),
+        BARGE(),
+        PROCESSOR(),
+        FEEDER(),
+        INTAKE_CORAL(),
+        INTAKE_ALGAE(),
+        DL2(),
+        DL3(),
+        POOP_ALGAE(),
+        POOP_CORAL(),
+        FUNNEL_CLEARANCE();
+
+        @Getter
+        private final SuperStructureState state;
+    }
+
 }
