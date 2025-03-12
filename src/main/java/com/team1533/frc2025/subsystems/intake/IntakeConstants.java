@@ -9,13 +9,18 @@ import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
 public class IntakeConstants {
     public static final CANDeviceId intakeTalon = new CANDeviceId(26, "rio");
-    public static final CANDeviceId intakeCC = new CANDeviceId(342, "rio");
 
     public static final boolean leaderInverted = true;
 
     public static final double reduction = 1.;
     public static final double rotorToSensorRatio = 1.;
     public static final double sensorToMechanismRatio = 1.;
+
+    public static final int kIntakeLaserSensorPort = 0;
+    public static final double kIntakeLaserDebounceTime = 0.0;
+
+    public static final int kIntakeBannerSensorPort = 0;
+    public static final double kIntakeBannerDebounceTime = 0.0;
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

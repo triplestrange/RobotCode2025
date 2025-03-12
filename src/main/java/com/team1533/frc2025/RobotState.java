@@ -8,11 +8,13 @@
 package com.team1533.frc2025;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntSupplier;
 
+import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
 
@@ -20,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import lombok.Getter;
 
 public class RobotState {
 
@@ -27,8 +30,6 @@ public class RobotState {
 
     // Kinematic Frames
     private final ConcurrentTimeInterpolatableBuffer<Pose2d> fieldToRobot = ConcurrentTimeInterpolatableBuffer
-            .createBuffer(LOOKBACK_TIME);
-    private final ConcurrentTimeInterpolatableBuffer<Rotation2d> robotToTurret = ConcurrentTimeInterpolatableBuffer
             .createBuffer(LOOKBACK_TIME);
     private final AtomicReference<ChassisSpeeds> measuredRobotRelativeChassisSpeeds = new AtomicReference<>(
             new ChassisSpeeds());
@@ -42,12 +43,11 @@ public class RobotState {
     private final AtomicInteger iteration = new AtomicInteger(0);
 
     private double lastUsedMegatagTimestamp = 0;
+    @Getter
     private double lastTriggeredIntakeSensorTimestamp = 0;
+    @Getter
+    private double lastTriggeredIntakeLaserTimestamp = 0;
 
-    private ConcurrentTimeInterpolatableBuffer<Double> turretAngularVelocity = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
-    private ConcurrentTimeInterpolatableBuffer<Double> turretPositionRadians = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
     private ConcurrentTimeInterpolatableBuffer<Double> driveYawAngularVelocity = ConcurrentTimeInterpolatableBuffer
             .createDoubleBuffer(LOOKBACK_TIME);
     private ConcurrentTimeInterpolatableBuffer<Double> driveRollAngularVelocity = ConcurrentTimeInterpolatableBuffer
@@ -67,6 +67,13 @@ public class RobotState {
     private final AtomicBoolean enablePathCancel = new AtomicBoolean(false);
 
     private double autoStartTime;
+
+    @Getter
+    private static RobotState instance;
+
+    public RobotState() {
+        instance = this;
+    }
 
     public void setAutoStartTime(double timestamp) {
         autoStartTime = timestamp;
@@ -140,29 +147,6 @@ public class RobotState {
         delta = delta.times(lookaheadTimeS);
         return fieldToRobot
                 .exp(new Twist2d(delta.vxMetersPerSecond, delta.vyMetersPerSecond, delta.omegaRadiansPerSecond));
-    }
-
-    public Pose2d getLatestFieldToRobotCenter() {
-        return fieldToRobot.getLatest().getValue().transformBy(Constants.kTurretToRobotCenter);
-    }
-
-    // This has rotation and radians to allow for wrapping tracking.
-    public void addTurretUpdates(double timestamp,
-            Rotation2d turretRotation,
-            double turretRadians,
-            double angularYawRadsPerS) {
-        // turret frame 180 degrees off from robot frame
-        robotToTurret.addSample(timestamp, turretRotation.rotateBy(MathHelpers.kRotation2dPi));
-        this.turretAngularVelocity.addSample(timestamp, angularYawRadsPerS);
-        this.turretPositionRadians.addSample(timestamp, turretRadians);
-    }
-
-    public double getLatestTurretPositionRadians() {
-        return this.turretPositionRadians.getInternalBuffer().lastEntry().getValue();
-    }
-
-    public double getLatestTurretAngularVelocity() {
-        return this.turretAngularVelocity.getInternalBuffer().lastEntry().getValue();
     }
 
     private Rotation2d hoodRotation = new Rotation2d();
@@ -239,10 +223,6 @@ public class RobotState {
         return speeds;
     }
 
-    public Optional<Double> getTurretAngularVelocity(double timestamp) {
-        return turretAngularVelocity.getSample(timestamp);
-    }
-
     private Optional<Double> getMaxAbsValueInRange(ConcurrentTimeInterpolatableBuffer<Double> buffer, double minTime,
             double maxTime) {
         var submap = buffer.getInternalBuffer().subMap(minTime, maxTime).values();
@@ -254,10 +234,6 @@ public class RobotState {
             return max;
         else
             return min;
-    }
-
-    public Optional<Double> getMaxAbsTurretYawAngularVelocityInRange(double minTime, double maxTime) {
-        return getMaxAbsValueInRange(turretAngularVelocity, minTime, maxTime);
     }
 
     public Optional<Double> getMaxAbsDriveYawAngularVelocityInRange(double minTime, double maxTime) {
@@ -289,12 +265,13 @@ public class RobotState {
             lastTriggeredIntakeSensorTimestamp = RobotTime.getTimestampSeconds();
     }
 
-    public double lastUsedMegatagTimestamp() {
-        return lastUsedMegatagTimestamp;
+    public void updateLastTriggeredIntakeLaserTimestamp(boolean triggered) {
+        if (triggered)
+            lastTriggeredIntakeLaserTimestamp = RobotTime.getTimestampSeconds();
     }
 
-    public double lastTriggeredIntakeSensorTimestamp() {
-        return lastTriggeredIntakeSensorTimestamp;
+    public double lastUsedMegatagTimestamp() {
+        return lastUsedMegatagTimestamp;
     }
 
     public boolean isRedAlliance() {
