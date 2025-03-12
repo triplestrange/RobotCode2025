@@ -33,8 +33,6 @@ public interface ElevatorIO {
         public double leaderRotPosition = 0.0;
         public double followerRotPosition = 0.0;
 
-        public boolean hasZero = false;
-
         public double elevatorPosMeters = 0.0;
         public double elevatorVelMetersPerSecond = 0.0;
         public double elevatorAccelMetersPerSecondPerSecond = 0.0;
@@ -50,8 +48,8 @@ public interface ElevatorIO {
 
     }
 
-    default void setDutyCycleOutIgnoreLimits()  {
-        
+    default void setDutyCycleOutIgnoreLimits() {
+
     }
 
     default void setPositionSetpoint(double positionMeters) {
@@ -60,14 +58,14 @@ public interface ElevatorIO {
     default void setPositionSetpoint(double positionMeters, double metersPerSec) {
     }
 
-    default void setPositionSetpointIgnoreLimits()  {
+    default void setPositionSetpointIgnoreLimits() {
 
     }
 
     default void setCurrentSetpoint(double amps) {
     }
 
-    default void setMotionMagicSetpoint(double positionRotations)   {
+    default void setMotionMagicSetpoint(double positionRotations) {
     }
 
     default void setBrakeMode(boolean enabled) {

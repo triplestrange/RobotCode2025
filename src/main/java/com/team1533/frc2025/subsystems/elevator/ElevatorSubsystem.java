@@ -2,6 +2,7 @@ package com.team1533.frc2025.subsystems.elevator;
 
 import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,6 +21,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
+    private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
+    public double currentFilterValue = 0.0;
+
+    public boolean hasZero = false;
+
     private double elevatorSetpointMeters = 0.0;
 
     public ElevatorSubsystem(final ElevatorIO io) {
@@ -29,7 +35,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void setTeleopDefaultCommand() {
         this.setDefaultCommand(holdSetpointCommand()
-        .withName("Elevator Maintain Setpoint (default)"));
+                .withName("Elevator Maintain Setpoint (default)"));
     }
 
     public Command holdSetpointCommand() {
@@ -37,11 +43,12 @@ public class ElevatorSubsystem extends SubsystemBase {
             setMotionMagicSetpointImpl(elevatorSetpointMeters);
         }).withName("Elevator Maintain Setpoint");
     }
-    
+
     public Command setSetpointHere() {
         return runOnce(
-            () -> { elevatorSetpointMeters = getCurrentPosition(); }
-            ).withName("Elevator Set Setpoint Here");
+                () -> {
+                    elevatorSetpointMeters = getCurrentPosition();
+                }).withName("Elevator Set Setpoint Here");
     }
 
     @Override
@@ -49,7 +56,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         double timestamp = RobotTime.getTimestampSeconds();
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
-        io.updateInputs(inputs);
+        currentFilterValue = currentFilter.calculate(inputs.leaderStatorAmps);
+        Logger.recordOutput("Elevator/Filtered Current", currentFilterValue);
 
         if (DriverStation.isDisabled()) {
             elevatorSetpointMeters = getCurrentPosition();
@@ -76,9 +84,9 @@ public class ElevatorSubsystem extends SubsystemBase {
         io.setPositionSetpoint(metersFromBottom, metersPerSec);
     }
 
-    private void setMotionMagicSetpointImpl(double metersFromBottom)   {
+    private void setMotionMagicSetpointImpl(double metersFromBottom) {
         Logger.recordOutput("Elevator/API/setPositionSetpoint/metersFromBottom", metersFromBottom);
-        io.setMotionMagicSetpoint(metersFromBottom);    
+        io.setMotionMagicSetpoint(metersFromBottom);
     }
 
     private void setDutyCycleOut(double percentOutput) {
@@ -100,7 +108,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             setMotionMagicSetpointImpl(setpoint);
             elevatorSetpointMeters = setpoint;
         }).withName("Elevator Motion Magic Setpoint Command");
-    } 
+    }
 
     public double getSetpoint() {
         return elevatorSetpointMeters;
@@ -129,10 +137,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public Command resetZeroPoint() {
-        
+
         return runEnd((() -> io.setDutyCycleOutIgnoreLimits()), () -> {
             io.zero();
-            elevatorSetpointMeters = 0;
-        }).until(() -> (inputs.leaderStatorAmps > ElevatorConstants.blockedCurrent && MathUtil.isNear(0, inputs.leaderVelocityRotPerSec, 0.1))).withName("Elevator Zero Command");
+            hasZero = true;
+        }).until(() -> (inputs.leaderStatorAmps > ElevatorConstants.blockedCurrent
+                && MathUtil.isNear(0, inputs.leaderVelocityRotPerSec, 0.1))).withName("Elevator Zero Command");
     }
 }

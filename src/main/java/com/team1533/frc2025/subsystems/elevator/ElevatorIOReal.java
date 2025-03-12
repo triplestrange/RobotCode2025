@@ -17,6 +17,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -34,7 +35,8 @@ public class ElevatorIOReal implements ElevatorIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicTorqueCurrentFOC motionMagicTorqueCurrentFOC = new MotionMagicTorqueCurrentFOC(0.0)
+            .withUpdateFreqHz(0.0);
     private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
@@ -56,9 +58,6 @@ public class ElevatorIOReal implements ElevatorIO {
     private final StatusSignal<AngularAcceleration> elevatorAccelerationSignal;
 
     private final TalonFXConfiguration config = new TalonFXConfiguration();
-
-    private boolean hasReset = false;
-    
 
     public ElevatorIOReal() {
 
@@ -176,7 +175,6 @@ public class ElevatorIOReal implements ElevatorIO {
         inputs.leaderRotPosition = leaderPositionSignal.getValueAsDouble();
         inputs.followerRotPosition = followerPositionSignal.getValueAsDouble();
 
-        inputs.hasZero = hasReset;
         inputs.elevatorPosMeters = elevatorPositionSignal.getValueAsDouble();
         inputs.elevatorVelMetersPerSecond = elevatorVelocitySignal.getValueAsDouble();
         inputs.elevatorAccelMetersPerSecondPerSecond = elevatorAccelerationSignal.getValueAsDouble();
@@ -205,9 +203,9 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override
-    public void setDutyCycleOutIgnoreLimits()   {
-        leaderTalon.setControl(dutyCycleOutControl.withEnableFOC(true).withOutput(-0.25));
-    }   
+    public void setDutyCycleOutIgnoreLimits() {
+        leaderTalon.setControl(dutyCycleOutControl.withEnableFOC(true).withOutput(-0.07));
+    }
 
     @Override
     public void setCurrentSetpoint(double amps) {
@@ -215,7 +213,7 @@ public class ElevatorIOReal implements ElevatorIO {
     }
 
     @Override
-    public void setMotionMagicSetpoint(double positionRotations)    {
+    public void setMotionMagicSetpoint(double positionRotations) {
         leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 
@@ -239,7 +237,6 @@ public class ElevatorIOReal implements ElevatorIO {
     @Override
     public void zero() {
         leaderTalon.setPosition(0);
-        hasReset = true;
     }
 
 }
