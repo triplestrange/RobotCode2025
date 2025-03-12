@@ -34,6 +34,9 @@ import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.intake.IntakeConstants;
+import com.team1533.frc2025.subsystems.intake.IntakeSensorIO;
+import com.team1533.frc2025.subsystems.intake.IntakeSensorIOReal;
+import com.team1533.frc2025.subsystems.intake.IntakeSensorIOSim;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
@@ -72,29 +75,33 @@ public class RobotContainer {
         private final CommandPS5Controller driveController = new CommandPS5Controller(0);
         private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
-
-        @AutoLogOutput @Getter
+        @AutoLogOutput
+        @Getter
         private boolean algaeMode = false;
-        @Getter @AutoLogOutput @Setter
+        @Getter
+        @AutoLogOutput
+        @Setter
         private boolean left = true;
-        @Getter @AutoLogOutput @Setter
+        @Getter
+        @AutoLogOutput
+        @Setter
         private boolean right = true;
 
         private Trigger inCoralMode = new Trigger(() -> !algaeMode);
         private Trigger inAlgaeMode = new Trigger(() -> algaeMode);
 
         @Getter
-        private DriveSubsystem driveSubsystem;
+        private final DriveSubsystem driveSubsystem;
         @Getter
-        private VisionSubsystem visionSubsystem;
+        private final VisionSubsystem visionSubsystem;
         @Getter
-        private ArmSubsystem armSubsystem;
+        private final ArmSubsystem armSubsystem;
         @Getter
-        private ElevatorSubsystem elevatorSubsystem;
+        private final ElevatorSubsystem elevatorSubsystem;
         @Getter
-        private WristSubsystem wristSubsystem;
+        private final WristSubsystem wristSubsystem;
         @Getter
-        private IntakeSubsystem intakeSubsystem;
+        private final IntakeSubsystem intakeSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -123,7 +130,7 @@ public class RobotContainer {
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
-                                                new TalonFXIO(IntakeConstants.config));
+                                                new TalonFXIO(IntakeConstants.config), new IntakeSensorIOReal());
 
                                 break;
 
@@ -147,8 +154,7 @@ public class RobotContainer {
                                                 driveSubsystem,
                                                 new VisionIOPhotonVisionSim(
                                                                 camera0Name, robotToCamera0,
-                                                                driveSimulation::getSimulatedDriveTrainPose)
-                                );
+                                                                driveSimulation::getSimulatedDriveTrainPose));
                                 armSubsystem = new ArmSubsystem(new ArmIOSim());
 
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
@@ -156,7 +162,7 @@ public class RobotContainer {
                                 wristSubsystem = new WristSubsystem(new WristIOSim());
 
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
-                                                new SimTalonFXIO(IntakeConstants.config));
+                                                new SimTalonFXIO(IntakeConstants.config), new IntakeSensorIOSim());
 
                                 break;
 
@@ -183,57 +189,66 @@ public class RobotContainer {
 
                                 });
 
+                                intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
+                                                new TalonFXIO(IntakeConstants.config) {
+
+                                                }, new IntakeSensorIO() {
+
+                                                });
+
                                 break;
                 }
 
                 NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
-                        .genericPreset( 0.205, 1.07, 0.337).asProxy());
+                                .genericPreset(0.205, 1.07, 0.337).asProxy());
 
-                NamedCommands.registerCommand("Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
+                NamedCommands.registerCommand("Outtake",
+                                (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
 
                 NamedCommands.registerCommand("Arm Neutral", SuperStructureCommandFactory
-                        .genericPreset( 0.21, 0.4, 0.22).asProxy());
+                                .genericPreset(0.21, 0.4, 0.22).asProxy());
 
                 NamedCommands.registerCommand("Arm Feeder While Moving", SuperStructureCommandFactory
-                        .forcedPos( 0.15, 0.045, 0.71).asProxy());
+                                .forcedPos(0.15, 0.045, 0.71).asProxy());
 
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
-                        .genericPreset( 0.15, 0.045, 0.71).asProxy());
+                                .genericPreset(0.15, 0.045, 0.71).asProxy());
 
                 NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
                 // Set up auto routines
-                // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+                // autoChooser = new LoggedDashboardChooser<>("Auto Choices",
+                // AutoBuilder.buildAutoChooser());
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
                 // Set up SysId routines
                 // autoChooser.addOption("Drive Wheel Radius Characterization",
-                //                 DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
+                // DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
                 // autoChooser.addOption("Drive Simple FF Characterization",
-                //                 DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
+                // DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
                 // autoChooser.addOption(
-                //                 "Drive SysId (Quasistatic Forward)",
-                //                 driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                // "Drive SysId (Quasistatic Forward)",
+                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
                 // autoChooser.addOption(
-                //                 "Drive SysId (Quasistatic Reverse)",
-                //                 driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                // "Drive SysId (Quasistatic Reverse)",
+                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
                 // autoChooser.addOption("Drive SysId (Dynamic Forward)",
-                //                 driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 // autoChooser.addOption("Drive SysId (Dynamic Reverse)",
-                //                 driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
                 // autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
 
                 // autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
 
-                // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New Auto"));
+                // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New
+                // Auto"));
 
                 autoChooser.addDefaultOption("None", Commands.none());
 
                 autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
                 autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
                 autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Left 2 Piece"));
-
 
                 // configure buetton bindings
                 configureButtonBindings();
@@ -262,33 +277,34 @@ public class RobotContainer {
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
                 // Climb Prep
-                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.25, 0, 0.5));
+                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(0.25, 0, 0.5));
 
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
 
                 // L4 Coral Automation
                 driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.205, 1.07, 0.337));
+                                .genericPreset(0.205, 1.07, 0.337));
 
                 // L3 Coral Automation
                 driveController.circle().and(inCoralMode)
-                                .onTrue(SuperStructureCommandFactory.genericPreset( 0.16, 0.387106, 0.22));
+                                .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
 
                 // L2 Coral Automation
-                driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.1, 0.086995, 0.145));
+                driveController.cross().and(inCoralMode)
+                                .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
 
                 // L1 Coral Automation
                 driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.0445, 0.71));
+                                .genericPreset(0.15, 0.0445, 0.71));
 
                 // Zero Preset
                 driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0, 0, 0));
+                                .genericPreset(0, 0, 0));
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.043, 0.71));
+                                .genericPreset(0.15, 0.043, 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -298,55 +314,62 @@ public class RobotContainer {
 
                 // Processor Algae
                 driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.08, 0.1, 0.5));
+                                .genericPreset(0.08, 0.1, 0.5));
 
                 // Low Reef Algae
-                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.155, 0.055, 0.455));
+                driveController.cross().and(inAlgaeMode)
+                                .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.455));
 
                 // High Reef Algae
                 driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.18, 0.48, 0.52));
+                                .genericPreset(0.18, 0.48, 0.52));
 
                 // Barge Algae
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.24, 1.07, 0.3));
-                
+                                .genericPreset(0.24, 1.07, 0.3));
+
                 // Algae Intake
-                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75)).onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
+                driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75))
+                                .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
 
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
                 // Auto Align Arm Neutral Pos
-                driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.21, 0.043, 0.22));
-                driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.21, 0.045, 0.22));
+                driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+                                .onTrue(SuperStructureCommandFactory
+                                                .genericPreset(0.21, 0.043, 0.22));
+                driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+                                .onTrue(SuperStructureCommandFactory
+                                                .genericPreset(0.21, 0.045, 0.22));
 
                 // Auto Align Options
                 driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
                 driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
 
-                
-        //Operator Binds
+                // Operator Binds
 
-                //Operator Manual Arm Override
+                // Operator Manual Arm Override
                 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-                        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
+                                .whileTrue(armSubsystem.runDutyCycle(() -> 0.3 * operatorController.getLeftY()));
 
-                //Operator Manual Wrist Override        
+                // Operator Manual Wrist Override
                 new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-                        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
+                                .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()));
 
-                //Operator Manual Elevator Override
-                new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
-                        .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
-                
-                //Operator Elevator Zero
+                // Operator Manual Elevator Override
+                new Trigger(() -> Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2) > 0.1)
+                                .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25
+                                                * ((operatorController.getR2Axis() - operatorController.getL2Axis())
+                                                                / 2)));
+
+                // Operator Elevator Zero
                 operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
 
-                operatorController.square().onTrue(new InstantCommand(() -> {setRight(false);
-                setLeft(false);}));
+                operatorController.square().onTrue(new InstantCommand(() -> {
+                        setRight(false);
+                        setLeft(false);
+                }));
 
         }
 
