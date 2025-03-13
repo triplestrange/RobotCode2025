@@ -11,6 +11,8 @@ import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 import org.littletonrobotics.junction.Logger;
 
+import com.team1533.frc2025.Constants;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
@@ -27,13 +29,11 @@ public class ElevatorIOSim extends ElevatorIOReal {
 
     private Notifier simNotifier = null;
 
-    private double simPeriodSeconds = 0.005;
-
     public ElevatorIOSim() {
         simNotifier = new Notifier(() -> {
             updateSimState();
         });
-        simNotifier.startPeriodic(simPeriodSeconds);
+        simNotifier.startPeriodic(Constants.kSimDt);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ElevatorIOSim extends ElevatorIOReal {
 
         double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
         Logger.recordOutput("Elevator/Sim/SimulatorPositionMeters", simPositionMeters);
-        mechanismSim.update(Seconds.of(simPeriodSeconds));
+        mechanismSim.update(Seconds.of(Constants.kSimDt));
         Logger.recordOutput("Elevator/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 
         double rotorPosition = mechanismSim.getAngularPosition().in(Revolutions);

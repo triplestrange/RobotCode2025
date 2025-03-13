@@ -12,16 +12,25 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
+import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
+import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
 
 public class RobotState {
@@ -71,8 +80,15 @@ public class RobotState {
     @Getter
     private static RobotState instance;
 
-    public RobotState() {
+    private Consumer<PoseObservation> poseObservationConsumer;
+
+    public RobotState(Consumer<PoseObservation> poseObservationConsumer) {
         instance = this;
+        this.poseObservationConsumer = poseObservationConsumer;
+
+        // Add one sample to protect callers against null
+        fieldToRobot.addSample(0.0, MathHelpers.kPose2dZero);
+        driveYawAngularVelocity.addSample(0.0, 0.0);
     }
 
     public void setAutoStartTime(double timestamp) {
@@ -175,30 +191,8 @@ public class RobotState {
         this.climberRotations = rotations;
     }
 
-    private NearTarget poopNearTarget = NearTarget.DEEP_AMP;
-
-    public void setPoopNearTarget(NearTarget nearTarget) {
-        poopNearTarget = nearTarget;
-    }
-
-    public NearTarget getPoopNearTarget() {
-        return poopNearTarget;
-    }
-
-    public Optional<Rotation2d> getRobotToTurret(double timestamp) {
-        return robotToTurret.getSample(timestamp);
-    }
-
     public Optional<Pose2d> getFieldToRobot(double timestamp) {
         return fieldToRobot.getSample(timestamp);
-    }
-
-    public Transform2d getTurretToCamera(boolean isTurretCamera) {
-        return isTurretCamera ? TURRET_TO_CAMERA : ROBOT_TO_CAMERA_B;
-    }
-
-    public Map.Entry<Double, Rotation2d> getLatestRobotToTurret() {
-        return robotToTurret.getLatest();
     }
 
     public ChassisSpeeds getLatestMeasuredFieldRelativeChassisSpeeds() {
@@ -251,13 +245,11 @@ public class RobotState {
         return getMaxAbsValueInRange(driveRollAngularVelocity, minTime, maxTime);
     }
 
-    public void updateMegatagEstimate(VisionFieldPoseEstimate megatagEstimate) {
-        lastUsedMegatagTimestamp = Timer.getFPGATimestamp();
-        visionEstimateConsumer.accept(megatagEstimate);
-    }
+    public void updatePoseObservation(PoseObservation poseObservation) {
 
-    public void updatePinholeEstimate(VisionFieldPoseEstimate pinholeEstimate) {
-        visionEstimateConsumer.accept(pinholeEstimate);
+        if (poseObservation.type() == PoseObservationType.SOLVE_PNP)
+            lastUsedMegatagTimestamp = Timer.getFPGATimestamp();
+        poseObservationConsumer.accept(poseObservation);
     }
 
     public void updateLastTriggeredIntakeSensorTimestamp(boolean triggered) {
@@ -306,36 +298,5 @@ public class RobotState {
     Pose3d climberPose3d = new Pose3d();
     Pose3d hoodPose3d = new Pose3d();
     Pose3d shooterPose3d = new Pose3d();
-    Pose3d turretPose3d = new Pose3d();
 
-    public void updateViz() {
-        if (getLatestRobotToTurret().getValue() != null) {
-            shooterPose3d = new Pose3d(new Translation3d(),
-                    new Rotation3d(0, 0,
-                            getLatestRobotToTurret().getValue().getRadians()));
-            hoodPose3d = new Pose3d(new Translation3d(),
-                    new Rotation3d(0, 0,
-                            getLatestRobotToTurret().getValue().getRadians()));
-        }
-        ampPose3d = new Pose3d(
-                new Translation3d(0.0, 0.0, this.elevatorHeightM),
-                new Rotation3d());
-        var climberRot = MathUtil.interpolate(0.0, -Math.PI / 2.0,
-                this.climberRotations /
-                        (Constants.ClimberConstants.kForwardMaxPositionRotations
-                                * Constants.kClimberConfig.unitToRotorRatio));
-        climberPose3d = new Pose3d(
-                new Translation3d(0, 0.0, 0.15), new Rotation3d(0.0, climberRot, 0.0));
-        // model_0 is elevator
-        // model_1 is climber
-        // model_2 is hood plates
-        // model_3 is shooter
-        // model_4 is turret
-        Logger.recordOutput("ComponentsPoseArray",
-                new Pose3d[] { ampPose3d, climberPose3d, hoodPose3d, shooterPose3d, turretPose3d });
-    }
-
-    public void logControllerMode() {
-        Logger.recordOutput("Controller Mode", ModalControls.getInstance().getMode().toString());
-    }
 }

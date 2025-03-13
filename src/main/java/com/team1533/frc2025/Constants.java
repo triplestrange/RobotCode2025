@@ -17,8 +17,9 @@ import lombok.RequiredArgsConstructor;
 
 public class Constants {
 
-    public static final double loopPeriodSecs = 0.02;
-    public static final double kSimDt = 0.001;
+    public static final double kRealDt = 0.02;
+    public static final double kSimDt = 0.005;
+
     private static RobotType robotType = RobotType.SIMBOT;
     public static final boolean tuningMode = false;
 
