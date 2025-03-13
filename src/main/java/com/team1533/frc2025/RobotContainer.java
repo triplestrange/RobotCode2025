@@ -101,8 +101,12 @@ public class RobotContainer {
         @Getter
         private static RobotContainer instance;
 
-        public RobotContainer(Robot robot) {
+        private final RobotState state;
+
+        public RobotContainer() {
                 instance = this;
+
+                this.state = new RobotState();
 
                 switch (Constants.getRobot()) {
                         case COMPBOT:
@@ -113,9 +117,8 @@ public class RobotContainer {
                                                 new ModuleIOTalonFXReal(TunerConstants.BackLeft),
                                                 new ModuleIOTalonFXReal(TunerConstants.BackRight));
 
-                                visionSubsystem = new VisionSubsystem(driveSubsystem,
-                                                new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0),
-                                                new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1));
+                                visionSubsystem = new VisionSubsystem(state,
+                                                new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0));
 
                                 armSubsystem = new ArmSubsystem(new ArmIOReal());
                                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
@@ -142,7 +145,7 @@ public class RobotContainer {
                                                                 driveSimulation.getModules()[3]));
 
                                 visionSubsystem = new VisionSubsystem(
-                                                driveSubsystem,
+                                                state,
                                                 new VisionIOPhotonVisionSim(
                                                                 camera0Name, robotToCamera0,
                                                                 driveSimulation::getSimulatedDriveTrainPose));
@@ -166,7 +169,7 @@ public class RobotContainer {
                                 }, new ModuleIO() {
                                 });
 
-                                visionSubsystem = new VisionSubsystem(driveSubsystem, new VisionIO() {
+                                visionSubsystem = new VisionSubsystem(state, new VisionIO() {
                                 }, new VisionIO() {
                                 });
 

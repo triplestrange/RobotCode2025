@@ -19,10 +19,10 @@ import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.RobotState;
 import com.team1533.frc2025.Constants.ReefLocations;
 import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.generated.TunerConstants;
-import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.swerve.AlignController;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.LocalADStarAK;
@@ -30,7 +30,6 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,8 +38,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -48,32 +45,45 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import lombok.Getter;
 
-import java.lang.annotation.Target;
-import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.VisionConsumer {
+public class DriveSubsystem extends SubsystemBase {
 
     static final Lock odometryLock = new ReentrantLock();
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+
     private final SysIdRoutine sysId;
+
     private final Alert gyroDisconnectedAlert = new Alert("Disconnected gyro, using kinematics as fallback.",
             AlertType.kError);
+
     private SwerveSetpoint setpoint;
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
     private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG,
             DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
+
     private final AlignController alignController = new AlignController(5, Constants.kRealDt, this::getPose);
-    private Rotation2d rawGyroRotation = new Rotation2d();
+
+    private Rotation2d rawYawRotation = new Rotation2d();
+    private Rotation2d rawPitchRotation = new Rotation2d();
+    private Rotation2d rawRollRotation = new Rotation2d();
+
+    private double rawYawVelocity = 0.0;
+    private double rawRollVelocity = 0.0;
+    private double rawPitchVelocity = 0.0;
+
+    private double rawAccelX = 0.0;
+    private double rawAccelY = 0.0;
+
+    private final RobotState state;
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
                     new SwerveModulePosition(),
@@ -81,7 +91,8 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                     new SwerveModulePosition(),
                     new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
+    @Getter
+    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawYawRotation,
             lastModulePositions, new Pose2d());
 
     public DriveSubsystem(
@@ -91,6 +102,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
             ModuleIO blModuleIO,
             ModuleIO brModuleIO) {
         this.gyroIO = gyroIO;
+
+        state = RobotState.getInstance();
+
         modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
         modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
         modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
@@ -143,10 +157,13 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
+
         for (var module : modules) {
             module.periodic();
         }
         odometryLock.unlock();
+
+        state.incrementIterationCount();
 
         // Stop moving when disabled
         if (DriverStation.isDisabled()) {
@@ -180,14 +197,30 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
             // Update gyro angle
             if (gyroInputs.connected) {
                 // Use the real gyro angle
-                rawGyroRotation = gyroInputs.odometryYawPositions[i];
+                rawYawRotation = gyroInputs.odometryYawPositions[i];
+                rawPitchRotation = gyroInputs.odometryPitchPositions[i];
+                rawRollRotation = gyroInputs.odometryRollPositions[i];
+
+                rawYawVelocity = gyroInputs.odometryYawVelocityRadPerSecs[i];
+                rawPitchVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
+                rawRollVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
+
+                rawAccelX = gyroInputs.odometryAccelXs[i];
+                rawAccelY = gyroInputs.odometryAccelYs[i];
             } else {
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-                rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+                rawYawRotation = rawYawRotation.plus(new Rotation2d(twist.dtheta));
             }
             // Apply update
-            poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+            poseEstimator.updateWithTime(sampleTimestamps[i], rawYawRotation, modulePositions);
+
+            state.addDriveMotionMeasurements(
+                    sampleTimestamps[i], rawRollVelocity, rawPitchVelocity, rawYawVelocity,
+                    rawPitchRotation.getRadians(), rawRollRotation.getRadians(), rawAccelX, rawAccelY,
+                    desiredFieldRelativeChassisSpeeds,
+                    measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
+                    fusedFieldRelativeChassisSpeeds);
         }
 
         // Update gyro alert
@@ -363,16 +396,6 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     /** Resets the current odometry pose. */
     public void setPose() {
         setPose(Pose2d.kZero);
-    }
-
-    /** Adds a new timestamped vision measurement. */
-    @Override
-    public void accept(
-            Pose2d visionRobotPoseMeters,
-            double timestampSeconds,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
-        poseEstimator.addVisionMeasurement(
-                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
     }
 
     /** Returns the maximum linear speed in meters per sec. */

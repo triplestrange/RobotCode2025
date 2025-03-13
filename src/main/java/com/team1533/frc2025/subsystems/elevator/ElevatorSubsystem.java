@@ -15,11 +15,14 @@ import java.util.function.DoubleSupplier;
 import org.dyn4j.Epsilon;
 import org.littletonrobotics.junction.Logger;
 
+import com.team1533.frc2025.RobotState;
 import com.team1533.lib.time.RobotTime;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+
+    private final RobotState state;
 
     private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
     public double currentFilterValue = 0.0;
@@ -30,6 +33,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public ElevatorSubsystem(final ElevatorIO io) {
         this.io = io;
+        this.state = RobotState.getInstance();
         setTeleopDefaultCommand();
     }
 
@@ -62,6 +66,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         if (DriverStation.isDisabled()) {
             elevatorSetpointMeters = getCurrentPosition();
         }
+        RobotState.getInstance().setElevatorHeightM(inputs.elevatorPosMeters);
 
         Logger.recordOutput("Elevator/latencyPeriodicSec", RobotTime.getTimestampSeconds() - timestamp);
     }

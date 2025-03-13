@@ -5,9 +5,11 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.team1533.frc2025.RobotState;
 import com.team1533.lib.time.RobotTime;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,11 +20,13 @@ public class ArmSubsystem extends SubsystemBase {
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
+    private final RobotState state;
     private double armSetpointRotations = 0.0;
 
     public ArmSubsystem(final ArmIO io) {
         this.io = io;
         setTeleopDefaultCommand();
+        this.state = RobotState.getInstance();
     }
 
     public void setTeleopDefaultCommand() {
@@ -37,8 +41,9 @@ public class ArmSubsystem extends SubsystemBase {
 
     public Command setSetpointHere() {
         return runOnce(
-            () -> { armSetpointRotations = getCurrentPosition(); }
-            ).withName("Arm Set Setpoint Here");
+                () -> {
+                    armSetpointRotations = getCurrentPosition();
+                }).withName("Arm Set Setpoint Here");
     }
 
     @Override
@@ -48,12 +53,14 @@ public class ArmSubsystem extends SubsystemBase {
         Logger.processInputs("Arm", inputs);
         io.updateInputs(inputs);
 
-         if (DriverStation.isDisabled()) {
+        if (DriverStation.isDisabled()) {
             armSetpointRotations = getCurrentPosition();
         }
 
         Logger.recordOutput("Arm/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
+
+        state.setArmRotation(Rotation2d.fromRotations(inputs.FusedCANcoderPositionRots));
     }
 
     public Command moveArmSetpoint(DoubleSupplier rotationsFromHorizontal) {
@@ -70,8 +77,8 @@ public class ArmSubsystem extends SubsystemBase {
 
     public Command manualDutyCycle(DoubleSupplier percentOutput) {
         return run(
-                () -> setDutyCycleOut(percentOutput.getAsDouble()));    
-            }
+                () -> setDutyCycleOut(percentOutput.getAsDouble()));
+    }
 
     private void setPositionSetpointImpl(double rotationsFromHorizontal, double rotationsPerSec) {
         Logger.recordOutput("Arm/API/setPositionSetpoint/rotationsFromHorizontal",
@@ -81,9 +88,9 @@ public class ArmSubsystem extends SubsystemBase {
         io.setPositionSetpoint(rotationsFromHorizontal, rotationsPerSec);
     }
 
-    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal)   {
+    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal) {
         Logger.recordOutput("Arm/API/setPositionSetpoint/rotationsFromHorizontal", rotationsFromHorizontal);
-        io.setMotionMagicSetpoint(rotationsFromHorizontal);    
+        io.setMotionMagicSetpoint(rotationsFromHorizontal);
     }
 
     private void setDutyCycleOut(double percentOutput) {
@@ -105,7 +112,7 @@ public class ArmSubsystem extends SubsystemBase {
             setMotionMagicSetpointImpl(setpoint);
             armSetpointRotations = setpoint;
         }).withName("Arm Motion Magic Setpoint Command");
-    } 
+    }
 
     public double getSetpoint() {
         return armSetpointRotations;

@@ -10,6 +10,9 @@ package com.team1533.frc2025.subsystems.vision;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.*;
 
 import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.Robot;
+import com.team1533.frc2025.RobotState;
+import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -27,12 +30,14 @@ import org.littletonrobotics.junction.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
   private final VisionConsumer consumer;
+  private final RobotState state;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
   public VisionSubsystem(VisionConsumer consumer, VisionIO... io) {
     this.consumer = consumer;
+    this.state = RobotState.getInstance();
     this.io = io;
 
     // Initialize inputs
@@ -133,8 +138,7 @@ public class VisionSubsystem extends SubsystemBase {
 
         // Send vision observation
         consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
+            observation,
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
@@ -173,8 +177,7 @@ public class VisionSubsystem extends SubsystemBase {
   @FunctionalInterface
   public interface VisionConsumer {
     void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
+        PoseObservation observation,
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
 }

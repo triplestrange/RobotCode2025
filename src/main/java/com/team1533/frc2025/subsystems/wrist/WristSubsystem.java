@@ -5,9 +5,11 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.team1533.frc2025.RobotState;
 import com.team1533.lib.time.RobotTime;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,16 +20,19 @@ public class WristSubsystem extends SubsystemBase {
     private final WristIO io;
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
+    private final RobotState state;
+
     private double wristSetpointRotations = 0.0;
 
     public WristSubsystem(final WristIO io) {
         this.io = io;
         setTeleopDefaultCommand();
+        this.state = RobotState.getInstance();
     }
 
     public void setTeleopDefaultCommand() {
         this.setDefaultCommand(holdSetpointCommand()
-        .withName("Wrist Maintain Setpoint (default)"));
+                .withName("Wrist Maintain Setpoint (default)"));
     }
 
     public Command holdSetpointCommand() {
@@ -38,8 +43,9 @@ public class WristSubsystem extends SubsystemBase {
 
     public Command setSetpointHere() {
         return runOnce(
-            () -> { wristSetpointRotations = getCurrentPosition(); }
-            ).withName("Wrist Set Setpoint Here");
+                () -> {
+                    wristSetpointRotations = getCurrentPosition();
+                }).withName("Wrist Set Setpoint Here");
     }
 
     @Override
@@ -49,10 +55,10 @@ public class WristSubsystem extends SubsystemBase {
         Logger.processInputs("Wrist", inputs);
         io.updateInputs(inputs);
 
-         if (DriverStation.isDisabled()) {
+        if (DriverStation.isDisabled()) {
             wristSetpointRotations = getCurrentPosition();
         }
-
+        state.setWristRotation(Rotation2d.fromRotations(inputs.FusedCANcoderPositionRots));
         Logger.recordOutput("Wrist/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
     }
@@ -71,8 +77,8 @@ public class WristSubsystem extends SubsystemBase {
 
     public Command manualDutyCycle(DoubleSupplier percentOutput) {
         return run(
-                () -> setDutyCycleOut(percentOutput.getAsDouble()));    
-            }
+                () -> setDutyCycleOut(percentOutput.getAsDouble()));
+    }
 
     private void setPositionSetpointImpl(double rotationsFromHorizontal, double rotationsPerSec) {
         Logger.recordOutput("Wrist/API/setPositionSetpoint/rotationsFromHorizontal",
@@ -82,9 +88,9 @@ public class WristSubsystem extends SubsystemBase {
         io.setPositionSetpoint(rotationsFromHorizontal, rotationsPerSec);
     }
 
-    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal)   {
+    private void setMotionMagicSetpointImpl(double rotationsFromHorizontal) {
         Logger.recordOutput("Wrist/API/setPositionSetpoint/rotationsFromHorizontal", rotationsFromHorizontal);
-        io.setMotionMagicSetpoint(rotationsFromHorizontal);    
+        io.setMotionMagicSetpoint(rotationsFromHorizontal);
     }
 
     private void setDutyCycleOut(double percentOutput) {
@@ -106,8 +112,7 @@ public class WristSubsystem extends SubsystemBase {
             setMotionMagicSetpointImpl(setpoint);
             wristSetpointRotations = setpoint;
         }).withName("Wrist Motion Magic Setpoint Command");
-    } 
-
+    }
 
     public double getSetpoint() {
         return wristSetpointRotations;

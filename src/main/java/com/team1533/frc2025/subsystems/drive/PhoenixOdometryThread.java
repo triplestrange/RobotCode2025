@@ -12,6 +12,8 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import com.team1533.frc2025.generated.TunerConstants;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
@@ -67,6 +69,42 @@ public class PhoenixOdometryThread extends Thread {
 
   /** Registers a Phoenix signal to be read from the thread. */
   public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
+    Queue<Double> queue = new ArrayBlockingQueue<>(20);
+    signalsLock.lock();
+    DriveSubsystem.odometryLock.lock();
+    try {
+      BaseStatusSignal[] newSignals = new BaseStatusSignal[phoenixSignals.length + 1];
+      System.arraycopy(phoenixSignals, 0, newSignals, 0, phoenixSignals.length);
+      newSignals[phoenixSignals.length] = signal;
+      phoenixSignals = newSignals;
+      phoenixQueues.add(queue);
+    } finally {
+      signalsLock.unlock();
+      DriveSubsystem.odometryLock.unlock();
+    }
+    return queue;
+  }
+
+  /** Registers a Phoenix signal to be read from the thread. */
+  public Queue<Double> registerSignalVelocity(StatusSignal<AngularVelocity> signal) {
+    Queue<Double> queue = new ArrayBlockingQueue<>(20);
+    signalsLock.lock();
+    DriveSubsystem.odometryLock.lock();
+    try {
+      BaseStatusSignal[] newSignals = new BaseStatusSignal[phoenixSignals.length + 1];
+      System.arraycopy(phoenixSignals, 0, newSignals, 0, phoenixSignals.length);
+      newSignals[phoenixSignals.length] = signal;
+      phoenixSignals = newSignals;
+      phoenixQueues.add(queue);
+    } finally {
+      signalsLock.unlock();
+      DriveSubsystem.odometryLock.unlock();
+    }
+    return queue;
+  }
+
+  /** Registers a Phoenix signal to be read from the thread. */
+  public Queue<Double> registerSignalAcceleration(StatusSignal<LinearAcceleration> signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     signalsLock.lock();
     DriveSubsystem.odometryLock.lock();

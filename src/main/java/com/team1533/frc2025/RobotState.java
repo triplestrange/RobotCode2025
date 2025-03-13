@@ -19,21 +19,25 @@ import org.littletonrobotics.junction.Logger;
 
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
+import com.team1533.frc2025.subsystems.vision.VisionSubsystem.VisionConsumer;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
+import lombok.Setter;
 
-public class RobotState {
+public class RobotState implements VisionConsumer {
 
     public final static double LOOKBACK_TIME = 1.0;
 
@@ -80,11 +84,16 @@ public class RobotState {
     @Getter
     private static RobotState instance;
 
-    private Consumer<PoseObservation> poseObservationConsumer;
+    /** Adds a new timestamped vision measurement. */
+    @Override
+    public void accept(
+            PoseObservation observation,
+            Matrix<N3, N1> visionMeasurementStdDevs) {
+        updatePoseObservation(observation, visionMeasurementStdDevs);
+    }
 
-    public RobotState(Consumer<PoseObservation> poseObservationConsumer) {
+    public RobotState() {
         instance = this;
-        this.poseObservationConsumer = poseObservationConsumer;
 
         // Add one sample to protect callers against null
         fieldToRobot.addSample(0.0, MathHelpers.kPose2dZero);
@@ -165,31 +174,15 @@ public class RobotState {
                 .exp(new Twist2d(delta.vxMetersPerSecond, delta.vyMetersPerSecond, delta.omegaRadiansPerSecond));
     }
 
-    private Rotation2d hoodRotation = new Rotation2d();
-
-    public void addHoodRotation(Rotation2d rotationFromZero) {
-        hoodRotation = rotationFromZero;
-    }
-
-    public Rotation2d getHoodRotation() {
-        return hoodRotation;
-    }
-
+    @Getter
+    @Setter
+    private Rotation2d armRotation = new Rotation2d();
+    @Getter
+    @Setter
     private double elevatorHeightM = 0.0;
-
-    public void setElevatorHeight(double heightM) {
-        this.elevatorHeightM = heightM;
-    }
-
-    public double getElevatorHeight() {
-        return elevatorHeightM;
-    }
-
-    private double climberRotations = 0.0;
-
-    public void setClimberRotations(double rotations) {
-        this.climberRotations = rotations;
-    }
+    @Getter
+    @Setter
+    private Rotation2d wristRotation = new Rotation2d();
 
     public Optional<Pose2d> getFieldToRobot(double timestamp) {
         return fieldToRobot.getSample(timestamp);
@@ -245,11 +238,13 @@ public class RobotState {
         return getMaxAbsValueInRange(driveRollAngularVelocity, minTime, maxTime);
     }
 
-    public void updatePoseObservation(PoseObservation poseObservation) {
+    public void updatePoseObservation(PoseObservation poseObservation, Matrix<N3, N1> visionMeasurementStdDevs) {
 
         if (poseObservation.type() == PoseObservationType.SOLVE_PNP)
             lastUsedMegatagTimestamp = Timer.getFPGATimestamp();
-        poseObservationConsumer.accept(poseObservation);
+        RobotContainer.getInstance().getDriveSubsystem().getPoseEstimator().addVisionMeasurement(
+                poseObservation.pose().toPose2d(),
+                poseObservation.timestamp(), visionMeasurementStdDevs);
     }
 
     public void updateLastTriggeredIntakeSensorTimestamp(boolean triggered) {
@@ -293,10 +288,5 @@ public class RobotState {
         Logger.recordOutput("RobotState/MeasuredChassisSpeedFieldFrame", getLatestMeasuredFieldRelativeChassisSpeeds());
         Logger.recordOutput("RobotState/FusedChassisSpeedFieldFrame", getLatestFusedFieldRelativeChassisSpeed());
     }
-
-    Pose3d ampPose3d = new Pose3d();
-    Pose3d climberPose3d = new Pose3d();
-    Pose3d hoodPose3d = new Pose3d();
-    Pose3d shooterPose3d = new Pose3d();
 
 }

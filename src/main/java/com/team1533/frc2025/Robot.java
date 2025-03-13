@@ -45,7 +45,6 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
   private int i;
 
-  
   // temp for catawba bc we lowkey need this please forgive me jonah
 
   private final DigitalInput bannerLaser = new DigitalInput(0);
@@ -126,7 +125,7 @@ public class Robot extends LoggedRobot {
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our
     // autonomous chooser on the dashboard.
-    robotContainer = new RobotContainer(this);
+    robotContainer = new RobotContainer();
   }
 
   @Override
