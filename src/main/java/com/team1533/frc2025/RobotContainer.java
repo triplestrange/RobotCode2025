@@ -200,7 +200,9 @@ public class RobotContainer {
                 NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
                         .genericPreset( 0.15, 0.045, 0.71).asProxy());
 
-                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
+                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.3));
+
+                NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
 
                 // Set up auto routines
                 // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -288,7 +290,7 @@ public class RobotContainer {
 
                 // Coral Feeder Automation
                 driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.043
+                                .genericPreset( 0.155, 0.045
                                 , 0.71));
 
                 // Coral Intake

@@ -24,9 +24,15 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Swerve Stop"
+          }
+        },
+        {
           "type": "wait",
           "data": {
-            "waitTime": 0.5
+            "waitTime": 0.05
           }
         },
         {
@@ -48,25 +54,19 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "path",
-                "data": {
-                  "pathName": "Big Boi Auto.1"
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "Arm Feeder While Moving"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Big Boi Auto.1"
                 }
               }
             ]
@@ -81,13 +81,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "Swerve Stop"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 0.5
+            "name": "Intake"
           }
         },
         {
@@ -113,12 +113,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.5
           }
         },
         {
