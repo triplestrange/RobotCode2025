@@ -72,6 +72,8 @@ public class RobotState implements VisionConsumer {
             .createDoubleBuffer(LOOKBACK_TIME);
     private ConcurrentTimeInterpolatableBuffer<Double> driveRollRads = ConcurrentTimeInterpolatableBuffer
             .createDoubleBuffer(LOOKBACK_TIME);
+    private ConcurrentTimeInterpolatableBuffer<Double> driveYawRads = ConcurrentTimeInterpolatableBuffer
+            .createDoubleBuffer(LOOKBACK_TIME);
     private ConcurrentTimeInterpolatableBuffer<Double> accelX = ConcurrentTimeInterpolatableBuffer
             .createDoubleBuffer(LOOKBACK_TIME);
     private ConcurrentTimeInterpolatableBuffer<Double> accelY = ConcurrentTimeInterpolatableBuffer
@@ -110,7 +112,7 @@ public class RobotState implements VisionConsumer {
         armRots.addSample(0.0, 0.0);
         elevExtensionM.addSample(0.0, 0.0);
         wristRots.addSample(0.0, 0.0);
-
+        driveYawRads.addSample(0.0, 0.0);
     }
 
     public void setAutoStartTime(double timestamp) {
@@ -202,6 +204,10 @@ public class RobotState implements VisionConsumer {
         return fieldToRobot.getLatest();
     }
 
+    public Map.Entry<Double, Double> getLatestYawRads() {
+        return driveYawRads.getLatest();
+    }
+
     public Pose2d getPredictedFieldToRobot(double lookaheadTimeS) {
         var maybeFieldToRobot = getLatestFieldToRobot();
         Pose2d fieldToRobot = maybeFieldToRobot == null ? MathHelpers.kPose2dZero : maybeFieldToRobot.getValue();
@@ -213,6 +219,10 @@ public class RobotState implements VisionConsumer {
 
     public Optional<Pose2d> getFieldToRobot(double timestamp) {
         return fieldToRobot.getSample(timestamp);
+    }
+
+    public Optional<Double> getYawRads(double timestamp) {
+        return driveYawRads.getSample(timestamp);
     }
 
     public ChassisSpeeds getLatestMeasuredFieldRelativeChassisSpeeds() {

@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.RobotController;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,6 +25,7 @@ import org.photonvision.PhotonCamera;
 
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.RobotState;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
@@ -73,7 +75,10 @@ public class VisionIOPhotonVision implements VisionIO {
           Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
           robotToTag = robotToTag.plus(robotToCamera.getTranslation());
 
-          Rotation2d robotRotation = RobotContainer.getInstance().getDriveSubsystem().getRotation();
+          Rotation2d robotRotation = RobotState.getInstance().getYawRads(result.getTimestampSeconds())
+              .isPresent()
+                  ? Rotation2d.fromRadians(RobotState.getInstance().getYawRads(result.getTimestampSeconds()).get())
+                  : RobotContainer.getInstance().getDriveSubsystem().getRotation();
           // rotate to field coordinates
           Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
           Translation2d fieldToRobot = tagPose.get().getTranslation().toTranslation2d().minus(robotToTagFC);
