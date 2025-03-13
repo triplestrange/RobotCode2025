@@ -1,5 +1,8 @@
 package com.team1533.frc2025.subsystems.arm;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -84,7 +87,7 @@ public class ArmIOReal implements ArmIO {
                 ? InvertedValue.Clockwise_Positive
                 : InvertedValue.CounterClockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        
+
         config.Feedback.FeedbackRemoteSensorID = pivotEncoder.getDeviceID();
         config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         config.Feedback.SensorToMechanismRatio = ArmConstants.SensorToMechanismRatio;
@@ -96,7 +99,7 @@ public class ArmIOReal implements ArmIO {
         config.CurrentLimits.SupplyCurrentLimit = ArmConstants.supplyCurrentLimit;
         config.CurrentLimits.SupplyCurrentLowerLimit = ArmConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = ArmConstants.supplyCurrentLowerLimitTime;
-        
+
         config.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.motionMagicCruiseVelocity;
         config.MotionMagic.MotionMagicAcceleration = ArmConstants.motionMagicAcceleration;
         config.MotionMagic.MotionMagicJerk = ArmConstants.motionMagicJerk;
@@ -137,8 +140,7 @@ public class ArmIOReal implements ArmIO {
         CTREUtil.applyConfiguration(pivotEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                100,
-                fusedCanCoderRotations, 
+                50,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
@@ -153,8 +155,9 @@ public class ArmIOReal implements ArmIO {
                 followerTemperatureSignal,
                 encoderAbsolutePositionRotations,
                 encoderRelativePositionRotations,
-                armVelocitySignal,
                 armAccelerationSignal);
+
+        BaseStatusSignal.setUpdateFrequencyForAll(250, fusedCanCoderRotations, armVelocitySignal);
 
         // Optimize bus utilization
         leaderTalon.optimizeBusUtilization(0, 1.0);
@@ -166,12 +169,25 @@ public class ArmIOReal implements ArmIO {
     }
 
     @Override
+    public List<BaseStatusSignal> getStatusSignals() {
+        // Only read position and velocity at 250 hz
+        return Arrays.asList(fusedCanCoderRotations, armVelocitySignal);
+    }
+
+    @Override
+    public void updateFastInputs(FastArmIOInputs inputs) {
+        double position = BaseStatusSignal.getLatencyCompensatedValueAsDouble(fusedCanCoderRotations,
+                armVelocitySignal);
+
+        inputs.FusedCANcoderPositionRots = position;
+
+    }
+
+    @Override
     public void updateInputs(ArmIOInputs inputs) {
         inputs.leaderConnected = BaseStatusSignal.refreshAll(leaderPositionSignal, leaderVelocitySignal,
                 leaderVoltsSignal, leaderCurrentStatorSignal, leaderCurrentSupplySignal,
                 armVelocitySignal, armAccelerationSignal, leaderTemperatureSignal, fusedCanCoderRotations).isOK();
-        
-        inputs.FusedCANcoderPositionRots = fusedCanCoderRotations.getValueAsDouble();
 
         inputs.leaderVelocityRotPerSec = leaderVelocitySignal.getValueAsDouble();
         inputs.leaderAppliedVolts = leaderVoltsSignal.getValueAsDouble();
@@ -224,7 +240,7 @@ public class ArmIOReal implements ArmIO {
     }
 
     @Override
-    public void setMotionMagicSetpoint(double positionRotations)    {
+    public void setMotionMagicSetpoint(double positionRotations) {
         leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 

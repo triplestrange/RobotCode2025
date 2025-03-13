@@ -2,9 +2,13 @@ package com.team1533.frc2025.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Second;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.Constants.Gains;
 
 import edu.wpi.first.units.AngularVelocityUnit;
@@ -13,6 +17,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Velocity;
 
 public interface ElevatorIO {
+
+    @AutoLog
+    class FastElevatorIOInputs {
+        public double elevatorPosMeters = 0.0;
+    }
+
     @AutoLog
     class ElevatorIOInputs {
 
@@ -33,12 +43,19 @@ public interface ElevatorIO {
         public double leaderRotPosition = 0.0;
         public double followerRotPosition = 0.0;
 
-        public double elevatorPosMeters = 0.0;
         public double elevatorVelMetersPerSecond = 0.0;
         public double elevatorAccelMetersPerSecondPerSecond = 0.0;
     }
 
+    default List<BaseStatusSignal> getStatusSignals() {
+        return Arrays.asList();
+    };
+
     default void updateInputs(ElevatorIOInputs inputs) {
+    }
+
+    default void updateFastInputs(FastElevatorIOInputs inputs) {
+
     }
 
     default void runVolts(double volts) {

@@ -1,6 +1,8 @@
 package com.team1533.frc2025.subsystems.wrist;
 
 import java.rmi.ConnectIOException;
+import java.util.Arrays;
+import java.util.List;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -25,6 +27,7 @@ import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -42,7 +45,8 @@ public class WristIOReal implements WristIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withEnableFOC(true).withUpdateFreqHz(0.0);
+    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withEnableFOC(true)
+            .withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -94,7 +98,7 @@ public class WristIOReal implements WristIO {
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLowerLimit = WristConstants.supplyCurrentLowerLimit;
         config.CurrentLimits.SupplyCurrentLowerTime = WristConstants.supplyCurrentLowerLimitTime;
-        
+
         config.MotionMagic.MotionMagicCruiseVelocity = WristConstants.motionMagicCruiseVelocity;
         config.MotionMagic.MotionMagicAcceleration = WristConstants.motionMagicAcceleration;
         config.MotionMagic.MotionMagicJerk = WristConstants.motionMagicJerk;
@@ -103,7 +107,6 @@ public class WristIOReal implements WristIO {
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.forwardSoftLimitThreshold;
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = WristConstants.reverseSoftLimitThreshold;
-        
 
         // Cancoder configs
         encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = WristConstants.absEncoderDiscontinuity;
@@ -125,14 +128,11 @@ public class WristIOReal implements WristIO {
 
         fusedCancoderSignal = leaderTalon.getPosition();
 
-
-
         CTREUtil.applyConfiguration(leaderTalon, config);
         CTREUtil.applyConfiguration(wristEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                100,
-                fusedCancoderSignal,
+                50,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
@@ -141,8 +141,8 @@ public class WristIOReal implements WristIO {
                 leaderTemperatureSignal,
                 encoderAbsolutePositionRotations,
                 encoderRelativePositionRotations,
-                wristVelocitySignal,
                 wristAccelerationSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(250, fusedCancoderSignal, wristVelocitySignal);
 
         // Optimize bus utilization
         leaderTalon.optimizeBusUtilization(0, 1.0);
@@ -155,6 +155,18 @@ public class WristIOReal implements WristIO {
     }
 
     @Override
+    public List<BaseStatusSignal> getStatusSignals() {
+        // Only read position and velocity at 250 hz
+        return Arrays.asList(fusedCancoderSignal, wristVelocitySignal);
+    }
+
+    @Override
+    public void updateFastInputs(FastWristIOInputs inputs) {
+        double position = BaseStatusSignal.getLatencyCompensatedValueAsDouble(fusedCancoderSignal, wristVelocitySignal);
+        inputs.FusedCANcoderPositionRots = position;
+    }
+
+    @Override
     public void updateInputs(WristIOInputs inputs) {
         inputs.leaderConnected = BaseStatusSignal.refreshAll(leaderPositionSignal, leaderVelocitySignal,
                 leaderVoltsSignal, leaderCurrentStatorSignal, leaderCurrentSupplySignal,
@@ -164,7 +176,6 @@ public class WristIOReal implements WristIO {
         inputs.leaderCurrentAmps = leaderCurrentSupplySignal.getValueAsDouble();
         inputs.leaderStatorAmps = leaderCurrentStatorSignal.getValueAsDouble();
         inputs.leaderTempCelc = leaderTemperatureSignal.getValueAsDouble();
-        inputs.FusedCANcoderPositionRots = fusedCancoderSignal.getValueAsDouble();
 
         inputs.absoluteEncoderConnected = BaseStatusSignal
                 .refreshAll(encoderAbsolutePositionRotations, encoderRelativePositionRotations).isOK();
@@ -202,8 +213,9 @@ public class WristIOReal implements WristIO {
     public void setCurrentSetpoint(double amps) {
         leaderTalon.setControl(currentControl.withOutput(amps));
     }
+
     @Override
-    public void setMotionMagicSetpoint(double positionRotations)    {
+    public void setMotionMagicSetpoint(double positionRotations) {
         leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
     }
 

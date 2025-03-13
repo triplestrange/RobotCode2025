@@ -1,32 +1,52 @@
 package com.team1533.frc2025.subsystems.arm;
 
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.RobotState;
+import com.team1533.lib.loops.IStatusSignalLoop;
 import com.team1533.lib.time.RobotTime;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import lombok.Getter;
 
-public class ArmSubsystem extends SubsystemBase {
+public class ArmSubsystem extends SubsystemBase implements IStatusSignalLoop {
 
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
+    private volatile FastArmIOInputsAutoLogged fastInputs = new FastArmIOInputsAutoLogged();
+
+    private final FastArmIOInputsAutoLogged cachedFastInputs = new FastArmIOInputsAutoLogged();
+
     private final RobotState state;
+    @Getter
     private double armSetpointRotations = 0.0;
 
     public ArmSubsystem(final ArmIO io) {
         this.io = io;
         setTeleopDefaultCommand();
         this.state = RobotState.getInstance();
+    }
+
+    @Override
+    public List<BaseStatusSignal> getStatusSignals() {
+        return io.getStatusSignals();
+    }
+
+    @Override
+    public void onLoop() {
+        io.updateFastInputs(fastInputs);
+        double timestamp = RobotTime.getTimestampSeconds();
+        state.addArmUpdate(timestamp, fastInputs.FusedCANcoderPositionRots);
     }
 
     public void setTeleopDefaultCommand() {
@@ -51,16 +71,15 @@ public class ArmSubsystem extends SubsystemBase {
         double timestamp = RobotTime.getTimestampSeconds();
         io.updateInputs(inputs);
         Logger.processInputs("Arm", inputs);
-        io.updateInputs(inputs);
+        cachedFastInputs.FusedCANcoderPositionRots = getCurrentPosition();
 
         if (DriverStation.isDisabled()) {
             armSetpointRotations = getCurrentPosition();
         }
+        Logger.processInputs("Arm/fastInputs", cachedFastInputs);
 
         Logger.recordOutput("Arm/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
-
-        state.setArmRotation(Rotation2d.fromRotations(inputs.FusedCANcoderPositionRots));
     }
 
     public Command moveArmSetpoint(DoubleSupplier rotationsFromHorizontal) {
@@ -114,12 +133,8 @@ public class ArmSubsystem extends SubsystemBase {
         }).withName("Arm Motion Magic Setpoint Command");
     }
 
-    public double getSetpoint() {
-        return armSetpointRotations;
-    }
-
     public double getCurrentPosition() {
-        return inputs.absoluteEncoderPositionRots;
+        return state.getLatestArmPositionRadians();
     }
 
     public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {
@@ -129,11 +144,11 @@ public class ArmSubsystem extends SubsystemBase {
     }
 
     public Command waitForSetpoint(double toleranceRotations) {
-        return waitForPosition(this::getSetpoint, toleranceRotations);
+        return waitForPosition(this::getArmSetpointRotations, toleranceRotations);
     }
 
     public BooleanSupplier atSetpoint(double toleranceRotations) {
-        return () -> MathUtil.isNear(getCurrentPosition(), getSetpoint(), toleranceRotations);
+        return () -> MathUtil.isNear(getCurrentPosition(), getArmSetpointRotations(), toleranceRotations);
     }
 
     public double getCurrentPositionRotations() {

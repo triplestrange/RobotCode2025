@@ -1,6 +1,10 @@
 package com.team1533.frc2025.subsystems.elevator;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import java.util.Arrays;
+import java.util.List;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -121,7 +125,7 @@ public class ElevatorIOReal implements ElevatorIO {
         CTREUtil.applyConfiguration(leaderTalon, config);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                100,
+                50,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
@@ -134,9 +138,8 @@ public class ElevatorIOReal implements ElevatorIO {
                 followerCurrentStatorSignal,
                 followerCurrentSupplySignal,
                 followerTemperatureSignal,
-                elevatorPositionSignal,
-                elevatorVelocitySignal,
                 elevatorAccelerationSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(250, elevatorPositionSignal, elevatorVelocitySignal);
 
         // Optimize bus utilization
         leaderTalon.optimizeBusUtilization(0, 1.0);
@@ -148,6 +151,20 @@ public class ElevatorIOReal implements ElevatorIO {
 
         leaderTalon.setPosition(0);
 
+    }
+
+    @Override
+    public List<BaseStatusSignal> getStatusSignals() {
+        // Only read position and velocity at 250 hz
+        return Arrays.asList(elevatorPositionSignal);
+    }
+
+    @Override
+    public void updateFastInputs(FastElevatorIOInputs inputs) {
+        double position = BaseStatusSignal.getLatencyCompensatedValueAsDouble(elevatorPositionSignal,
+                elevatorVelocitySignal);
+
+        inputs.elevatorPosMeters = position;
     }
 
     @Override
@@ -175,7 +192,6 @@ public class ElevatorIOReal implements ElevatorIO {
         inputs.leaderRotPosition = leaderPositionSignal.getValueAsDouble();
         inputs.followerRotPosition = followerPositionSignal.getValueAsDouble();
 
-        inputs.elevatorPosMeters = elevatorPositionSignal.getValueAsDouble();
         inputs.elevatorVelMetersPerSecond = elevatorVelocitySignal.getValueAsDouble();
         inputs.elevatorAccelMetersPerSecondPerSecond = elevatorAccelerationSignal.getValueAsDouble();
 

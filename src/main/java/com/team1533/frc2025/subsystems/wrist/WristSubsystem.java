@@ -1,11 +1,14 @@
 package com.team1533.frc2025.subsystems.wrist;
 
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.RobotState;
+import com.team1533.lib.loops.IStatusSignalLoop;
 import com.team1533.lib.time.RobotTime;
 
 import edu.wpi.first.math.MathUtil;
@@ -15,11 +18,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
-public class WristSubsystem extends SubsystemBase {
+public class WristSubsystem extends SubsystemBase implements IStatusSignalLoop {
 
     private final WristIO io;
     private final WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
-
+    private volatile FastWristIOInputsAutoLogged fastInputs = new FastWristIOInputsAutoLogged();
+    private final FastWristIOInputsAutoLogged cachedFastInputs = new FastWristIOInputsAutoLogged();
     private final RobotState state;
 
     private double wristSetpointRotations = 0.0;
@@ -28,6 +32,18 @@ public class WristSubsystem extends SubsystemBase {
         this.io = io;
         setTeleopDefaultCommand();
         this.state = RobotState.getInstance();
+    }
+
+    @Override
+    public List<BaseStatusSignal> getStatusSignals() {
+        return io.getStatusSignals();
+    }
+
+    @Override
+    public void onLoop() {
+        io.updateFastInputs(fastInputs);
+        double timestamp = RobotTime.getTimestampSeconds();
+        state.addWristUpdate(timestamp, fastInputs.FusedCANcoderPositionRots);
     }
 
     public void setTeleopDefaultCommand() {
@@ -58,7 +74,8 @@ public class WristSubsystem extends SubsystemBase {
         if (DriverStation.isDisabled()) {
             wristSetpointRotations = getCurrentPosition();
         }
-        state.setWristRotation(Rotation2d.fromRotations(inputs.FusedCANcoderPositionRots));
+        cachedFastInputs.FusedCANcoderPositionRots = getCurrentPosition();
+        Logger.processInputs("Elevator/fastInputs", cachedFastInputs);
         Logger.recordOutput("Wrist/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
     }
@@ -119,7 +136,7 @@ public class WristSubsystem extends SubsystemBase {
     }
 
     public double getCurrentPosition() {
-        return inputs.FusedCANcoderPositionRots;
+        return state.getLatestWristPositionRadians();
     }
 
     public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {

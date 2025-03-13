@@ -77,6 +77,15 @@ public class RobotState implements VisionConsumer {
     private ConcurrentTimeInterpolatableBuffer<Double> accelY = ConcurrentTimeInterpolatableBuffer
             .createDoubleBuffer(LOOKBACK_TIME);
 
+    private ConcurrentTimeInterpolatableBuffer<Double> armRots = ConcurrentTimeInterpolatableBuffer
+            .createDoubleBuffer(LOOKBACK_TIME);
+
+    private ConcurrentTimeInterpolatableBuffer<Double> elevExtensionM = ConcurrentTimeInterpolatableBuffer
+            .createDoubleBuffer(LOOKBACK_TIME);
+
+    private ConcurrentTimeInterpolatableBuffer<Double> wristRots = ConcurrentTimeInterpolatableBuffer
+            .createDoubleBuffer(LOOKBACK_TIME);
+
     private final AtomicBoolean enablePathCancel = new AtomicBoolean(false);
 
     private double autoStartTime;
@@ -98,6 +107,10 @@ public class RobotState implements VisionConsumer {
         // Add one sample to protect callers against null
         fieldToRobot.addSample(0.0, MathHelpers.kPose2dZero);
         driveYawAngularVelocity.addSample(0.0, 0.0);
+        armRots.addSample(0.0, 0.0);
+        elevExtensionM.addSample(0.0, 0.0);
+        wristRots.addSample(0.0, 0.0);
+
     }
 
     public void setAutoStartTime(double timestamp) {
@@ -161,6 +174,30 @@ public class RobotState implements VisionConsumer {
         this.fusedFieldRelativeChassisSpeeds.set(fusedFieldRelativeSpeeds);
     }
 
+    public void addArmUpdate(double timestamp, double rots) {
+        armRots.addSample(timestamp, rots);
+    }
+
+    public double getLatestArmPositionRadians() {
+        return this.armRots.getInternalBuffer().lastEntry().getValue();
+    }
+
+    public void addElevUpdate(double timestamp, double extM) {
+        elevExtensionM.addSample(timestamp, extM);
+    }
+
+    public double getLatestElevPositionMeters() {
+        return this.elevExtensionM.getInternalBuffer().lastEntry().getValue();
+    }
+
+    public void addWristUpdate(double timestamp, double rots) {
+        wristRots.addSample(timestamp, rots);
+    }
+
+    public double getLatestWristPositionRadians() {
+        return this.wristRots.getInternalBuffer().lastEntry().getValue();
+    }
+
     public Map.Entry<Double, Pose2d> getLatestFieldToRobot() {
         return fieldToRobot.getLatest();
     }
@@ -173,16 +210,6 @@ public class RobotState implements VisionConsumer {
         return fieldToRobot
                 .exp(new Twist2d(delta.vxMetersPerSecond, delta.vyMetersPerSecond, delta.omegaRadiansPerSecond));
     }
-
-    @Getter
-    @Setter
-    private Rotation2d armRotation = new Rotation2d();
-    @Getter
-    @Setter
-    private double elevatorHeightM = 0.0;
-    @Getter
-    @Setter
-    private Rotation2d wristRotation = new Rotation2d();
 
     public Optional<Pose2d> getFieldToRobot(double timestamp) {
         return fieldToRobot.getSample(timestamp);
