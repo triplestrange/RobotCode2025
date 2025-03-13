@@ -51,22 +51,13 @@ import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-
 import com.team1533.frc2025.subsystems.elevator.*;
-import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
-import com.team1533.lib.swerve.DriveCharacterizer;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -216,33 +207,7 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
-                // Set up auto routines
-                // autoChooser = new LoggedDashboardChooser<>("Auto Choices",
-                // AutoBuilder.buildAutoChooser());
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices");
-
-                // Set up SysId routines
-                // autoChooser.addOption("Drive Wheel Radius Characterization",
-                // DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
-                // autoChooser.addOption("Drive Simple FF Characterization",
-                // DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
-                // autoChooser.addOption(
-                // "Drive SysId (Quasistatic Forward)",
-                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-                // autoChooser.addOption(
-                // "Drive SysId (Quasistatic Reverse)",
-                // driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-                // autoChooser.addOption("Drive SysId (Dynamic Forward)",
-                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
-                // autoChooser.addOption("Drive SysId (Dynamic Reverse)",
-                // driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-                // autoChooser.addOption("test path", AutoBuilder.buildAuto("Test Path"));
-
-                // autoChooser.addOption("test path 2", AutoBuilder.buildAuto("Test Path 2"));
-
-                // autoChooser.addOption("pid tuning adventures", AutoBuilder.buildAuto("New
-                // Auto"));
 
                 autoChooser.addDefaultOption("None", Commands.none());
 

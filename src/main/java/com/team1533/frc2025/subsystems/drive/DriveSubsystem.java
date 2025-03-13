@@ -72,7 +72,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
     private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG,
             DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
-    private final AlignController alignController = new AlignController(5, Constants.loopPeriodSecs, this::getPose);
+    private final AlignController alignController = new AlignController(5, Constants.kRealDt, this::getPose);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
@@ -139,7 +139,6 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     @Override
     public void periodic() {
-        
 
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
@@ -196,34 +195,31 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         Pose2d bestPose = Pose2d.kZero;
         double min = Double.POSITIVE_INFINITY;
         if (RobotContainer.getInstance().isAlgaeMode()) {
-            for (ReefLocations location : ReefLocations.values()) { 
-                if (min > location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation()))
-                {
-                min = location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation());
-                bestPose = location.getPose2dFlipped();
+            for (ReefLocations location : ReefLocations.values()) {
+                if (min > location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation())) {
+                    min = location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dFlipped();
                 }
-                
-        }
-        }
-        else {
-            for (ReefLocations location : ReefLocations.values()) { 
-                if ((min > location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation())) && RobotContainer.getInstance().isRight())
-                {
-                min = location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation());
-                bestPose = location.getPose2dReef(false);
+
+            }
+        } else {
+            for (ReefLocations location : ReefLocations.values()) {
+                if ((min > location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation()))
+                        && RobotContainer.getInstance().isRight()) {
+                    min = location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dReef(false);
                 }
-                if ((min > location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation())) && RobotContainer.getInstance().isLeft())
-                {
-                min = location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation());
-                bestPose = location.getPose2dReef(true);
+                if ((min > location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation()))
+                        && RobotContainer.getInstance().isLeft()) {
+                    min = location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dReef(true);
                 }
+            }
         }
-        }
-        
-        
+
         setAlignTarget(bestPose);
 
-        if (!RobotContainer.getInstance().isLeft() && !RobotContainer.getInstance().isRight())    {
+        if (!RobotContainer.getInstance().isLeft() && !RobotContainer.getInstance().isRight()) {
             setAlignTarget(Pose2d.kZero);
         }
 
@@ -237,7 +233,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     public void runVelocity(ChassisSpeeds speeds) {
         Logger.recordOutput("SwerveStates/AutoSpeeds", speeds);
         // Calculate module setpoints
-        speeds = ChassisSpeeds.discretize(speeds, Constants.loopPeriodSecs);
+        speeds = ChassisSpeeds.discretize(speeds, Constants.kRealDt);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
@@ -391,12 +387,14 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     public void teleopControl(double driveX, double driveY, double rotate) {
         double magnitude = Math.hypot(driveX, driveY);
-        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)*magnitude;
-        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)*magnitude;
+        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)
+                * magnitude;
+        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)
+                * magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
 
-        //Yuckers Maybe?
-        if(RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
+        // Yuckers Maybe?
+        if (RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
             speedX *= 0.5;
             speedY *= 0.5;
             speedR *= 0.2;
@@ -408,8 +406,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         }
 
         setpoint = generator.generateSetpoint(setpoint,
-        alignController.update(
-      ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation())), Constants.loopPeriodSecs);
+                alignController.update(
+                        ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation())),
+                Constants.kRealDt);
         Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
         runVelocity(setpoint.robotRelativeSpeeds());
     }
@@ -419,7 +418,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                 new Pose2d(getPose().getX(), getPose().getY(), AllianceFlipUtil.apply(Rotation2d.fromDegrees(0))));
     }
 
-    public void setAlignTarget(Pose2d target)    {
+    public void setAlignTarget(Pose2d target) {
         alignController.setTarget(target);
     }
 
