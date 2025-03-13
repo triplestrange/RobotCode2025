@@ -215,6 +215,18 @@ public class DriveSubsystem extends SubsystemBase {
             // Apply update
             poseEstimator.updateWithTime(sampleTimestamps[i], rawYawRotation, modulePositions);
 
+            ChassisSpeeds measuredRobotRelativeChassisSpeeds = kinematics
+                    .toChassisSpeeds(swerveModulePositionToState(modulePositions));
+            ChassisSpeeds measuredFieldRelativeChassisSpeeds = ChassisSpeeds
+                    .fromRobotRelativeSpeeds(measuredRobotRelativeChassisSpeeds, rawYawRotation);
+            ChassisSpeeds desiredFieldRelativeChassisSpeeds = ChassisSpeeds
+                    .fromRobotRelativeSpeeds(setpoint.robotRelativeSpeeds(), rawYawRotation);
+
+            ChassisSpeeds fusedFieldRelativeChassisSpeeds = new ChassisSpeeds(
+                    measuredFieldRelativeChassisSpeeds.vxMetersPerSecond,
+                    measuredFieldRelativeChassisSpeeds.vyMetersPerSecond,
+                    rawYawVelocity);
+
             state.addDriveMotionMeasurements(
                     sampleTimestamps[i], rawRollVelocity, rawPitchVelocity, rawYawVelocity,
                     rawPitchRotation.getRadians(), rawRollRotation.getRadians(), rawAccelX, rawAccelY,
@@ -387,7 +399,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     /** Resets the current odometry pose. */
     public void setPose(Pose2d pose) {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        poseEstimator.resetPosition(rawYawRotation, getModulePositions(), pose);
         if (Constants.getRobot() == Constants.RobotType.SIMBOT) {
             RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
         }
@@ -437,12 +449,21 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     public void teleopResetRotation() {
-        poseEstimator.resetPosition(rawGyroRotation, getModulePositions(),
+        poseEstimator.resetPosition(rawYawRotation, getModulePositions(),
                 new Pose2d(getPose().getX(), getPose().getY(), AllianceFlipUtil.apply(Rotation2d.fromDegrees(0))));
     }
 
     public void setAlignTarget(Pose2d target) {
         alignController.setTarget(target);
+    }
+
+    public static SwerveModuleState[] swerveModulePositionToState(SwerveModulePosition... positions) {
+        SwerveModuleState[] states = new SwerveModuleState[positions.length];
+        for (int i = 0; i < positions.length; i++) {
+            states[i] = new SwerveModuleState(positions[i].distanceMeters, positions[i].angle);
+        }
+
+        return states;
     }
 
 }
