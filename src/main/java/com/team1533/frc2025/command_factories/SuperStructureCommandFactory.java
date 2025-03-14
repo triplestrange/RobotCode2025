@@ -58,13 +58,20 @@ public class SuperStructureCommandFactory {
 
     // Climb Sequence?
 
+    // public static Command climbSequence() {
+
+    //     return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
+    //             arm.motionMagicPositionCommand(() -> 0),
+    //             wrist.motionMagicPositionCommand(() -> 0),
+    //             elevator.motionMagicPositionCommand(() -> 0.35)));
+    //     }
+
     public static Command climbSequence() {
 
-        return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
-                arm.motionMagicPositionCommand(() -> 0),
-                wrist.motionMagicPositionCommand(() -> 0),
-                elevator.motionMagicPositionCommand(() -> 0.4)));
-        }
+            return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
+                    wrist.motionMagicPositionCommand(() -> 0),
+                    arm.motionMagicPositionCommand(() -> 0).until(arm.atSetpoint(0.05)).andThen(elevator.motionMagicPositionCommand(() -> 0.35))));
+            }
 
         // return new SequentialCommandGroup(
         // moveArmOnly(arm, elevator, wrist,

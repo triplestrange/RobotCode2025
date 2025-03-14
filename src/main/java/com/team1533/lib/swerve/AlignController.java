@@ -45,8 +45,8 @@ public class AlignController {
 
         // if (current.getTranslation().getDistance(target.getTranslation()) < -1000 || override)   {
         if (override)   {
-            MathUtil.clamp(skewed.vxMetersPerSecond = pidTranslationController.calculate(current.getX(), target.getX()), -1., 1.);
-            MathUtil.clamp(skewed.vyMetersPerSecond = pidTranslationController.calculate(current.getY(), target.getY()), -1., 1.);
+            skewed.vxMetersPerSecond = MathUtil.clamp(pidTranslationController.calculate(current.getX(), target.getX()), -1., 1.);
+            skewed.vyMetersPerSecond = MathUtil.clamp(pidTranslationController.calculate(current.getY(), target.getY()), -1., 1.);
         }
 
         // if (current.getTranslation().getDistance(target.getTranslation()) < -1000 || override)  {
