@@ -13,7 +13,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class SuperStructureCommandFactory {
 
-        private final Trigger funnelDeployed = new Trigger(null, null);
+        private final Trigger wristBlockElevator = new Trigger(null, null);
+
+        private final Trigger armBlockWrist = new Trigger(null);
 
         // Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a
         // setpoint
