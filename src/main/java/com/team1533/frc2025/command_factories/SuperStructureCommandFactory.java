@@ -66,14 +66,33 @@ public class SuperStructureCommandFactory {
     //             elevator.motionMagicPositionCommand(() -> 0.35)));
     //     }
 
+    public static Command climbPrep() {
+
+        return arm.motionMagicPositionCommand(()-> 0.125);
+            
+        }
+
     public static Command climbSequence() {
 
-            return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
-                    wrist.motionMagicPositionCommand(() -> 0),
-                    arm.motionMagicPositionCommand(() -> 0).until(arm.atSetpoint(0.05)).andThen(elevator.motionMagicPositionCommand(() -> 0.35))));
-            }
+        return new ParallelCommandGroup(
+                wrist.motionMagicPositionCommand(() -> 0),
+                arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625)
+                .andThen(moveElevatorOnly(0.325)).withName("Climb Sequence Command");
+        }
+            
+        
+        // public static Command climbSequence() {
 
-        // return new SequentialCommandGroup(
+        //         return  moveArmOnly(0.125).until(arm.atSetpoint(0.03))
+        //         .andThen(new ParallelCommandGroup(wrist.motionMagicPositionCommand(() -> 0.125),
+        //         arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625).andThen(moveElevatorOnly(0.35)
+        //         .until(elevator.atSetpoint(0.02)))
+        //         .andThen(moveWristOnly(0))).withName("Climb Sequence Command");
+        //         }
+
+
+
+                // return new SequentialCommandGroup(
         // moveArmOnly(arm, elevator, wrist,
         // 0.22).withDeadline(Commands.waitSeconds(3)),
         // moveWristOnly(arm, elevator, wrist,

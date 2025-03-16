@@ -209,8 +209,8 @@ public class RobotContainer {
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
                 // Set up SysId routines
-                // autoChooser.addOption("Drive Wheel Radius Characterization",
-                //                 DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
+                autoChooser.addOption("Drive Wheel Radius Characterization",
+                                DriveCharacterizer.wheelRadiusCharacterization(driveSubsystem));
                 // autoChooser.addOption("Drive Simple FF Characterization",
                 //                 DriveCharacterizer.feedforwardCharacterization(driveSubsystem));
                 // autoChooser.addOption(
@@ -263,11 +263,14 @@ public class RobotContainer {
                 // Gyro Rotation Reset
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                // Climb Prep
+                // Climb Vertical
                 driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset( 0.25, 0, 0.5));
 
+                // Climb Prep
+                driveController.povRight().onTrue(SuperStructureCommandFactory.climbPrep());
+
                 // Climb Sequence
-                driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
+                driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence());
 
                 // L4 Coral Automation
                 driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
@@ -280,9 +283,9 @@ public class RobotContainer {
                 // L2 Coral Automation
                 driveController.cross().and(inCoralMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.1, 0.086995, 0.145));
 
-                // L1 Coral Automation
-                driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.15, 0.0445, 0.71));
+                // // L1 Coral Automation
+                // driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset( 0.15, 0.0445, 0.71));
 
                 // Zero Preset
                 driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
@@ -301,7 +304,7 @@ public class RobotContainer {
 
                 // Processor Algae
                 driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.08, 0.1, 0.5));
+                                .genericPreset( 0.08, 0, 0.5));
 
                 // Low Reef Algae
                 driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.155, 0.055, 0.455));
