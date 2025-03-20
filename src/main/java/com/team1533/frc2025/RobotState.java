@@ -176,6 +176,10 @@ public class RobotState implements VisionConsumer {
         this.fusedFieldRelativeChassisSpeeds.set(fusedFieldRelativeSpeeds);
     }
 
+    public void addYawMeasurements(Rotation2d yaw, double timestamp) {
+        this.driveYawRads.addSample(timestamp, yaw.getRadians());
+    }
+
     public void addArmUpdate(double timestamp, double rots) {
         armRots.addSample(timestamp, rots);
     }
