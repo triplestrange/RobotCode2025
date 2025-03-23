@@ -9,8 +9,6 @@ package com.team1533.frc2025;
 
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera0Name;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera0;
-import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera1;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -52,6 +50,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import com.team1533.frc2025.subsystems.elevator.*;
+import com.team1533.lib.loops.StatusSignalLoop;
 import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -102,6 +101,8 @@ public class RobotContainer {
         private static RobotContainer instance;
 
         private final RobotState state;
+
+        private final StatusSignalLoop fastLoop = new StatusSignalLoop(250, "Fast Looper");
 
         public RobotContainer() {
                 instance = this;
@@ -220,7 +221,11 @@ public class RobotContainer {
 
                 // configure buetton bindings
                 configureButtonBindings();
-
+                fastLoop.register(armSubsystem);
+                fastLoop.register(elevatorSubsystem);
+                fastLoop.register(intakeSubsystem);
+                fastLoop.register(wristSubsystem);
+                fastLoop.start();
         }
 
         // Button Binds

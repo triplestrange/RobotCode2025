@@ -17,9 +17,9 @@ public class IntakeConstants {
     public static final double sensorToMechanismRatio = 1.;
 
     public static final int kIntakeLaserSensorPort = 0;
-    public static final double kIntakeLaserDebounceTime = 0.0;
+    public static final double kIntakeLaserDebounceTime = 0.05;
 
-    public static final int kIntakeBannerSensorPort = 0;
+    public static final int kIntakeBannerSensorPort = 1;
     public static final double kIntakeBannerDebounceTime = 0.0;
 
     public static final Gains gains = switch (Constants.getRobot()) {
@@ -47,7 +47,7 @@ public class IntakeConstants {
         config.fxConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
         config.fxConfig.CurrentLimits.SupplyCurrentLowerTime = 1;
 
-        config.name = "intake";
+        config.name = "Intake";
 
         config.kMinPositionUnits = 0;
         config.kMaxPositionUnits = 0;

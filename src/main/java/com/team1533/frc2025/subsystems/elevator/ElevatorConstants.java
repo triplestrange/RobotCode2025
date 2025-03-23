@@ -33,6 +33,8 @@ public class ElevatorConstants {
 
     public static final double blockedCurrent = 100;
 
+    public static final double toleranceMeters = .02;
+
 
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);

@@ -26,7 +26,6 @@ public class IntakeSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
 
     private final RobotState state;
 
-    private double timeOfLastLaser = 0.0;
     private Debouncer laserDebouncer = new Debouncer(IntakeConstants.kIntakeLaserDebounceTime, DebounceType.kRising);
 
     public IntakeSubsystem(
@@ -40,26 +39,14 @@ public class IntakeSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
     @Override
     public void periodic() {
         super.periodic();
-        ioSensors.updateInputs(inputsSensors);
-        inputsSensors.intakeLaserBlocked = hasReefAtIntake();
-        state.updateLastTriggeredIntakeLaserTimestamp(inputsSensors.intakeLaserBlocked);
-        Logger.recordOutput("Intake/lastTriggeredLaserTimestamp", state.getLastTriggeredIntakeLaserTimestamp());
-        Logger.processInputs(getName() + "/sensors", inputsSensors);
-        if (inputsSensors.intakeLaserBlocked) {
-            timeOfLastLaser = Timer.getFPGATimestamp();
-        }
     }
 
     public void setTeleopDefaultCommand() {
         setDefaultCommand(dutyCycleCommand(() -> 0.0).withName("Zero intake Duty Cycle"));
     }
 
-    public boolean hasReefAtIntake() {
-        return laserHasReef.get();
-    }
-
-    public boolean hasReefAtIntake(double secondsAgo) {
-        return Timer.getFPGATimestamp() - secondsAgo <= timeOfLastLaser;
+    public boolean hasReefAtBannerLaser() {
+        return inputsSensors.intakeLaserBlocked;
     }
 
     @Override
@@ -69,6 +56,10 @@ public class IntakeSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
 
     @Override
     public void onLoop() {
-        laserHasReef.set(laserDebouncer.calculate(ioSensors.getIntakeLaser().get()));
+        ioSensors.updateInputs(inputsSensors);
+        laserHasReef.set(laserDebouncer.calculate(inputsSensors.intakeLaserBlocked));
+        state.updateLastTriggeredIntakeLaserTimestamp(laserHasReef.get());    
+        Logger.recordOutput("Intake/lastTriggeredLaserTimestamp", state.getLastTriggeredIntakeLaserTimestamp());
+        Logger.processInputs(getName() + "/sensors", inputsSensors);
     }
 }

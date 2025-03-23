@@ -69,13 +69,12 @@ public class WristSubsystem extends SubsystemBase implements IStatusSignalLoop {
         double timestamp = RobotTime.getTimestampSeconds();
         io.updateInputs(inputs);
         Logger.processInputs("Wrist", inputs);
-        io.updateInputs(inputs);
 
         if (DriverStation.isDisabled()) {
             wristSetpointRotations = getCurrentPosition();
         }
         cachedFastInputs.FusedCANcoderPositionRots = getCurrentPosition();
-        Logger.processInputs("Elevator/fastInputs", cachedFastInputs);
+        Logger.processInputs("Wrist/fastInputs", cachedFastInputs);
         Logger.recordOutput("Wrist/latencyPeriodicSec", RobotTime.getTimestampSeconds()
                 - timestamp);
     }

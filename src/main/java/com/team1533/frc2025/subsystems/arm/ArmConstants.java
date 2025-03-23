@@ -33,6 +33,8 @@ public class ArmConstants {
     public static final double reverseSoftLimitThreshold = 0.01;
     public static final double forwardSoftLimitThreshold = 0.25;
 
+    public static final double armToleranceRotations = 0.03;
+
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         case COMPBOT -> new Gains(150, 0.0, 0, 0, 0.0, 0.0, 0);

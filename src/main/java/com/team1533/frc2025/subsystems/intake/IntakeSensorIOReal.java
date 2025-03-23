@@ -12,7 +12,7 @@ public class IntakeSensorIOReal implements IntakeSensorIO {
 
     @Override
     public void updateInputs(IntakeSensorInputs inputs) {
-        inputs.intakeLaserBlocked = intakeLaser.get();
+        inputs.intakeLaserBlocked = !intakeLaser.get();
     }
 
     @Override

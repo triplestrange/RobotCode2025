@@ -23,7 +23,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.team1533.frc2025.Constants.Gains;
-import com.team1533.frc2025.subsystems.wrist.WristConstants;
 import com.team1533.lib.util.CTREUtil;
 
 import edu.wpi.first.units.measure.Angle;

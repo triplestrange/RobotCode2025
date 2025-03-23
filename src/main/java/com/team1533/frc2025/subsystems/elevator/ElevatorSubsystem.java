@@ -19,7 +19,6 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.RobotState;
-import com.team1533.frc2025.subsystems.arm.FastArmIOInputsAutoLogged;
 import com.team1533.frc2025.subsystems.elevator.ElevatorIO.FastElevatorIOInputs;
 import com.team1533.lib.loops.IStatusSignalLoop;
 import com.team1533.lib.time.RobotTime;
@@ -163,7 +162,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoo
         return runEnd((() -> io.setDutyCycleOutIgnoreLimits()), () -> {
             io.zero();
             hasZero = true;
-        }).until(() -> (inputs.leaderStatorAmps > ElevatorConstants.blockedCurrent
+        }).until(() -> (currentFilterValue > ElevatorConstants.blockedCurrent
                 && MathUtil.isNear(0, inputs.leaderVelocityRotPerSec, 0.1))).withName("Elevator Zero Command");
     }
 }

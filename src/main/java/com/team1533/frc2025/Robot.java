@@ -45,12 +45,6 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
   private int i;
 
-  // temp for catawba bc we lowkey need this please forgive me jonah
-
-  private final DigitalInput bannerLaser = new DigitalInput(0);
-
-  private final Debouncer bannerDebouncer = new Debouncer(0.20, DebounceType.kRising);
-
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -133,8 +127,6 @@ public class Robot extends LoggedRobot {
     if (i % 10 == 0) {
     }
     i++;
-    SmartDashboard.putBoolean("hasReef", bannerDebouncer.calculate(bannerLaser.get()));
-
     // Switch thread to high priority to improve loop timing
     Threads.setCurrentThreadPriority(true, 99);
 
@@ -147,6 +139,8 @@ public class Robot extends LoggedRobot {
 
     // Return to normal thread priority
     Threads.setCurrentThreadPriority(false, 10);
+
+    RobotState.getInstance().updateLogger();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
