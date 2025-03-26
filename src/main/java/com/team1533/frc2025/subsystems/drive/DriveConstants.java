@@ -24,8 +24,8 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 public class DriveConstants {
 
         // Wheel Slippage Constants
-        public static final double acceptableSlippageMeters = 0;
-        public static final double acceptableSlippageRadians = 0;
+        public static final double acceptableSlippageMeters = 0.075;
+        public static final double acceptableSlippageRadians = Math.PI / 4.;
 
         // TunerConstants doesn't include these constants, so they are declared locally
         static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
@@ -47,7 +47,7 @@ public class DriveConstants {
         // PathPlanner config constants
         public static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
         public static final double ROBOT_MOI = 5.645;
-        public static final double WHEEL_COF = 1.15;
+        public static final double WHEEL_COF = 2;
         public static final double MAX_STEER_VEL_RAD_PER_SEC = 2 * Math.PI;
         public static final RobotConfig PP_CONFIG = new RobotConfig(
                         ROBOT_MASS_KG,

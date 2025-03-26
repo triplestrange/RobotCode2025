@@ -23,12 +23,12 @@ public class Constants {
 
   public static final double loopPeriodSecs = 0.02;
   public static final double kSimDt = 0.001;
-  private static RobotType robotType = RobotType.SIMBOT;
+  private static RobotType robotType = RobotType.REPLAY;
   public static final boolean tuningMode = false;
 
   // AprilTag layout
-  public static final AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+  public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout
+      .loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
   public static RobotType getRobot() {
     if (!disableHAL && RobotBase.isReal() && robotType == RobotType.SIMBOT) {
@@ -60,10 +60,10 @@ public class Constants {
   }
 
   public record Gains(
-      double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {}
+      double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {
+  }
 
-  public static final Pose2d REEF_OFFSET =
-      new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
+  public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
 
   @RequiredArgsConstructor
   public enum ReefLocations {

@@ -26,13 +26,19 @@ import org.littletonrobotics.junction.Logger;
 // the WPILib BSD license file in the root directory of this project.
 
 /**
- * Class for odometry. Robot code should not use this directly- Instead, use the particular type for
- * your drivetrain (e.g., {@link DifferentialDriveOdometry}). Odometry allows you to track the
- * robot's position on the field over the course of a match using readings from encoders and a
+ * Class for odometry. Robot code should not use this directly- Instead, use the
+ * particular type for
+ * your drivetrain (e.g., {@link DifferentialDriveOdometry}). Odometry allows
+ * you to track the
+ * robot's position on the field over the course of a match using readings from
+ * encoders and a
  * gyroscope.
  *
- * <p>Teams can use odometry during the autonomous period for complex tasks like path following.
- * Furthermore, odometry can be used for latency compensation when using computer-vision systems.
+ * <p>
+ * Teams can use odometry during the autonomous period for complex tasks like
+ * path following.
+ * Furthermore, odometry can be used for latency compensation when using
+ * computer-vision systems.
  *
  * @param <T> Wheel positions type.
  */
@@ -49,9 +55,9 @@ public class ConstrainedSwerveDriveOdometry {
   /**
    * Constructs an Odometry object.
    *
-   * @param kinematics The kinematics of the drivebase.
-   * @param gyroAngle The angle reported by the gyroscope.
-   * @param wheelPositions The current encoder readings.
+   * @param kinematics        The kinematics of the drivebase.
+   * @param gyroAngle         The angle reported by the gyroscope.
+   * @param wheelPositions    The current encoder readings.
    * @param initialPoseMeters The starting position of the robot on the field.
    */
   public ConstrainedSwerveDriveOdometry(
@@ -113,12 +119,14 @@ public class ConstrainedSwerveDriveOdometry {
   /**
    * Resets the robot's position on the field.
    *
-   * <p>The gyroscope angle does not need to be reset here on the user's robot code. The library
+   * <p>
+   * The gyroscope angle does not need to be reset here on the user's robot code.
+   * The library
    * automatically takes care of offsetting the gyro angle.
    *
-   * @param gyroAngle The angle reported by the gyroscope.
+   * @param gyroAngle      The angle reported by the gyroscope.
    * @param wheelPositions The current encoder readings.
-   * @param poseMeters The position on the field that your robot is at.
+   * @param poseMeters     The position on the field that your robot is at.
    */
   public void resetPosition(
       Rotation2d gyroAngle, SwerveModulePosition[] modulePositions, Pose2d pose) {
@@ -134,12 +142,15 @@ public class ConstrainedSwerveDriveOdometry {
   }
 
   /**
-   * Updates the robot's position on the field using forward kinematics and integration of the pose
-   * over time. This method takes in an angle parameter which is used instead of the angular rate
-   * that is calculated from forward kinematics, in addition to the current distance measurement at
+   * Updates the robot's position on the field using forward kinematics and
+   * integration of the pose
+   * over time. This method takes in an angle parameter which is used instead of
+   * the angular rate
+   * that is calculated from forward kinematics, in addition to the current
+   * distance measurement at
    * each wheel.
    *
-   * @param gyroAngle The angle reported by the gyroscope.
+   * @param gyroAngle      The angle reported by the gyroscope.
    * @param wheelPositions The current encoder readings.
    * @return The new pose of the robot.
    */
@@ -156,29 +167,27 @@ public class ConstrainedSwerveDriveOdometry {
 
     var twist = m_kinematics.toTwist2d(m_previousWheelPositions, wheelPositions);
     // Converts twist back to module states
-    var kinematicsToWheelSpeeds =
-        m_kinematics.toWheelSpeeds(new ChassisSpeeds(twist.dx, twist.dy, twist.dtheta));
+    var kinematicsToWheelSpeeds = m_kinematics.toWheelSpeeds(new ChassisSpeeds(twist.dx, twist.dy, twist.dtheta));
     // check if wheel states match original wheel states
     for (int i = 0; (i < wheelPositions.length); i++) {
       rejected[i] = false;
 
-      rejected[i] =
-          !MathUtil.isNear(
-              wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters,
-              kinematicsToWheelSpeeds[i].speedMetersPerSecond,
-              DriveConstants.acceptableSlippageMeters);
+      rejected[i] = !MathUtil.isNear(
+          wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters,
+          kinematicsToWheelSpeeds[i].speedMetersPerSecond,
+          DriveConstants.acceptableSlippageMeters);
 
-      double angleError =
-          Math.IEEEremainder(
-              wheelPositions[i].angle.getRadians() - kinematicsToWheelSpeeds[i].angle.getRadians(),
-              2 * Math.PI);
+      double angleError = Math.IEEEremainder(
+          wheelPositions[i].angle.getRadians() - kinematicsToWheelSpeeds[i].angle.getRadians(),
+          2 * Math.PI);
 
       rejected[i] &= Math.abs(angleError) > DriveConstants.acceptableSlippageRadians;
 
-      if (rejected[i]) numRejected++;
+      if (rejected[i])
+        numRejected++;
     }
 
-    if (numRejected > 0) {
+    if (numRejected > 0 && numRejected < 3) {
       double dx = 0;
       double dy = 0;
 
@@ -192,25 +201,22 @@ public class ConstrainedSwerveDriveOdometry {
           continue;
         }
 
-        speed =
-            new Translation2d(
-                    0,
-                    wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters)
-                .rotateBy(wheelPositions[i].angle);
+        speed = new Translation2d(
+            0,
+            wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters)
+            .rotateBy(wheelPositions[i].angle);
         dx += speed.getX();
         dy += speed.getY();
       }
-      twist =
-          new Twist2d(
-              dx / (wheelPositions.length - numRejected),
-              dy / (wheelPositions.length - numRejected),
-              0);
+      twist = new Twist2d(
+          dx / (wheelPositions.length - numRejected),
+          dy / (wheelPositions.length - numRejected),
+          0);
       twist.dtheta = angle.minus(m_previousAngle).getRadians();
 
       Logger.recordOutput("Odometry/numRejected", numRejected);
       Logger.recordOutput("Odometry/Rejected Modules", rejected);
       Logger.recordOutput("Odometry/Rejected Poses", m_poseMeters);
-      Logger.recordOutput("Odometry/Rejected Wheel States Calculated", kinematicsToWheelSpeeds);
     }
 
     var newPose = m_poseMeters.exp(twist);
