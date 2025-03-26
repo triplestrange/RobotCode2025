@@ -1,18 +1,20 @@
-package com.team1533.lib.swerve;
+package com.team1533.lib.odometry;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.team1533.frc2025.subsystems.drive.DriveConstants;
 
+import edu.wpi.first.math.MathSharedStore;
+import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
@@ -36,7 +38,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
  * @param <T> Wheel positions type.
  */
 
-public class AdvancedOdometry {
+public class ConstrainedSwerveDriveOdometry {
+  private final int m_numModules;
 
   private final SwerveDriveKinematics m_kinematics;
   private Pose2d m_poseMeters;
@@ -53,35 +56,21 @@ public class AdvancedOdometry {
    * @param wheelPositions    The current encoder readings.
    * @param initialPoseMeters The starting position of the robot on the field.
    */
-  public AdvancedOdometry(
+  public ConstrainedSwerveDriveOdometry(
       SwerveDriveKinematics kinematics,
       Rotation2d gyroAngle,
       SwerveModulePosition[] wheelPositions,
       Pose2d initialPoseMeters) {
+    m_numModules = wheelPositions.length;
+
     m_kinematics = kinematics;
     m_poseMeters = initialPoseMeters;
     m_gyroOffset = m_poseMeters.getRotation().minus(gyroAngle);
     m_previousAngle = m_poseMeters.getRotation();
     m_previousWheelPositions = m_kinematics.copy(wheelPositions);
-  }
 
-  /**
-   * Resets the robot's position on the field.
-   *
-   * <p>
-   * The gyroscope angle does not need to be reset here on the user's robot code.
-   * The library
-   * automatically takes care of offsetting the gyro angle.
-   *
-   * @param gyroAngle      The angle reported by the gyroscope.
-   * @param wheelPositions The current encoder readings.
-   * @param poseMeters     The position on the field that your robot is at.
-   */
-  public void resetPosition(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions, Pose2d poseMeters) {
-    m_poseMeters = poseMeters;
-    m_previousAngle = m_poseMeters.getRotation();
-    m_gyroOffset = m_poseMeters.getRotation().minus(gyroAngle);
-    m_kinematics.copyInto(wheelPositions, m_previousWheelPositions);
+    MathSharedStore.reportUsage(MathUsageId.kOdometry_SwerveDrive, 1);
+
   }
 
   /**
@@ -125,6 +114,32 @@ public class AdvancedOdometry {
   }
 
   /**
+   * Resets the robot's position on the field.
+   *
+   * <p>
+   * The gyroscope angle does not need to be reset here on the user's robot code.
+   * The library
+   * automatically takes care of offsetting the gyro angle.
+   *
+   * @param gyroAngle      The angle reported by the gyroscope.
+   * @param wheelPositions The current encoder readings.
+   * @param poseMeters     The position on the field that your robot is at.
+   */
+
+  public void resetPosition(
+      Rotation2d gyroAngle, SwerveModulePosition[] modulePositions, Pose2d pose) {
+    if (modulePositions.length != m_numModules) {
+      throw new IllegalArgumentException(
+          "Number of modules is not consistent with number of wheel locations provided in "
+              + "constructor");
+    }
+    m_poseMeters = pose;
+    m_previousAngle = m_poseMeters.getRotation();
+    m_gyroOffset = m_poseMeters.getRotation().minus(gyroAngle);
+    m_kinematics.copyInto(modulePositions, m_previousWheelPositions);
+  }
+
+  /**
    * Updates the robot's position on the field using forward kinematics and
    * integration of the pose
    * over time. This method takes in an angle parameter which is used instead of
@@ -137,7 +152,12 @@ public class AdvancedOdometry {
    * @param wheelPositions The current encoder readings.
    * @return The new pose of the robot.
    */
-  public Pose2d update(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions, SwerveModuleState[] measured) {
+  public Pose2d update(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
+    if (wheelPositions.length != m_numModules) {
+      throw new IllegalArgumentException(
+          "Number of modules is not consistent with number of wheel locations provided in "
+              + "constructor");
+    }
 
     boolean[] rejected = new boolean[wheelPositions.length];
     int numRejected = 0;
@@ -146,7 +166,7 @@ public class AdvancedOdometry {
     var twist = m_kinematics.toTwist2d(m_previousWheelPositions, wheelPositions);
     // Converts twist back to module states
     var kinematicsToWheelSpeeds = m_kinematics
-        .toWheelSpeeds(ChassisSpeeds.fromRobotRelativeSpeeds(twist.dx, twist.dy, twist.dtheta, gyroAngle));
+        .toWheelSpeeds(new ChassisSpeeds(twist.dx, twist.dy, twist.dtheta));
     // check if wheel states match original wheel states
     for (int i = 0; (i < wheelPositions.length); i++) {
       rejected[i] = false;
@@ -156,7 +176,8 @@ public class AdvancedOdometry {
           DriveConstants.acceptableSlippageMeters);
 
       double angleError = Math
-          .IEEEremainder(measured[i].angle.getRadians() - kinematicsToWheelSpeeds[i].angle.getRadians(), 2 * Math.PI);
+          .IEEEremainder(
+              wheelPositions[i].angle.getRadians() - kinematicsToWheelSpeeds[i].angle.getRadians(), 2 * Math.PI);
 
       rejected[i] &= Math.abs(angleError) > DriveConstants.acceptableSlippageRadians;
 
@@ -205,4 +226,5 @@ public class AdvancedOdometry {
 
     return m_poseMeters;
   }
+
 }

@@ -9,7 +9,7 @@ public class Constants {
 
     public static final double loopPeriodSecs = 0.02;
     public static final double kSimDt = 0.001;
-    private static RobotType robotType = RobotType.SIMBOT;
+    private static RobotType robotType = RobotType.REPLAY;
     public static final boolean tuningMode = false;
 
     public static RobotType getRobot() {

@@ -21,7 +21,9 @@ import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
+import com.team1533.lib.odometry.StrangeSwerveDrivePoseEstimator;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -29,7 +31,6 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -74,8 +75,11 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                     new SwerveModulePosition(),
                     new SwerveModulePosition()
             };
-    private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
-            lastModulePositions, new Pose2d());
+    private StrangeSwerveDrivePoseEstimator poseEstimator = new StrangeSwerveDrivePoseEstimator(kinematics,
+            rawGyroRotation,
+            lastModulePositions, new Pose2d(), VisionConstants.STATE_STD_DEVS,
+            VisionConstants.VISION_MEASUREMENT_STD_DEVS,
+            1. / DriveConstants.ODOMETRY_FREQUENCY);
 
     public DriveSubsystem(
             GyroIO gyroIO,
@@ -333,7 +337,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
             double timestampSeconds,
             Matrix<N3, N1> visionMeasurementStdDevs) {
         poseEstimator.addVisionMeasurement(
-                visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+                visionRobotPoseMeters, timestampSeconds);
     }
 
     /** Returns the maximum linear speed in meters per sec. */
@@ -348,8 +352,10 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     public void teleopControl(double driveX, double driveY, double rotate) {
         double magnitude = Math.hypot(driveX, driveY);
-        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)*magnitude;
-        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)*magnitude;
+        double speedX = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveX, 0.05)
+                * magnitude;
+        double speedY = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * MathUtil.applyDeadband(driveY, 0.05)
+                * magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
 
         if (AllianceFlipUtil.shouldFlip()) {
