@@ -151,8 +151,9 @@ public class AdvancedOdometry {
     for (int i = 0; (i < wheelPositions.length); i++) {
       rejected[i] = false;
 
-      rejected[i] = !MathUtil.isNear(measured[i].speedMetersPerSecond, kinematicsToWheelSpeeds[i].speedMetersPerSecond,
-          DriveConstants.acceptableSlippageMetersPerSec);
+      rejected[i] = !MathUtil.isNear(wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters,
+          kinematicsToWheelSpeeds[i].speedMetersPerSecond,
+          DriveConstants.acceptableSlippageMeters);
 
       double angleError = Math
           .IEEEremainder(measured[i].angle.getRadians() - kinematicsToWheelSpeeds[i].angle.getRadians(), 2 * Math.PI);

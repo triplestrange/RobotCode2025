@@ -19,8 +19,8 @@ import edu.wpi.first.units.measure.Distance;
 public class DriveConstants {
 
         // Wheel Slippage Constants
-        public static final double acceptableSlippageMetersPerSec = 0;
-        public static final double acceptableSlippageRadians = 0; 
+        public static final double acceptableSlippageMeters = 0;
+        public static final double acceptableSlippageRadians = 0;
 
         // TunerConstants doesn't include these constants, so they are declared locally
         static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
@@ -61,7 +61,8 @@ public class DriveConstants {
                         .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
                         .withCustomModuleTranslations(getModuleTranslations())
                         .withGyro(COTS.ofPigeon2())
-                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36, Inch))
+                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36,
+                        // Inch))
                         .withSwerveModule(
                                         new SwerveModuleSimulationConfig(
                                                         DCMotor.getKrakenX60Foc(1),
