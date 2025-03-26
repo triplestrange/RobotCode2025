@@ -28,6 +28,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
+
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 
@@ -299,14 +301,13 @@ public class UnscentedPoseEstimator {
 
     // Step 4: Measure the twist between the old pose estimate and the vision pose.
     var twist = field_to_robot.get().log(visionRobotPoseMeters);
-
+ try {
     kalman.correct(
         VecBuilder.fill(0.0, 0.0, 0.0), VecBuilder.fill(twist.dx, twist.dy, twist.dtheta));
-
-    var scaledTwist = new Twist2d(kalman.getXhat(0), kalman.getXhat(1), kalman.getXhat(2));
+        
+        var scaledTwist = new Twist2d(kalman.getXhat(0), kalman.getXhat(1), kalman.getXhat(2));
     // Step 7: Calculate and record the vision update.
-    mLatestVisionUpdate =
-        new VisionUpdate(field_to_robot.get().exp(scaledTwist), odometrySample.get());
+    mLatestVisionUpdate = new VisionUpdate(field_to_robot.get().exp(scaledTwist), odometrySample.get());
 
     m_field_to_odom.put(
         new InterpolatingDouble(timestampSeconds),
@@ -318,6 +319,11 @@ public class UnscentedPoseEstimator {
     // vision update,
     // it's guaranteed to be the latest vision update.
     m_poseEstimate = mLatestVisionUpdate.compensate(m_odometry.getPoseMeters());
+ }
+ catch (Exception e) {
+  DriverStation.reportError("QR Decompsition failed: ", e.getStackTrace());
+ }
+  
   }
 
   /**
