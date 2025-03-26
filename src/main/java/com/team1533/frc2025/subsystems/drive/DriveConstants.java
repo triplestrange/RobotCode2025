@@ -9,6 +9,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
+import com.team1533.frc2025.Constants.Gains;
 import com.team1533.frc2025.generated.TunerConstants;
 
 import edu.wpi.first.math.geometry.Translation2d;
@@ -61,8 +62,6 @@ public class DriveConstants {
                         .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
                         .withCustomModuleTranslations(getModuleTranslations())
                         .withGyro(COTS.ofPigeon2())
-                        // .withBumperSize(Distance.ofBaseUnits(36, Inch), Distance.ofBaseUnits(36,
-                        // Inch))
                         .withSwerveModule(
                                         new SwerveModuleSimulationConfig(
                                                         DCMotor.getKrakenX60Foc(1),
@@ -86,6 +85,14 @@ public class DriveConstants {
                                 new Translation2d(TunerConstants.BackRight.LocationX,
                                                 TunerConstants.BackRight.LocationY)
                 };
+        }
+
+        public static final class RotationConfigs {
+
+                public static final double kSwerveHeadingControllerErrorTolerance = 0.025;
+                public static final Gains gainsSnap = new Gains(30, 0, 0, 0, 0, 0, 0);
+                public static final Gains gainsMaintain = new Gains(30, 0, 0, 0, 0, 0, 0);
+
         }
 
 }

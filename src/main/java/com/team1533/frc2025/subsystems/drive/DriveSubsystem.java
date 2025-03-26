@@ -19,11 +19,13 @@ import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.Constants.ReefLocations;
 import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
 import com.team1533.lib.odometry.StrangeSwerveDrivePoseEstimator;
+import com.team1533.lib.swerve.AlignController;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.LocalADStarAK;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -48,8 +50,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
+import java.lang.annotation.Target;
+import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -67,6 +73,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
     private final SwerveSetpointGenerator generator = new SwerveSetpointGenerator(DriveConstants.PP_CONFIG,
             DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
+    private final AlignController alignController = new AlignController(10, Constants.loopPeriodSecs, this::getPose);
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
             new SwerveModulePosition[] {
@@ -136,6 +143,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     @Override
     public void periodic() {
+
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -188,6 +196,37 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.getRobot() != RobotType.SIMBOT);
+        Pose2d bestPose = Pose2d.kZero;
+        double min = Double.POSITIVE_INFINITY;
+        if (RobotContainer.getInstance().isAlgaeMode()) {
+            for (ReefLocations location : ReefLocations.values()) {
+                if (min > location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation())) {
+                    min = location.getPose2dFlipped().getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dFlipped();
+                }
+
+            }
+        } else {
+            for (ReefLocations location : ReefLocations.values()) {
+                if ((min > location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation()))
+                        && RobotContainer.getInstance().isRight()) {
+                    min = location.getPose2dReef(false).getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dReef(false);
+                }
+                if ((min > location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation()))
+                        && RobotContainer.getInstance().isLeft()) {
+                    min = location.getPose2dReef(true).getTranslation().getDistance(getPose().getTranslation());
+                    bestPose = location.getPose2dReef(true);
+                }
+            }
+        }
+
+        setAlignTarget(bestPose);
+
+        if (!RobotContainer.getInstance().isLeft() && !RobotContainer.getInstance().isRight()) {
+            setAlignTarget(Pose2d.kZero);
+        }
+
     }
 
     /**
@@ -358,13 +397,22 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
                 * magnitude;
         double speedR = 6 * MathUtil.applyDeadband(rotate, 0.05);
 
+        // Yuckers Maybe?
+        if (RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
+            speedX *= 0.5;
+            speedY *= 0.5;
+            speedR *= 0.2;
+        }
+
         if (AllianceFlipUtil.shouldFlip()) {
             speedX = -speedX;
             speedY = -speedY;
         }
 
         setpoint = generator.generateSetpoint(setpoint,
-                ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation()), Constants.loopPeriodSecs);
+                alignController.update(
+                        ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation())),
+                Constants.loopPeriodSecs);
         Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
         runVelocity(setpoint.robotRelativeSpeeds());
     }
@@ -373,4 +421,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(),
                 new Pose2d(getPose().getX(), getPose().getY(), AllianceFlipUtil.apply(Rotation2d.fromDegrees(0))));
     }
+
+    public void setAlignTarget(Pose2d target) {
+        alignController.setTarget(target);
+    }
+
 }

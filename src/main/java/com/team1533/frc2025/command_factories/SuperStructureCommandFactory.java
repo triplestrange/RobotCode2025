@@ -16,12 +16,33 @@ public class SuperStructureCommandFactory {
         private static final ElevatorSubsystem elevator = RobotContainer.getInstance().getElevatorSubsystem();
         private static final WristSubsystem wrist = RobotContainer.getInstance().getWristSubsystem();
 
+// Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a setpoint
     public static Command genericPreset(
             double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
 
         return new SequentialCommandGroup(
                 moveArmOnly(0.21).until(arm.atSetpoint(.03)),
                 moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
+                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
+                moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
+                moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
+    }
+
+// Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any number within travel distance.
+    public static Command neutralPos(
+            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+
+        return new SequentialCommandGroup(
+                moveArmOnly(0.21).until(arm.atSetpoint(.03)),
+                moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
+                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)));
+    }
+
+// Forced Pos - Immediately Sets the SuperStructure to a setpoint. To be used in auto, ONLY AFTER NEUTRAL POS.
+    public static Command forcedPos(
+            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+
+        return new SequentialCommandGroup(
                 moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
                 moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
                 moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
@@ -37,15 +58,41 @@ public class SuperStructureCommandFactory {
 
     // Climb Sequence?
 
+    // public static Command climbSequence() {
+
+    //     return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
+    //             arm.motionMagicPositionCommand(() -> 0),
+    //             wrist.motionMagicPositionCommand(() -> 0),
+    //             elevator.motionMagicPositionCommand(() -> 0.35)));
+    //     }
+
+    public static Command climbPrep() {
+
+        return arm.motionMagicPositionCommand(()-> 0.125);
+            
+        }
+
     public static Command climbSequence() {
 
         return new ParallelCommandGroup(
-                arm.motionMagicPositionCommand(() -> 0),
                 wrist.motionMagicPositionCommand(() -> 0),
-                elevator.motionMagicPositionCommand(() -> 0.3));
+                arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625)
+                .andThen(moveElevatorOnly(0.325)).withName("Climb Sequence Command");
         }
+            
+        
+        // public static Command climbSequence() {
 
-        // return new SequentialCommandGroup(
+        //         return  moveArmOnly(0.125).until(arm.atSetpoint(0.03))
+        //         .andThen(new ParallelCommandGroup(wrist.motionMagicPositionCommand(() -> 0.125),
+        //         arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625).andThen(moveElevatorOnly(0.35)
+        //         .until(elevator.atSetpoint(0.02)))
+        //         .andThen(moveWristOnly(0))).withName("Climb Sequence Command");
+        //         }
+
+
+
+                // return new SequentialCommandGroup(
         // moveArmOnly(arm, elevator, wrist,
         // 0.22).withDeadline(Commands.waitSeconds(3)),
         // moveWristOnly(arm, elevator, wrist,
