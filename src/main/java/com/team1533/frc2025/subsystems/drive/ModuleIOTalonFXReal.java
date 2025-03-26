@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -15,13 +15,10 @@ import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
 /**
- * Module IO implementation for Talon FX drive motor controller, Talon FX turn
- * motor controller, and
+ * Module IO implementation for Talon FX drive motor controller, Talon FX turn motor controller, and
  * CANcoder. Configured using a set of module constants from Phoenix.
  *
- * <p>
- * Device configuration and other behaviors not exposed by TunerConstants can be
- * customized here.
+ * <p>Device configuration and other behaviors not exposed by TunerConstants can be customized here.
  */
 public class ModuleIOTalonFXReal extends ModuleIOTalonFX {
   // Queue to read inputs from odometry thread
@@ -30,12 +27,15 @@ public class ModuleIOTalonFXReal extends ModuleIOTalonFX {
   private final Queue<Double> turnPositionQueue;
 
   public ModuleIOTalonFXReal(
-      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants) {
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+          constants) {
     super(constants);
 
     this.timestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-    this.drivePositionQueue = PhoenixOdometryThread.getInstance().registerSignal(super.drivePosition);
-    this.turnPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(super.turnAbsolutePosition);
+    this.drivePositionQueue =
+        PhoenixOdometryThread.getInstance().registerSignal(super.drivePosition);
+    this.turnPositionQueue =
+        PhoenixOdometryThread.getInstance().registerSignal(super.turnAbsolutePosition);
   }
 
   @Override
@@ -43,9 +43,14 @@ public class ModuleIOTalonFXReal extends ModuleIOTalonFX {
     super.updateInputs(inputs);
 
     // Update odometry inputs
-    inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-    inputs.odometryDrivePositionsRad = drivePositionQueue.stream().mapToDouble((Double n) -> Units.rotationsToRadians(n) / constants.DriveMotorGearRatio).toArray();
-    inputs.odometryTurnPositions = turnPositionQueue.stream().map(Rotation2d::fromRotations).toArray(Rotation2d[]::new);
+    inputs.odometryTimestamps =
+        timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryDrivePositionsRad =
+        drivePositionQueue.stream()
+            .mapToDouble((Double n) -> Units.rotationsToRadians(n) / constants.DriveMotorGearRatio)
+            .toArray();
+    inputs.odometryTurnPositions =
+        turnPositionQueue.stream().map(Rotation2d::fromRotations).toArray(Rotation2d[]::new);
     timestampQueue.clear();
     drivePositionQueue.clear();
     turnPositionQueue.clear();

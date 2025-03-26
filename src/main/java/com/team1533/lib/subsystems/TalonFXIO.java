@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -58,9 +58,10 @@ public class TalonFXIO implements MotorIO {
     currentStatorSignal = talon.getStatorCurrent();
     currentSupplySignal = talon.getSupplyCurrent();
 
-    signals = new BaseStatusSignal[] {
-        positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
-    };
+    signals =
+        new BaseStatusSignal[] {
+          positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
+        };
 
     CTREUtil.tryUntilOK(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(50.0, signals), talon.getDeviceID());

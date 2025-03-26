@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -23,27 +23,24 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
 
 /**
- * Provides an interface for asynchronously reading high-frequency measurements
- * to a set of queues.
+ * Provides an interface for asynchronously reading high-frequency measurements to a set of queues.
  *
- * <p>
- * This version is intended for Phoenix 6 devices on both the RIO and CANivore
- * buses. When using
- * a CANivore, the thread uses the "waitForAll" blocking method to enable more
- * consistent sampling.
- * This also allows Phoenix Pro users to benefit from lower latency between
- * devices using CANivore
+ * <p>This version is intended for Phoenix 6 devices on both the RIO and CANivore buses. When using
+ * a CANivore, the thread uses the "waitForAll" blocking method to enable more consistent sampling.
+ * This also allows Phoenix Pro users to benefit from lower latency between devices using CANivore
  * time synchronization.
  */
 public class PhoenixOdometryThread extends Thread {
-  private final Lock signalsLock = new ReentrantLock(); // Prevents conflicts when registering signals
+  private final Lock signalsLock =
+      new ReentrantLock(); // Prevents conflicts when registering signals
   private BaseStatusSignal[] phoenixSignals = new BaseStatusSignal[0];
   private final List<DoubleSupplier> genericSignals = new ArrayList<>();
   private final List<Queue<Double>> phoenixQueues = new ArrayList<>();
   private final List<Queue<Double>> genericQueues = new ArrayList<>();
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
-  private static boolean isCANFD = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD();
+  private static boolean isCANFD =
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD();
   private static PhoenixOdometryThread instance = null;
 
   public static PhoenixOdometryThread getInstance() {
@@ -123,8 +120,7 @@ public class PhoenixOdometryThread extends Thread {
           // that is not CAN FD, regardless of Pro licensing. No reasoning for this
           // behavior is provided by the documentation.
           Thread.sleep((long) (1000.0 / DriveConstants.ODOMETRY_FREQUENCY));
-          if (phoenixSignals.length > 0)
-            BaseStatusSignal.refreshAll(phoenixSignals);
+          if (phoenixSignals.length > 0) BaseStatusSignal.refreshAll(phoenixSignals);
         }
       } catch (InterruptedException e) {
         e.printStackTrace();

@@ -1,21 +1,25 @@
+// Copyright (c) 2025 FRC 1533
+// http://github.com/triplestrange
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1533.frc2025.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
-
-import org.ironmaple.simulation.drivesims.COTS;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.frc2025.generated.TunerConstants;
-
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 public class DriveConstants {
 
@@ -92,7 +96,5 @@ public class DriveConstants {
                 public static final double kSwerveHeadingControllerErrorTolerance = 0.025;
                 public static final Gains gainsSnap = new Gains(30, 0, 0, 0, 0, 0, 0);
                 public static final Gains gainsMaintain = new Gains(30, 0, 0, 0, 0, 0, 0);
-
         }
-
 }

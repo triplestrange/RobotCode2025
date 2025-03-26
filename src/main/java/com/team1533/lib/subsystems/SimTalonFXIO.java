@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -7,24 +7,18 @@
 
 package com.team1533.lib.subsystems;
 
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.sim.ChassisReference;
-import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
-import com.team1533.lib.time.RobotTime;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.MomentOfInertia;
-import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Microseconds;
 import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.sim.ChassisReference;
+import com.team1533.lib.time.RobotTime;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Notifier;
 import org.ironmaple.simulation.motorsims.MapleMotorSim;
 import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
@@ -41,20 +35,26 @@ public class SimTalonFXIO extends TalonFXIO {
   public SimTalonFXIO(ServoMotorSubsystemConfig config) {
     super(config);
 
-    configMaple = new SimMotorConfigs(DCMotor.getKrakenX60Foc(1), config.unitToRotorRatio,
-        KilogramSquareMeters.of(config.momentOfInertia), Volts.of(0.25));
+    configMaple =
+        new SimMotorConfigs(
+            DCMotor.getKrakenX60Foc(1),
+            config.unitToRotorRatio,
+            KilogramSquareMeters.of(config.momentOfInertia),
+            Volts.of(0.25));
     mechanismSim = new MapleMotorSim(configMaple);
 
     // Assume that config is correct (which it might not be)
-    talon.getSimState().Orientation = (config.fxConfig.MotorOutput.Inverted == InvertedValue.Clockwise_Positive)
-        ? ChassisReference.Clockwise_Positive
-        : ChassisReference.CounterClockwise_Positive;
+    talon.getSimState().Orientation =
+        (config.fxConfig.MotorOutput.Inverted == InvertedValue.Clockwise_Positive)
+            ? ChassisReference.Clockwise_Positive
+            : ChassisReference.CounterClockwise_Positive;
 
     /* Run simulation at a faster rate so PID gains behave more reasonably */
-    simNotifier = new Notifier(
-        () -> {
-          updateSimState();
-        });
+    simNotifier =
+        new Notifier(
+            () -> {
+              updateSimState();
+            });
     simNotifier.startPeriodic(0.005);
   }
 
@@ -68,10 +68,15 @@ public class SimTalonFXIO extends TalonFXIO {
     simState.setSupplyVoltage(12.0);
     mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
 
-    double simVoltage = mechanismSim.useMotorController(controller)
-        .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
-            mechanismSim.getEncoderPosition(), mechanismSim.getEncoderVelocity())
-        .baseUnitMagnitude();
+    double simVoltage =
+        mechanismSim
+            .useMotorController(controller)
+            .updateControlSignal(
+                mechanismSim.getAngularPosition(),
+                mechanismSim.getVelocity(),
+                mechanismSim.getEncoderPosition(),
+                mechanismSim.getEncoderVelocity())
+            .baseUnitMagnitude();
 
     Logger.recordOutput(config.name + "/Sim/SimulatorVoltage", simVoltage);
 
@@ -92,6 +97,7 @@ public class SimTalonFXIO extends TalonFXIO {
     double rotorVel = mechanismSim.getVelocity().baseUnitMagnitude() / config.unitToRotorRatio;
     simState.setRotorVelocity(rotorVel);
     Logger.recordOutput(
-        config.name + "/Sim/SimulatorVelocityRadS", mechanismSim.getVelocity().in(RadiansPerSecond));
+        config.name + "/Sim/SimulatorVelocityRadS",
+        mechanismSim.getVelocity().in(RadiansPerSecond));
   }
 }

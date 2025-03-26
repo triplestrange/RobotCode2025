@@ -1,10 +1,16 @@
+// Copyright (c) 2025 FRC 1533
+// http://github.com/triplestrange
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1533.frc2025.command_factories;
 
 import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.subsystems.arm.ArmSubsystem;
 import com.team1533.frc2025.subsystems.elevator.ElevatorSubsystem;
 import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -12,124 +18,121 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 public class SuperStructureCommandFactory {
 
-        private static final ArmSubsystem arm = RobotContainer.getInstance().getArmSubsystem();
-        private static final ElevatorSubsystem elevator = RobotContainer.getInstance().getElevatorSubsystem();
-        private static final WristSubsystem wrist = RobotContainer.getInstance().getWristSubsystem();
+  private static final ArmSubsystem arm = RobotContainer.getInstance().getArmSubsystem();
+  private static final ElevatorSubsystem elevator =
+      RobotContainer.getInstance().getElevatorSubsystem();
+  private static final WristSubsystem wrist = RobotContainer.getInstance().getWristSubsystem();
 
-// Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a setpoint
-    public static Command genericPreset(
-            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+  // Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a setpoint
+  public static Command genericPreset(
+      double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
 
-        return new SequentialCommandGroup(
-                moveArmOnly(0.21).until(arm.atSetpoint(.03)),
-                moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
-                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
-                moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
-                moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
-    }
+    return new SequentialCommandGroup(
+        moveArmOnly(0.21).until(arm.atSetpoint(.03)),
+        moveWristOnly(0.22).until(wrist.atSetpoint(.02)),
+        moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
+        moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
+        moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
+  }
 
-// Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any number within travel distance.
-    public static Command neutralPos(
-            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+  // Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any number within
+  // travel distance.
+  public static Command neutralPos(
+      double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
 
-        return new SequentialCommandGroup(
-                moveArmOnly(0.21).until(arm.atSetpoint(.03)),
-                moveWristOnly( 0.22).until(wrist.atSetpoint(.02)),
-                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)));
-    }
+    return new SequentialCommandGroup(
+        moveArmOnly(0.21).until(arm.atSetpoint(.03)),
+        moveWristOnly(0.22).until(wrist.atSetpoint(.02)),
+        moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)));
+  }
 
-// Forced Pos - Immediately Sets the SuperStructure to a setpoint. To be used in auto, ONLY AFTER NEUTRAL POS.
-    public static Command forcedPos(
-            double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+  // Forced Pos - Immediately Sets the SuperStructure to a setpoint. To be used in auto, ONLY AFTER
+  // NEUTRAL POS.
+  public static Command forcedPos(
+      double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
 
-        return new SequentialCommandGroup(
-                moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
-                moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
-                moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
-    }
+    return new SequentialCommandGroup(
+        moveElevatorOnly(elevatorSetpointMeters).until(elevator.atSetpoint(.02)),
+        moveWristOnly(wristSetpointRotations).until(wrist.atSetpoint(.02)),
+        moveArmOnly(armSetpointRotations).until(arm.atSetpoint(.03)));
+  }
 
-    public static Command zeroElevator()   {
-        return new SequentialCommandGroup(
+  public static Command zeroElevator() {
+    return new SequentialCommandGroup(
         moveArmOnly(0.21).until(arm.atSetpoint(0.03)),
         moveWristOnly(0.22).until(wrist.atSetpoint(0.02)),
-        new ParallelDeadlineGroup(elevator.resetZeroPoint(), arm.holdSetpointCommand(),
-        wrist.holdSetpointCommand()));
-    }
+        new ParallelDeadlineGroup(
+            elevator.resetZeroPoint(), arm.holdSetpointCommand(), wrist.holdSetpointCommand()));
+  }
 
-    // Climb Sequence?
+  // Climb Sequence?
 
-    // public static Command climbSequence() {
+  // public static Command climbSequence() {
 
-    //     return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
-    //             arm.motionMagicPositionCommand(() -> 0),
-    //             wrist.motionMagicPositionCommand(() -> 0),
-    //             elevator.motionMagicPositionCommand(() -> 0.35)));
-    //     }
+  //     return   moveArmOnly(0.125).until(arm.atSetpoint(0.03)).andThen(new ParallelCommandGroup(
+  //             arm.motionMagicPositionCommand(() -> 0),
+  //             wrist.motionMagicPositionCommand(() -> 0),
+  //             elevator.motionMagicPositionCommand(() -> 0.35)));
+  //     }
 
-    public static Command climbPrep() {
+  public static Command climbPrep() {
 
-        return arm.motionMagicPositionCommand(()-> 0.125);
-            
-        }
+    return arm.motionMagicPositionCommand(() -> 0.125);
+  }
 
-    public static Command climbSequence() {
+  public static Command climbSequence() {
 
-        return new ParallelCommandGroup(
-                wrist.motionMagicPositionCommand(() -> 0),
-                arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625)
-                .andThen(moveElevatorOnly(0.325)).withName("Climb Sequence Command");
-        }
-            
-        
-        // public static Command climbSequence() {
+    return new ParallelCommandGroup(
+            wrist.motionMagicPositionCommand(() -> 0), arm.motionMagicPositionCommand(() -> 0))
+        .withTimeout(0.625)
+        .andThen(moveElevatorOnly(0.325))
+        .withName("Climb Sequence Command");
+  }
 
-        //         return  moveArmOnly(0.125).until(arm.atSetpoint(0.03))
-        //         .andThen(new ParallelCommandGroup(wrist.motionMagicPositionCommand(() -> 0.125),
-        //         arm.motionMagicPositionCommand(() -> 0)).withTimeout(0.625).andThen(moveElevatorOnly(0.35)
-        //         .until(elevator.atSetpoint(0.02)))
-        //         .andThen(moveWristOnly(0))).withName("Climb Sequence Command");
-        //         }
+  // public static Command climbSequence() {
 
+  //         return  moveArmOnly(0.125).until(arm.atSetpoint(0.03))
+  //         .andThen(new ParallelCommandGroup(wrist.motionMagicPositionCommand(() -> 0.125),
+  //         arm.motionMagicPositionCommand(() ->
+  // 0)).withTimeout(0.625).andThen(moveElevatorOnly(0.35)
+  //         .until(elevator.atSetpoint(0.02)))
+  //         .andThen(moveWristOnly(0))).withName("Climb Sequence Command");
+  //         }
 
+  // return new SequentialCommandGroup(
+  // moveArmOnly(arm, elevator, wrist,
+  // 0.22).withDeadline(Commands.waitSeconds(3)),
+  // moveWristOnly(arm, elevator, wrist,
+  // 0.337).withDeadline(Commands.waitSeconds(3)),
+  // moveElevatorOnly(arm, elevator, wrist,
+  // elevatorSetpointMeters).withDeadline(Commands.waitSeconds(3)),
+  // moveWristOnly(arm, elevator, wrist,
+  // wristSetpointRotations).withDeadline(Commands.waitSeconds(3)),
+  // moveArmOnly(arm, elevator, wrist,
+  // armSetpointRotations).withDeadline(Commands.waitSeconds(3))
+  // );
 
-                // return new SequentialCommandGroup(
-        // moveArmOnly(arm, elevator, wrist,
-        // 0.22).withDeadline(Commands.waitSeconds(3)),
-        // moveWristOnly(arm, elevator, wrist,
-        // 0.337).withDeadline(Commands.waitSeconds(3)),
-        // moveElevatorOnly(arm, elevator, wrist,
-        // elevatorSetpointMeters).withDeadline(Commands.waitSeconds(3)),
-        // moveWristOnly(arm, elevator, wrist,
-        // wristSetpointRotations).withDeadline(Commands.waitSeconds(3)),
-        // moveArmOnly(arm, elevator, wrist,
-        // armSetpointRotations).withDeadline(Commands.waitSeconds(3))
-        // );
+  public static Command moveArmOnly(double armSetpointRotations) {
 
-    public static Command moveArmOnly(
-            double armSetpointRotations) {
+    return new ParallelCommandGroup(
+        arm.motionMagicPositionCommand(() -> armSetpointRotations),
+        elevator.holdSetpointCommand(),
+        wrist.holdSetpointCommand());
+  }
 
-        return new ParallelCommandGroup(
-                arm.motionMagicPositionCommand(() -> armSetpointRotations),
-                elevator.holdSetpointCommand(),
-                wrist.holdSetpointCommand());
-    }
+  public static Command moveWristOnly(double wristSetpointRotations) {
 
-    public static Command moveWristOnly(
-            double wristSetpointRotations) {
+    return new ParallelCommandGroup(
+        arm.holdSetpointCommand(),
+        elevator.holdSetpointCommand(),
+        wrist.motionMagicPositionCommand(() -> wristSetpointRotations));
+  }
 
-        return new ParallelCommandGroup(
-                arm.holdSetpointCommand(),
-                elevator.holdSetpointCommand(),
-                wrist.motionMagicPositionCommand(() -> wristSetpointRotations));
-    }
+  public static Command moveElevatorOnly(double elevatorSetpointMeters) {
 
-    public static Command moveElevatorOnly(
-            double elevatorSetpointMeters) {
-
-        return new ParallelCommandGroup(
-                arm.holdSetpointCommand(),
-                elevator.motionMagicPositionCommand(() -> elevatorSetpointMeters),
-                wrist.holdSetpointCommand());
-    }
-
+    return new ParallelCommandGroup(
+        arm.holdSetpointCommand(),
+        elevator.motionMagicPositionCommand(() -> elevatorSetpointMeters),
+        wrist.holdSetpointCommand());
+  }
 }

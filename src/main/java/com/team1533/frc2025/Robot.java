@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -9,7 +9,6 @@ package com.team1533.frc2025;
 
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
-
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -21,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -31,12 +29,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the
- * name of this class or
- * the package after creating this project, you must also update the
- * build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
 public class Robot extends LoggedRobot {
@@ -45,7 +40,6 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
   private int i;
 
-  
   // temp for catawba bc we lowkey need this please forgive me jonah
 
   private final DigitalInput bannerLaser = new DigitalInput(0);
@@ -53,8 +47,7 @@ public class Robot extends LoggedRobot {
   private final Debouncer bannerDebouncer = new Debouncer(0.20, DebounceType.kRising);
 
   /**
-   * This function is run when the robot is first started up and should be used
-   * for any
+   * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
@@ -98,14 +91,15 @@ public class Robot extends LoggedRobot {
     // be added.
     // Log active commands
     Map<String, Integer> commandCounts = new HashMap<>();
-    BiConsumer<Command, Boolean> logCommandFunction = (Command command, Boolean active) -> {
-      String name = command.getName();
-      int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
-      commandCounts.put(name, count);
-      Logger.recordOutput(
-          "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), active);
-      Logger.recordOutput("CommandsAll/" + name, count > 0);
-    };
+    BiConsumer<Command, Boolean> logCommandFunction =
+        (Command command, Boolean active) -> {
+          String name = command.getName();
+          int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+          commandCounts.put(name, count);
+          Logger.recordOutput(
+              "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), active);
+          Logger.recordOutput("CommandsAll/" + name, count > 0);
+        };
     CommandScheduler.getInstance()
         .onCommandInitialize(
             (Command command) -> {
@@ -130,8 +124,7 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    if (i % 10 == 0) {
-    }
+    if (i % 10 == 0) {}
     i++;
     SmartDashboard.putBoolean("hasReef", bannerDebouncer.calculate(bannerLaser.get()));
 
@@ -160,10 +153,7 @@ public class Robot extends LoggedRobot {
     autonomousCommand = robotContainer.getAutonomousCommand();
   }
 
-  /**
-   * This autonomous runs the autonomous command selected by your
-   * {@link RobotContainer} class.
-   */
+  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
     // schedule the autonomous command (example)
@@ -174,8 +164,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-  }
+  public void autonomousPeriodic() {}
 
   @Override
   public void teleopInit() {
@@ -193,8 +182,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void testInit() {
@@ -204,13 +192,11 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {
-  }
+  public void testPeriodic() {}
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {
-  }
+  public void simulationInit() {}
 
   /** This function is called periodically whilst in simulation. */
   @Override
