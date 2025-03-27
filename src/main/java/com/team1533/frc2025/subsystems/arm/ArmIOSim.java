@@ -47,6 +47,11 @@ public class ArmIOSim extends ArmIOReal {
         super.updateInputs(inputs);
     }
 
+    @Override
+    public void updateFastInputs(FastArmIOInputs inputs) {
+        super.updateFastInputs(inputs);
+    }
+
     public void updateSimState() {
         var simState = leaderTalon.getSimState();
 
@@ -62,7 +67,7 @@ public class ArmIOSim extends ArmIOReal {
         Logger.recordOutput("Arm/Sim/SimulatorVoltage", simVoltage);
 
         double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
-        Logger.recordOutput("Arm/Sim/SimulatorPositionMeters", simPositionMeters);
+        Logger.recordOutput("Arm/Sim/SimulatorPositionRotations", simPositionMeters);
         mechanismSim.update(Seconds.of(Constants.kSimDt));
         Logger.recordOutput("Arm/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 

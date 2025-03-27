@@ -198,15 +198,17 @@ public class DriveSubsystem extends SubsystemBase {
             if (gyroInputs.connected) {
                 // Use the real gyro angle
                 rawYawRotation = gyroInputs.odometryYawPositions[i];
-                rawPitchRotation = gyroInputs.odometryPitchPositions[i];
-                rawRollRotation = gyroInputs.odometryRollPositions[i];
+                if (Constants.getRobot() == RobotType.COMPBOT) {
+                    rawPitchRotation = gyroInputs.odometryPitchPositions[i];
+                    rawRollRotation = gyroInputs.odometryRollPositions[i];
 
-                rawYawVelocity = gyroInputs.odometryYawVelocityRadPerSecs[i];
-                rawPitchVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
-                rawRollVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
+                    rawPitchVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
+                    rawRollVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
+                    rawYawVelocity = gyroInputs.odometryYawVelocityRadPerSecs[i];
 
-                rawAccelX = gyroInputs.odometryAccelXs[i];
-                rawAccelY = gyroInputs.odometryAccelYs[i];
+                    rawAccelX = gyroInputs.odometryAccelXs[i];
+                    rawAccelY = gyroInputs.odometryAccelYs[i];
+                }
             } else {
                 // Use the angle delta from the kinematics and module deltas
                 Twist2d twist = kinematics.toTwist2d(moduleDeltas);

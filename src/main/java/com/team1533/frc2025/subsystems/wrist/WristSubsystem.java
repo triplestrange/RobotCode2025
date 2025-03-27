@@ -135,7 +135,7 @@ public class WristSubsystem extends SubsystemBase implements IStatusSignalLoop {
     }
 
     public double getCurrentPosition() {
-        return state.getLatestWristPositionRadians();
+        return state.getLatestWristPositionRotations();
     }
 
     public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {

@@ -141,6 +141,7 @@ public class Robot extends LoggedRobot {
     Threads.setCurrentThreadPriority(false, 10);
 
     RobotState.getInstance().updateLogger();
+    RobotState.getInstance().updateMech2dViz();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

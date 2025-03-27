@@ -134,7 +134,7 @@ public class ArmSubsystem extends SubsystemBase implements IStatusSignalLoop {
     }
 
     public double getCurrentPosition() {
-        return state.getLatestArmPositionRadians();
+        return state.getLatestArmPositionRotations();
     }
 
     public Command waitForPosition(DoubleSupplier rotationsFromHorizontal, double toleranceRotations) {

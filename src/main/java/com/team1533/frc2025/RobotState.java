@@ -15,24 +15,41 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
+import com.team1533.frc2025.subsystems.arm.ArmConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem.VisionConsumer;
+import com.team1533.frc2025.subsystems.wrist.WristConstants;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj.Timer;
 import lombok.Getter;
 import lombok.Setter;
@@ -90,6 +107,30 @@ public class RobotState implements VisionConsumer {
 
     private final AtomicBoolean enablePathCancel = new AtomicBoolean(false);
 
+    private Pose3d wristPose3d = new Pose3d();
+    private Pose3d elevatorPose3d = new Pose3d();
+    private Pose3d armPose3d = new Pose3d();
+    private Pose3d funnelPose3d = new Pose3d();
+
+    private Translation2d superstructureOrigin2d = new Translation2d(0.089153, 0.219531);
+
+    public LoggedMechanism2d mechanism = new LoggedMechanism2d(Units.inchesToMeters(
+            29.750000), Units.feetToMeters(7.0), new Color8Bit(Color.kDarkBlue));
+
+    LoggedMechanismRoot2d root = mechanism.getRoot(
+            "Superstructure Root", superstructureOrigin2d.getX(), superstructureOrigin2d.getY());
+
+    public LoggedMechanismLigament2d arm = root
+            .append(new LoggedMechanismLigament2d("arm", 0.66089, 0, 4, new Color8Bit(Color.kBlue)));
+    public LoggedMechanismLigament2d elev = arm.append(
+            new LoggedMechanismLigament2d("elev", 0.5, 0, 4, new Color8Bit(Color.kBlack)));
+    public LoggedMechanismLigament2d wrist1 = elev
+            .append(new LoggedMechanismLigament2d("wrist1", 0.097401, 0, 4, new Color8Bit(Color.kCrimson)));
+    public LoggedMechanismLigament2d wrist2 = wrist1
+            .append(new LoggedMechanismLigament2d("wrist2", 0.18561, 86.308414, 4, new Color8Bit(Color.kCrimson)));
+    public LoggedMechanismLigament2d wrist3 = wrist2
+            .append(new LoggedMechanismLigament2d("wrist3", 0.165042, 68.159446, 4,
+                    new Color8Bit(Color.kAntiqueWhite)));
     private double autoStartTime;
 
     @Getter
@@ -184,7 +225,7 @@ public class RobotState implements VisionConsumer {
         armRots.addSample(timestamp, rots);
     }
 
-    public double getLatestArmPositionRadians() {
+    public double getLatestArmPositionRotations() {
         return this.armRots.getInternalBuffer().lastEntry().getValue();
     }
 
@@ -200,7 +241,7 @@ public class RobotState implements VisionConsumer {
         wristRots.addSample(timestamp, rots);
     }
 
-    public double getLatestWristPositionRadians() {
+    public double getLatestWristPositionRotations() {
         return this.wristRots.getInternalBuffer().lastEntry().getValue();
     }
 
@@ -328,6 +369,18 @@ public class RobotState implements VisionConsumer {
         Logger.recordOutput("RobotState/DesiredChassisSpeedFieldFrame", getLatestDesiredFieldRelativeChassisSpeed());
         Logger.recordOutput("RobotState/MeasuredChassisSpeedFieldFrame", getLatestMeasuredFieldRelativeChassisSpeeds());
         Logger.recordOutput("RobotState/FusedChassisSpeedFieldFrame", getLatestFusedFieldRelativeChassisSpeed());
+    }
+
+    public void updateMech2dViz() {
+        arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations() - ArmConstants.absEncoderOffset));
+        elev.setLength(getLatestElevPositionMeters());
+        wrist1.setAngle(Units.rotationsToDegrees(getLatestWristPositionRotations() - WristConstants.absEncoderOffset));
+
+        // arm.setAngle(45);
+        // elev.setLength(0);
+        // wrist1.setAngle(0);
+
+        Logger.recordOutput("score mech", mechanism);
     }
 
 }

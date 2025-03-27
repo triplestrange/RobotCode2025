@@ -43,6 +43,11 @@ public class WristIOSim extends WristIOReal {
     }
 
     @Override
+    public void updateFastInputs(FastWristIOInputs inputs) {
+        super.updateFastInputs(inputs);
+    }
+
+    @Override
     public void updateInputs(WristIOInputs inputs) {
         super.updateInputs(inputs);
     }
@@ -62,7 +67,7 @@ public class WristIOSim extends WristIOReal {
         Logger.recordOutput("Wrist/Sim/SimulatorVoltage", simVoltage);
 
         double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
-        Logger.recordOutput("Wrist/Sim/SimulatorPositionMeters", simPositionMeters);
+        Logger.recordOutput("Wrist/Sim/SimulatorPositionRotations", simPositionMeters);
         mechanismSim.update(Seconds.of(Constants.kSimDt));
         Logger.recordOutput("Wrist/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 
