@@ -125,7 +125,7 @@ public class WristIOReal implements WristIO {
         CTREUtil.applyConfiguration(wristEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                50,
+                10,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,

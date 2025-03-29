@@ -16,8 +16,8 @@ public class WristFactory {
         return wrist.motionMagicPositionCommand(setpoint).until(wrist.atSetpoint(WristConstants.toleranceRotations));
     }
 
-    public static Command hold()    {
-        return moveWristMotionMagic(wrist::getCurrentPosition);
+    public static Command hold() {
+        return wrist.holdSetpointCommand();
     }
 
 }

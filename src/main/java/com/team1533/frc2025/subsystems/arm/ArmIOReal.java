@@ -139,7 +139,7 @@ public class ArmIOReal implements ArmIO {
         CTREUtil.applyConfiguration(pivotEncoder, encoderConfig);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                50,
+                10,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
@@ -161,6 +161,7 @@ public class ArmIOReal implements ArmIO {
         // Optimize bus utilization
         leaderTalon.optimizeBusUtilization(0, 1.0);
         followerTalon.optimizeBusUtilization(0, 1.0);
+        pivotEncoder.optimizeBusUtilization(0, 1.0);
 
         voltageOut.EnableFOC = true;
         dutyCycleOutControl.EnableFOC = true;

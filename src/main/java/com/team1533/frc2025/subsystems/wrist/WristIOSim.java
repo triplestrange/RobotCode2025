@@ -15,7 +15,9 @@ import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.sim.ChassisReference;
 import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.subsystems.arm.ArmConstants;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -53,11 +55,14 @@ public class WristIOSim extends WristIOReal {
     }
 
     public void updateSimState() {
-        var simState = leaderTalon.getSimState();
+        var motorSimState = leaderTalon.getSimState();
+        var encSimState = wristEncoder.getSimState();
 
-        simState.setSupplyVoltage(12.0);
-        mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
-        Logger.recordOutput("Wrist/Sim/TalonMotorVoltage", simState.getMotorVoltage());
+        encSimState.setSupplyVoltage(12.0);
+
+        motorSimState.setSupplyVoltage(12.0);
+        mechanismSim.useMotorController(controller).requestVoltage(motorSimState.getMotorVoltageMeasure());
+        Logger.recordOutput("Wrist/Sim/TalonMotorVoltage", motorSimState.getMotorVoltage());
 
         double simVoltage = mechanismSim.useMotorController(controller)
                 .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
@@ -66,18 +71,20 @@ public class WristIOSim extends WristIOReal {
 
         Logger.recordOutput("Wrist/Sim/SimulatorVoltage", simVoltage);
 
-        double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
-        Logger.recordOutput("Wrist/Sim/SimulatorPositionRotations", simPositionMeters);
+        double simPositionRotations = mechanismSim.getAngularPosition().baseUnitMagnitude();
+        Logger.recordOutput("Wrist/Sim/SimulatorPositionRotations", simPositionRotations);
+        encSimState.setRawPosition(simPositionRotations / WristConstants.reduction);
         mechanismSim.update(Seconds.of(Constants.kSimDt));
         Logger.recordOutput("Wrist/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 
         double rotorPosition = mechanismSim.getAngularPosition().in(Revolutions);
-        simState.setRawRotorPosition(rotorPosition);
+        motorSimState.setRawRotorPosition(rotorPosition);
         Logger.recordOutput("Wrist/Sim/RawRotorPosition", rotorPosition);
 
         double rotorVel = mechanismSim.getVelocity().in(RevolutionsPerSecond);
-        simState.setRotorVelocity(rotorVel);
+        motorSimState.setRotorVelocity(rotorVel);
         Logger.recordOutput("Wrist/Sim/SimulatorVelocityRPS", rotorVel);
+        encSimState.setVelocity(rotorVel / WristConstants.reduction);
     }
 
 }

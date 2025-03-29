@@ -53,11 +53,12 @@ public class ArmIOSim extends ArmIOReal {
     }
 
     public void updateSimState() {
-        var simState = leaderTalon.getSimState();
+        var motorSimState = leaderTalon.getSimState();
+        var encSimState = pivotEncoder.getSimState();
 
-        simState.setSupplyVoltage(12.0);
-        mechanismSim.useMotorController(controller).requestVoltage(simState.getMotorVoltageMeasure());
-        Logger.recordOutput("Arm/Sim/TalonMotorVoltage", simState.getMotorVoltage());
+        motorSimState.setSupplyVoltage(12.0);
+        mechanismSim.useMotorController(controller).requestVoltage(motorSimState.getMotorVoltageMeasure());
+        Logger.recordOutput("Arm/Sim/TalonMotorVoltage", motorSimState.getMotorVoltage());
 
         double simVoltage = mechanismSim.useMotorController(controller)
                 .updateControlSignal(mechanismSim.getAngularPosition(), mechanismSim.getVelocity(),
@@ -66,17 +67,19 @@ public class ArmIOSim extends ArmIOReal {
 
         Logger.recordOutput("Arm/Sim/SimulatorVoltage", simVoltage);
 
-        double simPositionMeters = mechanismSim.getAngularPosition().baseUnitMagnitude();
-        Logger.recordOutput("Arm/Sim/SimulatorPositionRotations", simPositionMeters);
+        double simPositionRotations = mechanismSim.getAngularPosition().baseUnitMagnitude();
+        Logger.recordOutput("Arm/Sim/SimulatorPositionRotations", simPositionRotations);
+        encSimState.setRawPosition(simPositionRotations / ArmConstants.reduction);
         mechanismSim.update(Seconds.of(Constants.kSimDt));
         Logger.recordOutput("Arm/Sim/SimulatorVoltage", mechanismSim.getAppliedVoltage());
 
         double rotorPosition = mechanismSim.getAngularPosition().in(Revolutions);
-        simState.setRawRotorPosition(rotorPosition);
+        motorSimState.setRawRotorPosition(rotorPosition);
         Logger.recordOutput("Arm/Sim/RawRotorPosition", rotorPosition);
 
         double rotorVel = mechanismSim.getVelocity().in(RevolutionsPerSecond);
-        simState.setRotorVelocity(rotorVel);
+        motorSimState.setRotorVelocity(rotorVel);
         Logger.recordOutput("Arm/Sim/SimulatorVelocityRPS", rotorVel);
+        encSimState.setRawPosition(rotorVel / ArmConstants.reduction);
     }
 }

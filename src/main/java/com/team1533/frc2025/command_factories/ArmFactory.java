@@ -13,15 +13,15 @@ public class ArmFactory {
     private static final ArmSubsystem arm = RobotContainer.getInstance().getArmSubsystem();
 
     public static Command moveArmMotionMagic(DoubleSupplier setpoint) {
-        return arm.motionMagicPositionCommand(setpoint).until(arm.atSetpoint(ArmConstants.armToleranceRotations));
+        return arm.motionMagicPositionCommand(setpoint).until(arm.atSetpoint(ArmConstants.toleranceRotations));
     }
 
     public static Command moveArmDutyCycle(DoubleSupplier setpoint) {
         return arm.manualDutyCycle(setpoint);
     }
 
-    public static Command hold()    {
-        return moveArmMotionMagic(arm::getCurrentPosition);
+    public static Command hold() {
+        return arm.holdSetpointCommand();
     }
 
 }

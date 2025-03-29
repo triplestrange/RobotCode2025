@@ -70,18 +70,18 @@ public class SuperStructureCommandFactory {
                         double armSetpointRotations) {
 
                 return new ParallelCommandGroup(
-                        ArmFactory.moveArmMotionMagic(() -> armSetpointRotations),
                                 ElevatorFactory.hold(),
-                                WristFactory.hold());
+                                WristFactory.hold())
+                                .raceWith(ArmFactory.moveArmMotionMagic(() -> armSetpointRotations));
         }
 
         public static Command moveWristOnly(
                         double wristSetpointRotations) {
 
                 return new ParallelCommandGroup(
-                               ArmFactory.hold(),
-                                ElevatorFactory.hold(),
-                                WristFactory.moveWristMotionMagic(() -> wristSetpointRotations));
+                                ArmFactory.hold(),
+                                ElevatorFactory.hold())
+                                .raceWith(WristFactory.moveWristMotionMagic(() -> wristSetpointRotations));
         }
 
         public static Command moveElevatorOnly(
@@ -89,8 +89,8 @@ public class SuperStructureCommandFactory {
 
                 return new ParallelCommandGroup(
                                 ArmFactory.hold(),
-                                ElevatorFactory.moveArmMotionMagic(() -> elevatorSetpointMeters),
-                               WristFactory.hold());
+                                WristFactory.hold())
+                                .raceWith(ElevatorFactory.moveArmMotionMagic(() -> elevatorSetpointMeters));
         }
 
 }

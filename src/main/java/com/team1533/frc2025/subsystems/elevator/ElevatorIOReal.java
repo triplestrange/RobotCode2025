@@ -21,14 +21,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.util.CTREUtil;
 
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 
 public class ElevatorIOReal implements ElevatorIO {
     protected final TalonFX leaderTalon;
@@ -125,7 +123,7 @@ public class ElevatorIOReal implements ElevatorIO {
         CTREUtil.applyConfiguration(leaderTalon, config);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                50,
+                10,
                 leaderPositionSignal,
                 leaderVelocitySignal,
                 leaderVoltsSignal,
