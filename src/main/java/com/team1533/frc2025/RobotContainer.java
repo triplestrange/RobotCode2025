@@ -58,6 +58,8 @@ import com.team1533.frc2025.subsystems.funnel.FunnelSubsystem;
 import com.team1533.lib.loops.StatusSignalLoop;
 import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
+
+import edu.wpi.first.hal.LEDJNI;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -209,7 +211,7 @@ public class RobotContainer {
 
                                 ledSubsystem = new LedSubsystem(new LedIO() {
                                         
-                                });
+                                }); 
                                 break;
                 }
 
