@@ -36,6 +36,9 @@ import com.team1533.frc2025.subsystems.intake.IntakeSensorIO;
 import com.team1533.frc2025.subsystems.intake.IntakeSensorIOReal;
 import com.team1533.frc2025.subsystems.intake.IntakeSensorIOSim;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
+import com.team1533.frc2025.subsystems.leds.LedIO;
+import com.team1533.frc2025.subsystems.leds.LedIOHardware;
+import com.team1533.frc2025.subsystems.leds.LedSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -96,6 +99,8 @@ public class RobotContainer {
         private final IntakeSubsystem intakeSubsystem;
         @Getter
         private final FunnelSubsystem funnelSubsystem;
+        @Getter
+        private final LedSubsystem ledSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -131,6 +136,8 @@ public class RobotContainer {
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new TalonFXIO(IntakeConstants.config), new IntakeSensorIOReal());
                                 funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
+                                                new TalonFXIO(IntakeConstants.config);
+                                ledSubsystem = new LedSubsystem(new LedIOHardware());
 
                                 break;
 
@@ -164,6 +171,8 @@ public class RobotContainer {
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new SimTalonFXIO(IntakeConstants.config), new IntakeSensorIOSim());
                                 funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new SimTalonFXIO(FunnelConstants.config));
+                                                new SimTalonFXIO(IntakeConstants.config);
+                                ledSubsystem = new LedSubsystem(new LedIOHardware());
 
                                 break;
 
@@ -198,6 +207,9 @@ public class RobotContainer {
 
                                 funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
 
+                                ledSubsystem = new LedSubsystem(new LedIO() {
+                                        
+                                });
                                 break;
                 }
 
@@ -216,7 +228,9 @@ public class RobotContainer {
                 // NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
                 //                 .genericPreset(0.15, 0.045, 0.71).asProxy());
 
-                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
+                NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.3));
+
+                NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
 
                 autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
@@ -259,8 +273,11 @@ public class RobotContainer {
                 // // Climb Prep
                 // driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(0.25, 0, 0.5));
 
+                // Climb Prep
+                driveController.povRight().onTrue(SuperStructureCommandFactory.climbPrep());
+
                 // Climb Sequence
-                driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
+                driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence());
 
                 // // L4 Coral Automation
                 // driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
