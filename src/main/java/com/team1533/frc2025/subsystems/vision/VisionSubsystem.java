@@ -10,13 +10,11 @@ package com.team1533.frc2025.subsystems.vision;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.*;
 
 import com.team1533.frc2025.Constants;
-import com.team1533.frc2025.Robot;
 import com.team1533.frc2025.RobotState;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
