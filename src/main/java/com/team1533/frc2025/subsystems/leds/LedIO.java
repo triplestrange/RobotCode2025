@@ -10,13 +10,13 @@ public interface LedIO {
     class LedInputs {
     }
 
-    default void readInputs(LedIO.LedInputs inputs) {
+    default void updateInputs(LedIO.LedInputs inputs) {
     };
 
     default void update(final LedIO.LedInputs inputs) {
     };
 
-    void writePixels(LedState state);
+    default void writePixels(LedState state) {};
 
-    void writePixels(LedState[] states);
+    default void writePixels(LedState[] states) {};
 }
