@@ -1,5 +1,7 @@
 package com.team1533.frc2025;
 
+import com.team1533.frc2025.generated.TunerConstants;
+import com.team1533.lib.drivers.CANDeviceId;
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.Alert.AlertType;
@@ -59,7 +61,13 @@ public class Constants {
 
     public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
 
-
+    //LedConstants
+    public static final class LEDConstants {
+        public static final CANDeviceId kCANdleId = new CANDeviceId(29, TunerConstants.DrivetrainConstants.CANBusName);
+        public static final int kNonCandleLEDCount = 30;
+        public static final int kCandleLEDCount = 8;
+        public static final int kMaxLEDCount = kNonCandleLEDCount + kCandleLEDCount;
+    }
     @RequiredArgsConstructor
     public enum ReefLocations {
         REEF_17(aprilTagLayout.getTagPose(17).get().toPose2d()),

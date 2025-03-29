@@ -35,6 +35,9 @@ import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.intake.IntakeConstants;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
+import com.team1533.frc2025.subsystems.leds.LedIO;
+import com.team1533.frc2025.subsystems.leds.LedIOHardware;
+import com.team1533.frc2025.subsystems.leds.LedSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -95,6 +98,8 @@ public class RobotContainer {
         private WristSubsystem wristSubsystem;
         @Getter
         private IntakeSubsystem intakeSubsystem;
+        @Getter
+        private LedSubsystem ledSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -124,6 +129,7 @@ public class RobotContainer {
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new TalonFXIO(IntakeConstants.config));
+                                ledSubsystem = new LedSubsystem(new LedIOHardware());
 
                                 break;
 
@@ -157,6 +163,7 @@ public class RobotContainer {
 
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new SimTalonFXIO(IntakeConstants.config));
+                                ledSubsystem = new LedSubsystem(new LedIOHardware());
 
                                 break;
 
