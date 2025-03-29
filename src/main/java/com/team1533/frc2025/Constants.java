@@ -71,7 +71,7 @@ public class Constants {
     //LedConstants
     public static final class LEDConstants {
         public static final CANDeviceId kCANdleId = new CANDeviceId(29, TunerConstants.DrivetrainConstants.CANBusName);
-        public static final int kNonCandleLEDCount = 30;
+        public static final int kNonCandleLEDCount = 5;
         public static final int kCandleLEDCount = 8;
         public static final int kMaxLEDCount = kNonCandleLEDCount + kCandleLEDCount;
     }

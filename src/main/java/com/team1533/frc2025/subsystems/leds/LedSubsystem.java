@@ -30,7 +30,7 @@ public class LedSubsystem extends SubsystemBase {
     public LedSubsystem(final LedIO io) {
         this.io = io;
 
-        setDefaultCommand(commandSolidColor(LedState.kOrange).ignoringDisable(true)
+        setDefaultCommand(commandBlinkingState(LedState.kBlue, LedState.kOrange, 1, 1).ignoringDisable(true)
                 .withName("LED Default Command"));
     }
 
@@ -58,12 +58,13 @@ public class LedSubsystem extends SubsystemBase {
 
     public Command commandBlinkingState(LedState stateOne, LedState stateTwo, double durationOne, double durationTwo) {
         return new SequentialCommandGroup(
-                Commands.runOnce(() -> setSolidColor(stateOne)),
+                runOnce(() -> setSolidColor(stateOne)),
                 new WaitCommand(durationOne),
-                Commands.runOnce(() -> setSolidColor(stateTwo)),
+                runOnce(() -> setSolidColor(stateTwo)),
                 new WaitCommand(durationTwo)).repeatedly().ignoringDisable(true).withName("Blinking LED command");
     }
 
+   
     public Command commandBlinkingStateWithoutScheduler(LedState stateOne, LedState stateTwo, double durationOne,
             double durationTwo) {
         var state = new Object() {
