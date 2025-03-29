@@ -50,6 +50,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import com.team1533.frc2025.subsystems.elevator.*;
+import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
+import com.team1533.frc2025.subsystems.funnel.FunnelSubsystem;
 import com.team1533.lib.loops.StatusSignalLoop;
 import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
@@ -92,6 +94,8 @@ public class RobotContainer {
         private final WristSubsystem wristSubsystem;
         @Getter
         private final IntakeSubsystem intakeSubsystem;
+        @Getter
+        private final FunnelSubsystem funnelSubsystem;
 
         private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -126,6 +130,7 @@ public class RobotContainer {
                                 wristSubsystem = new WristSubsystem(new WristIOReal());
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new TalonFXIO(IntakeConstants.config), new IntakeSensorIOReal());
+                                funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
 
                                 break;
 
@@ -158,6 +163,7 @@ public class RobotContainer {
 
                                 intakeSubsystem = new IntakeSubsystem(IntakeConstants.config,
                                                 new SimTalonFXIO(IntakeConstants.config), new IntakeSensorIOSim());
+                                funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new SimTalonFXIO(FunnelConstants.config));
 
                                 break;
 
@@ -171,7 +177,6 @@ public class RobotContainer {
                                 });
 
                                 visionSubsystem = new VisionSubsystem(state, new VisionIO() {
-                                }, new VisionIO() {
                                 });
 
                                 armSubsystem = new ArmSubsystem(new ArmIO() {
@@ -191,23 +196,25 @@ public class RobotContainer {
 
                                                 });
 
+                                funnelSubsystem = new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
+
                                 break;
                 }
 
-                NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
-                                .genericPreset(0.205, 1.07, 0.337).asProxy());
+                // NamedCommands.registerCommand("Arm L4", SuperStructureCommandFactory
+                //                 .genericPreset(0.205, 1.07, 0.337).asProxy());
 
-                NamedCommands.registerCommand("Outtake",
-                                (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
+                // NamedCommands.registerCommand("Outtake",
+                //                 (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
 
-                NamedCommands.registerCommand("Arm Neutral", SuperStructureCommandFactory
-                                .genericPreset(0.21, 0.4, 0.22).asProxy());
+                // NamedCommands.registerCommand("Arm Neutral", SuperStructureCommandFactory
+                //                 .genericPreset(0.21, 0.4, 0.22).asProxy());
 
-                NamedCommands.registerCommand("Arm Feeder While Moving", SuperStructureCommandFactory
-                                .forcedPos(0.15, 0.045, 0.71).asProxy());
+                // NamedCommands.registerCommand("Arm Feeder While Moving", SuperStructureCommandFactory
+                //                 .forcedPos(0.15, 0.045, 0.71).asProxy());
 
-                NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
-                                .genericPreset(0.15, 0.045, 0.71).asProxy());
+                // NamedCommands.registerCommand("Arm Feeder", SuperStructureCommandFactory
+                //                 .genericPreset(0.15, 0.045, 0.71).asProxy());
 
                 NamedCommands.registerCommand("Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(2));
 
@@ -249,35 +256,35 @@ public class RobotContainer {
                 // Gyro Rotation Reset
                 driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-                // Climb Prep
-                driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(0.25, 0, 0.5));
+                // // Climb Prep
+                // driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(0.25, 0, 0.5));
 
                 // Climb Sequence
                 driveController.povDown().whileTrue(SuperStructureCommandFactory.climbSequence());
 
-                // L4 Coral Automation
-                driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.205, 1.07, 0.337));
+                // // L4 Coral Automation
+                // driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.205, 1.07, 0.337));
 
-                // L3 Coral Automation
-                driveController.circle().and(inCoralMode)
-                                .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
+                // // L3 Coral Automation
+                // driveController.circle().and(inCoralMode)
+                //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
 
-                // L2 Coral Automation
-                driveController.cross().and(inCoralMode)
-                                .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
+                // // L2 Coral Automation
+                // driveController.cross().and(inCoralMode)
+                //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
 
-                // L1 Coral Automation
-                driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.15, 0.0445, 0.71));
+                // // L1 Coral Automation
+                // driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.15, 0.0445, 0.71));
 
-                // Zero Preset
-                driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0, 0, 0));
+                // // Zero Preset
+                // driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0, 0, 0));
 
-                // Coral Feeder Automation
-                driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.15, 0.043, 0.71));
+                // // Coral Feeder Automation
+                // driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.15, 0.043, 0.71));
 
                 // Coral Intake
                 driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -285,21 +292,21 @@ public class RobotContainer {
                 // Coral Outtake
                 driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
 
-                // Processor Algae
-                driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.08, 0.1, 0.5));
+                // // Processor Algae
+                // driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.08, 0.1, 0.5));
 
-                // Low Reef Algae
-                driveController.cross().and(inAlgaeMode)
-                                .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.455));
+                // // Low Reef Algae
+                // driveController.cross().and(inAlgaeMode)
+                //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.455));
 
-                // High Reef Algae
-                driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.18, 0.48, 0.52));
+                // // High Reef Algae
+                // driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.18, 0.48, 0.52));
 
-                // Barge Algae
-                driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset(0.24, 1.07, 0.3));
+                // // Barge Algae
+                // driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
+                //                 .genericPreset(0.24, 1.07, 0.3));
 
                 // Algae Intake
                 driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75))
@@ -308,13 +315,13 @@ public class RobotContainer {
                 // Algae Outtake
                 driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-                // Auto Align Arm Neutral Pos
-                driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-                                .onTrue(SuperStructureCommandFactory
-                                                .genericPreset(0.21, 0.043, 0.22));
-                driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-                                .onTrue(SuperStructureCommandFactory
-                                                .genericPreset(0.21, 0.045, 0.22));
+                // // Auto Align Arm Neutral Pos
+                // driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+                //                 .onTrue(SuperStructureCommandFactory
+                //                                 .genericPreset(0.21, 0.043, 0.22));
+                // driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+                //                 .onTrue(SuperStructureCommandFactory
+                //                                 .genericPreset(0.21, 0.045, 0.22));
 
                 // Auto Align Options
                 driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));

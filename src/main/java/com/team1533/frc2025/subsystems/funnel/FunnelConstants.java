@@ -29,6 +29,8 @@ public class FunnelConstants {
     public static final double reverseSoftLimitThreshold = 0;
     public static final double forwardSoftLimitThreshold = 0.712;
 
+    public static final double toleranceRotations = 0.05;
+
     public static final Gains gains = switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         case COMPBOT -> new Gains(60, 0.0, 1, 0, 0.0, 0.0, 0);
@@ -58,6 +60,12 @@ public class FunnelConstants {
 
         config.fxConfig.MotionMagic.MotionMagicExpo_kA = motionMagicAcceleration;
         config.fxConfig.MotionMagic.MotionMagicCruiseVelocity = motionMagicCruiseVelocity;
+
+        config.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+        config.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+        config.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = forwardSoftLimitThreshold;
+        config.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = reverseSoftLimitThreshold;
+
 
     }
 }

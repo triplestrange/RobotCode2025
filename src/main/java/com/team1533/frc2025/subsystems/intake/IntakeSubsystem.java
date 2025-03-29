@@ -16,7 +16,6 @@ import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.Timer;
 
 public class IntakeSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, MotorIO> implements IStatusSignalLoop {
 

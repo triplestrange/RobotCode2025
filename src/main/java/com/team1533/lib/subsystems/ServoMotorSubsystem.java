@@ -143,6 +143,11 @@ public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends Moto
         .withName(getName() + " motionMagicSetpointCommand");
   }
 
+  public Command holdSetpointCommand() {
+    return run(() -> {
+        setMotionMagicSetpointImpl(positionSetpoint);
+    }).withName(getName() + " Maintain Setpoint");
+}
   protected void setCurrentPositionAsZero() {
     io.setCurrentPositionAsZero();
   }

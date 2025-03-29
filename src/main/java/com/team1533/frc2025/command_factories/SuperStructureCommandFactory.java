@@ -17,14 +17,15 @@ public class SuperStructureCommandFactory {
         // Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a
         // setpoint
         public static Command genericPreset(
-                        double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+                        double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations, double funnelSetpointRotations) {
 
                 return new SequentialCommandGroup(
                                 moveArmOnly(0.21),
                                 moveWristOnly(0.22),
                                 moveElevatorOnly(elevatorSetpointMeters),
                                 moveWristOnly(wristSetpointRotations),
-                                moveArmOnly(armSetpointRotations));
+                                moveArmOnly(armSetpointRotations),
+                                moveFunnelOnly(funnelSetpointRotations));
         }
 
         // Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any
@@ -71,7 +72,8 @@ public class SuperStructureCommandFactory {
 
                 return new ParallelCommandGroup(
                                 ElevatorFactory.hold(),
-                                WristFactory.hold())
+                                WristFactory.hold(),
+                                FunnelFactory.hold())
                                 .raceWith(ArmFactory.moveArmMotionMagic(() -> armSetpointRotations));
         }
 
@@ -80,7 +82,8 @@ public class SuperStructureCommandFactory {
 
                 return new ParallelCommandGroup(
                                 ArmFactory.hold(),
-                                ElevatorFactory.hold())
+                                ElevatorFactory.hold(),
+                                FunnelFactory.hold())
                                 .raceWith(WristFactory.moveWristMotionMagic(() -> wristSetpointRotations));
         }
 
@@ -89,8 +92,16 @@ public class SuperStructureCommandFactory {
 
                 return new ParallelCommandGroup(
                                 ArmFactory.hold(),
-                                WristFactory.hold())
+                                WristFactory.hold(),
+                                FunnelFactory.hold())
                                 .raceWith(ElevatorFactory.moveArmMotionMagic(() -> elevatorSetpointMeters));
+        }
+
+        public static Command moveFunnelOnly(double funnelSetpointRotations)  {
+                return new ParallelCommandGroup(
+                        ArmFactory.hold(),
+                ElevatorFactory.hold(),
+                WristFactory.hold()).raceWith(FunnelFactory.moveFunnelMotionMagic(() -> funnelSetpointRotations));
         }
 
 }

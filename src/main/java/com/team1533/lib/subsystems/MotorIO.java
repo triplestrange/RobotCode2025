@@ -10,22 +10,22 @@ package com.team1533.lib.subsystems;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public interface MotorIO {
-  void updateInputs(MotorInputs inputs);
+  default void updateInputs(MotorInputs inputs) {};
 
-  void setOpenLoopDutyCycle(double dutyCycle);
+  default void setOpenLoopDutyCycle(double dutyCycle) {};
 
   // These are in the "units" of the subsystem (rad, m).
-  void setPositionSetpoint(double units);
+  default void setPositionSetpoint(double units) {};
 
-  void setMotionMagicSetpoint(double units);
+  default void setMotionMagicSetpoint(double units) {};
 
-  void setNeutralMode(NeutralModeValue mode);
+  default void setNeutralMode(NeutralModeValue mode) {};
 
-  void setVelocitySetpoint(double unitsPerSecond);
+  default void setVelocitySetpoint(double unitsPerSecond) {};
 
-  void setCurrentPositionAsZero();
+  default void setCurrentPositionAsZero() {};
 
-  void setCurrentPosition(double positionUnits);
+  default void setCurrentPosition(double positionUnits) {};
 
-  void setEnableSoftLimits(boolean forward, boolean reverse);
+  default void setEnableSoftLimits(boolean forward, boolean reverse) {};
 }
