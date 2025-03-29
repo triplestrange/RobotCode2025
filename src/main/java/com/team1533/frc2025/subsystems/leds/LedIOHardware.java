@@ -1,7 +1,6 @@
 package com.team1533.frc2025.subsystems.leds;
 
 import com.ctre.phoenix.led.CANdle; // Import the CANdle class from CTRE Phoenix library
-
 import com.team1533.frc2025.Constants;
 
 /**
