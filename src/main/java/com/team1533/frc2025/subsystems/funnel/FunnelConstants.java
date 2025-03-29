@@ -23,8 +23,8 @@ public class FunnelConstants {
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;
 
-    public static final double motionMagicCruiseVelocity = 3.9;
-    public static final double motionMagicAcceleration = 2;
+    public static final double motionMagicCruiseVelocity = 0;
+    public static final double motionMagicAcceleration = 0;
 
     public static final double reverseSoftLimitThreshold = 0;
     public static final double forwardSoftLimitThreshold = 0.712;
@@ -55,8 +55,10 @@ public class FunnelConstants {
 
         config.name = "Funnel";
 
+        config.unitToRotorRatio = 1./reduction;
+
         config.talonCANID = funnelTalon;
-        config.unitToRotorRatio = reduction;
+
 
         config.fxConfig.MotionMagic.MotionMagicExpo_kA = motionMagicAcceleration;
         config.fxConfig.MotionMagic.MotionMagicCruiseVelocity = motionMagicCruiseVelocity;
@@ -65,6 +67,15 @@ public class FunnelConstants {
         config.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
         config.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = forwardSoftLimitThreshold;
         config.fxConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = reverseSoftLimitThreshold;
+
+        config.fxConfig.Slot0.kP = gains.kP();
+        config.fxConfig.Slot0.kI = gains.kI();
+        config.fxConfig.Slot0.kD = gains.kD();
+        config.fxConfig.Slot0.kG = gains.ffkG();
+        config.fxConfig.Slot0.kS= gains.ffkS();
+        config.fxConfig.Slot0.kV = gains.ffkV();
+        config.fxConfig.Slot0.kA = gains.ffkA();
+
 
 
     }

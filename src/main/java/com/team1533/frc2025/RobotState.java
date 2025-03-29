@@ -12,10 +12,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
@@ -30,14 +28,11 @@ import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -45,9 +40,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj.Timer;
@@ -104,6 +96,9 @@ public class RobotState implements VisionConsumer {
 
     private ConcurrentTimeInterpolatableBuffer<Double> wristRots = ConcurrentTimeInterpolatableBuffer
             .createDoubleBuffer(LOOKBACK_TIME);
+@Getter
+@Setter
+    private double funnelRots = 0.0;
 
     private final AtomicBoolean enablePathCancel = new AtomicBoolean(false);
 
@@ -127,10 +122,13 @@ public class RobotState implements VisionConsumer {
     public LoggedMechanismLigament2d wrist1 = elev
             .append(new LoggedMechanismLigament2d("wrist1", 0.097401, 0, 4, new Color8Bit(Color.kCrimson)));
     public LoggedMechanismLigament2d wrist2 = wrist1
-            .append(new LoggedMechanismLigament2d("wrist2", 0.18561, 86.308414, 4, new Color8Bit(Color.kCrimson)));
+            .append(new LoggedMechanismLigament2d("wrist2", 0.18561, -86.308414, 0, new Color8Bit(Color.kCrimson)));
     public LoggedMechanismLigament2d wrist3 = wrist2
-            .append(new LoggedMechanismLigament2d("wrist3", 0.165042, 68.159446, 4,
+            .append(new LoggedMechanismLigament2d("wrist3", 0.165042, 180 - 68.159446, 4,
                     new Color8Bit(Color.kAntiqueWhite)));
+    public LoggedMechanismLigament2d funnel1 = arm.append(new LoggedMechanismLigament2d("Funnel1", 0.358,  180-19.18, 0, new Color8Bit(Color.kCrimson)));
+    public LoggedMechanismLigament2d funnel2 = funnel1.append(new LoggedMechanismLigament2d("Funnel2", 0.296, 0, 4, new Color8Bit(Color.kAntiqueWhite)));
+
     private double autoStartTime;
 
     @Getter
@@ -372,14 +370,14 @@ public class RobotState implements VisionConsumer {
     }
 
     public void updateMech2dViz() {
-        arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations() - ArmConstants.absEncoderOffset));
+        arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations()));
         elev.setLength(getLatestElevPositionMeters());
-        wrist1.setAngle(Units.rotationsToDegrees(getLatestWristPositionRotations() - WristConstants.absEncoderOffset));
-
-        // arm.setAngle(45);
-        // elev.setLength(0);
-        // wrist1.setAngle(0);
-
+        wrist1.setAngle(Units.rotationsToDegrees(-getLatestWristPositionRotations()) +.388);
+        funnel2.setAngle(Units.rotationsToDegrees(getFunnelRots() - Units.degreesToRotations( 180 - 19.18)));
+        // arm.setAngle(Constants.SuperStructureStates.FEEDER.getState().armGoalRots() * 360);
+        // elev.setLength(Constants.SuperStructureStates.FEEDER.getState().elevGoalMeters());
+        // wrist1.setAngle(Constants.SuperStructureStates.FEEDER.getState().wristGoalRots() * 360 * 0);
+        // funnel2.setAngle(90 - 180 + 19.18);
         Logger.recordOutput("score mech", mechanism);
     }
 
