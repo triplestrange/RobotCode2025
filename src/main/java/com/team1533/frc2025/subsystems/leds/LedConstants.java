@@ -25,11 +25,11 @@ public class LedConstants {
 
   static {
     // TODO: find the actual settings im guessing
-    config.brightnessScalar = 1.;
+    config.brightnessScalar = 0.1;
     config.disableWhenLOS = false;
     config.enableOptimizations = true;
     config.statusLedOffWhenActive = false;
-    config.stripType = LEDStripType.BRG;
+    config.stripType = LEDStripType.GRB;
     config.v5Enabled = true;
     config.vBatOutputMode = VBatOutputMode.Off;
   }

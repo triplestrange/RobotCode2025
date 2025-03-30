@@ -42,7 +42,7 @@ public class FunnelConstants {
   public static final Gains gains =
       switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(60, 0.0, 1, 0, 0.0, 0.0, 0);
+        case COMPBOT -> new Gains(20, 0.0, 0, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
       };
 
@@ -67,6 +67,9 @@ public class FunnelConstants {
     config.unitToRotorRatio = 1. / reduction;
 
     config.talonCANID = funnelTalon;
+
+    config.fxConfig.MotorOutput.Inverted =
+        leaderInverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
     // TODO: tune these
     config.fxConfig.MotionMagic.MotionMagicExpo_kA = MotionMagicExpo_kA;

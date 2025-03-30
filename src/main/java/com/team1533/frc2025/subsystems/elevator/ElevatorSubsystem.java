@@ -35,8 +35,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoo
 
   private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
   public double currentFilterValue = 0.0;
-@Getter
-  private boolean zerod = false;
+  @Getter private boolean zerod = false;
   @Getter private double elevatorSetpointMeters = 0.0;
 
   public ElevatorSubsystem(final ElevatorIO io) {

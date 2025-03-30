@@ -7,11 +7,11 @@
 
 package com.team1533.lib.time;
 
-import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.Timer;
 
 public class RobotTime {
   public static double getTimestampSeconds() {
-    long micros = Logger.getTimestamp();
-    return (double) micros * 1.0E-6;
+    double seconds = Timer.getFPGATimestamp();
+    return (double) seconds; // * 1.0E-6;
   }
 }
