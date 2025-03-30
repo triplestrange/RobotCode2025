@@ -14,6 +14,7 @@ public class FunnelSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
             ServoMotorSubsystemConfig c,
             final MotorIO io) {
         super(c, new MotorInputsAutoLogged(), io);
+        setTeleopDefaultCommand();
     }
 
     @Override
@@ -21,7 +22,7 @@ public class FunnelSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
         super.periodic();
         state.setFunnelRots(getCurrentPosition());
     }
-
+    // TODO: change this if its too annoying
     public void setTeleopDefaultCommand() {
         setDefaultCommand(motionMagicSetpointCommand(() -> 0.0).withName("Stow Funnel"));
     }

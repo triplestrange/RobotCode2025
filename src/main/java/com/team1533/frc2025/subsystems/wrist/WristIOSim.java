@@ -15,9 +15,7 @@ import org.ironmaple.simulation.motorsims.SimMotorConfigs;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.sim.ChassisReference;
 import com.team1533.frc2025.Constants;
-import com.team1533.frc2025.subsystems.arm.ArmConstants;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.MomentOfInertia;

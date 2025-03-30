@@ -3,8 +3,6 @@ package com.team1533.frc2025.command_factories;
 import java.util.function.DoubleSupplier;
 
 import com.team1533.frc2025.RobotContainer;
-import com.team1533.frc2025.subsystems.arm.ArmConstants;
-import com.team1533.frc2025.subsystems.arm.ArmSubsystem;
 import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
 import com.team1533.frc2025.subsystems.funnel.FunnelSubsystem;
 

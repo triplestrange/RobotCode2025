@@ -1,6 +1,5 @@
 package com.team1533.frc2025.subsystems.elevator;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Gains;
 
@@ -25,12 +24,16 @@ public class ElevatorConstants {
     public static final double motionMagicCruiseVelocity = 2;
     public static final double motionMagicAcceleration = 18;
     public static final double motionMagicJerk = 60;
+    // TODO: Tune these 
+    public static final double motionMagicExpo_kA = 0;
+    public static final double motionMagicExpo_kV = 0;
+
 
 
     
     public static final double reverseSoftLimitThreshold = 0;
     public static final double forwardSoftLimitThreshold = 1.07;
-
+    // TODO: tune this because we changed it to use a linear filter
     public static final double blockedCurrent = 100;
 
     public static final double toleranceMeters = .02;

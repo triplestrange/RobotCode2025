@@ -20,10 +20,14 @@ public class WristConstants {
     public static final double supplyCurrentLimit = 60;
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;
-
+    
     public static final double motionMagicCruiseVelocity = 3.9;
     public static final double motionMagicAcceleration = 2;
     public static final double motionMagicJerk = 10;
+    // TODO: tune these values
+    public static final double motionMagicExpo_kA = 0;
+    public static final double motionMagicExpo_kV = 0;
+
 
     
     public static final double absEncoderOffset = 0.875 - 0.005859375;

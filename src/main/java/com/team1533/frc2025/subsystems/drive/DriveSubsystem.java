@@ -73,12 +73,8 @@ public class DriveSubsystem extends SubsystemBase {
     private final AlignController alignController = new AlignController(5, Constants.kRealDt, this::getPose);
 
     private Rotation2d rawYawRotation = new Rotation2d();
-    private Rotation2d rawPitchRotation = new Rotation2d();
-    private Rotation2d rawRollRotation = new Rotation2d();
 
     private double rawYawVelocity = 0.0;
-    private double rawRollVelocity = 0.0;
-    private double rawPitchVelocity = 0.0;
 
     private double rawAccelX = 0.0;
     private double rawAccelY = 0.0;
@@ -198,12 +194,8 @@ public class DriveSubsystem extends SubsystemBase {
             if (gyroInputs.connected) {
                 // Use the real gyro angle
                 rawYawRotation = gyroInputs.odometryYawPositions[i];
+            // too lazy to update gyro sim so here's the solution
                 if (Constants.getRobot() == RobotType.COMPBOT) {
-                    rawPitchRotation = gyroInputs.odometryPitchPositions[i];
-                    rawRollRotation = gyroInputs.odometryRollPositions[i];
-
-                    rawPitchVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
-                    rawRollVelocity = gyroInputs.odometryPitchVelocityRadPerSecs[i];
                     rawYawVelocity = gyroInputs.odometryYawVelocityRadPerSecs[i];
 
                     rawAccelX = gyroInputs.odometryAccelXs[i];
@@ -215,7 +207,7 @@ public class DriveSubsystem extends SubsystemBase {
                 rawYawRotation = rawYawRotation.plus(new Rotation2d(twist.dtheta));
             }
             // Apply update
-            poseEstimator.updateWithTime(sampleTimestamps[i], rawYawRotation, modulePositions);
+            state.addOdometryMeasurement(sampleTimestamps[i],   poseEstimator.updateWithTime(sampleTimestamps[i], rawYawRotation, modulePositions));
 
             ChassisSpeeds measuredRobotRelativeChassisSpeeds = kinematics
                     .toChassisSpeeds(swerveModulePositionToState(modulePositions));
@@ -230,8 +222,8 @@ public class DriveSubsystem extends SubsystemBase {
                     rawYawVelocity);
 
             state.addDriveMotionMeasurements(
-                    sampleTimestamps[i], rawRollVelocity, rawPitchVelocity, rawYawVelocity,
-                    rawPitchRotation.getRadians(), rawRollRotation.getRadians(), rawAccelX, rawAccelY,
+                    sampleTimestamps[i], rawYawVelocity,
+                    rawAccelX, rawAccelY,
                     desiredFieldRelativeChassisSpeeds,
                     measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
                     fusedFieldRelativeChassisSpeeds);

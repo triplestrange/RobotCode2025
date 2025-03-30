@@ -1,20 +1,11 @@
 package com.team1533.frc2025.subsystems.elevator;
 
-import static edu.wpi.first.units.Units.Second;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.Constants.Gains;
-
-import edu.wpi.first.units.AngularVelocityUnit;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Velocity;
 
 public interface ElevatorIO {
 

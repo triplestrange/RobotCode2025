@@ -1,9 +1,7 @@
 package com.team1533.frc2025.subsystems.elevator;
 
-import edu.wpi.first.math.MathUsageId;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,12 +12,10 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import org.dyn4j.Epsilon;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.RobotState;
-import com.team1533.frc2025.subsystems.elevator.ElevatorIO.FastElevatorIOInputs;
 import com.team1533.lib.loops.IStatusSignalLoop;
 import com.team1533.lib.time.RobotTime;
 

@@ -8,7 +8,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -38,7 +38,7 @@ public class WristIOReal implements WristIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withEnableFOC(true)
+    private final MotionMagicExpoVoltage motionMagicExpoVoltage = new MotionMagicExpoVoltage(0.0).withEnableFOC(true)
             .withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
@@ -143,7 +143,7 @@ public class WristIOReal implements WristIO {
 
         voltageOut.EnableFOC = true;
         dutyCycleOutControl.EnableFOC = true;
-        motionMagicVoltage.EnableFOC = true;
+        motionMagicExpoVoltage.EnableFOC = true;
 
     }
 
@@ -209,7 +209,7 @@ public class WristIOReal implements WristIO {
 
     @Override
     public void setMotionMagicSetpoint(double positionRotations) {
-        leaderTalon.setControl(motionMagicVoltage.withPosition(positionRotations));
+        leaderTalon.setControl(motionMagicExpoVoltage.withPosition(positionRotations));
     }
 
     @Override

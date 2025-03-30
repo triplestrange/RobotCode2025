@@ -9,8 +9,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -31,7 +30,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Timer;
 
 public class ArmIOReal implements ArmIO {
     protected final TalonFX leaderTalon;
@@ -43,7 +41,7 @@ public class ArmIOReal implements ArmIO {
     private final PositionTorqueCurrentFOC positionTorqueCurrentFOC = new PositionTorqueCurrentFOC(0)
             .withUpdateFreqHz(0.0);
     private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-    private final MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
+    private final MotionMagicExpoVoltage motionMagicVoltage = new MotionMagicExpoVoltage(0.0).withUpdateFreqHz(0.0);
 
     private final StatusSignal<Angle> leaderPositionSignal;
     private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -102,6 +100,9 @@ public class ArmIOReal implements ArmIO {
         config.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.motionMagicCruiseVelocity;
         config.MotionMagic.MotionMagicAcceleration = ArmConstants.motionMagicAcceleration;
         config.MotionMagic.MotionMagicJerk = ArmConstants.motionMagicJerk;
+        config.MotionMagic.MotionMagicExpo_kA = ArmConstants.motionMagicExpo_kA;
+        config.MotionMagic.MotionMagicExpo_kV = ArmConstants.motionMagicExpo_kV;
+
 
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ArmConstants.forwardSoftLimitThreshold;

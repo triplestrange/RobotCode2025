@@ -1,7 +1,6 @@
 package com.team1533.frc2025.subsystems.leds;
 
 import com.ctre.phoenix.led.CANdle; // Import the CANdle class from CTRE Phoenix library
-import com.team1533.frc2025.Constants;
 
 /**
  * The {@code LedIOHardware} class implements the {@link LedIO} interface to
@@ -16,9 +15,9 @@ public class LedIOHardware implements LedIO {
     private final CANdle candle;
 
     public LedIOHardware() {
-        candle = new CANdle(Constants.LEDConstants.kCANdleId.getDeviceNumber(),
-                Constants.LEDConstants.kCANdleId.getBus());
-        candle.configBrightnessScalar(1.0);
+        candle = new CANdle(LedConstants.kCANdleId.getDeviceNumber(),
+                LedConstants.kCANdleId.getBus());
+       candle.configAllSettings(LedConstants.config);
     }
 
     @Override

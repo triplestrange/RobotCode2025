@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.photonvision.PhotonCamera;
-
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.RobotState;
@@ -29,6 +28,7 @@ import com.team1533.frc2025.RobotState;
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  protected final RobotState state = RobotState.getInstance();
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -56,8 +56,8 @@ public class VisionIOPhotonVision implements VisionIO {
             Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
 
         for (var target : result.targets) {
+          
           // Pinhole model using sensed tag distance instead of height difference
-
           Optional<Pose3d> tagPose = Constants.aprilTagLayout.getTagPose(target.fiducialId);
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
@@ -73,9 +73,9 @@ public class VisionIOPhotonVision implements VisionIO {
           Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
           robotToTag = robotToTag.plus(robotToCamera.getTranslation());
 
-          Rotation2d robotRotation = RobotState.getInstance().getYawRads(result.getTimestampSeconds())
+          Rotation2d robotRotation = state.getYawRads(result.getTimestampSeconds())
               .isPresent()
-                  ? Rotation2d.fromRadians(RobotState.getInstance().getYawRads(result.getTimestampSeconds()).get())
+                  ? Rotation2d.fromRadians(state.getYawRads(result.getTimestampSeconds()).get())
                   : RobotContainer.getInstance().getDriveSubsystem().getRotation();
           // rotate to field coordinates
           Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
@@ -93,6 +93,8 @@ public class VisionIOPhotonVision implements VisionIO {
                   PoseObservationType.PINHOLE)); // Observation type
 
           tagIds.add((short) target.fiducialId);
+
+          
 
         }
       } else {

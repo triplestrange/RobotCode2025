@@ -155,9 +155,4 @@ public class WristSubsystem extends SubsystemBase implements IStatusSignalLoop {
         return inputs.leaderRotPosition;
     }
 
-    // TODO: implememt
-    public void resetZeroPoint() {
-
-    }
-
 }

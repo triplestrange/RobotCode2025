@@ -22,9 +22,10 @@ public class FunnelConstants {
     public static final double supplyCurrentLimit = 60;
     public static final double supplyCurrentLowerLimit = 40;
     public static final double supplyCurrentLowerLimitTime = 1;
-
+// TODO: tune these
     public static final double motionMagicCruiseVelocity = 0;
-    public static final double motionMagicAcceleration = 0;
+    public static final double MotionMagicExpo_kA = 0;
+    public static final double MotionMagicExpo_kV = 0;
 
     public static final double reverseSoftLimitThreshold = 0;
     public static final double forwardSoftLimitThreshold = 0.712;
@@ -59,8 +60,9 @@ public class FunnelConstants {
 
         config.talonCANID = funnelTalon;
 
-
-        config.fxConfig.MotionMagic.MotionMagicExpo_kA = motionMagicAcceleration;
+        // TODO: tune these
+        config.fxConfig.MotionMagic.MotionMagicExpo_kA = MotionMagicExpo_kA;
+        config.fxConfig.MotionMagic.MotionMagicExpo_kV = MotionMagicExpo_kV;
         config.fxConfig.MotionMagic.MotionMagicCruiseVelocity = motionMagicCruiseVelocity;
 
         config.fxConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;

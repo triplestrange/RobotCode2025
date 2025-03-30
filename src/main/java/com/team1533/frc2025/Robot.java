@@ -10,12 +10,8 @@ package com.team1533.frc2025;
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
@@ -127,6 +123,7 @@ public class Robot extends LoggedRobot {
     if (i % 10 == 0) {
     }
     i++;
+    // TODO: setting this thread's priority could also be killing the pheonix thread so if its a problem try getting rid of this part
     // Switch thread to high priority to improve loop timing
     Threads.setCurrentThreadPriority(true, 99);
 

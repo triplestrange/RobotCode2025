@@ -15,7 +15,6 @@ import com.team1533.frc2025.generated.TunerConstants;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 
 public class DriveConstants {
 

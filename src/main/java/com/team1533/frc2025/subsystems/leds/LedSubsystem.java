@@ -2,7 +2,6 @@ package com.team1533.frc2025.subsystems.leds;
 
 import java.util.function.Supplier;
 
-import com.team1533.frc2025.Constants;
 import com.team1533.lib.util.Util;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -104,7 +103,7 @@ public class LedSubsystem extends SubsystemBase {
     }
 
     private void setPercentageFull(double percentageFull, LedState state) {
-        LedState[] pixels = new LedState[Constants.LEDConstants.kMaxLEDCount / 2];
+        LedState[] pixels = new LedState[LedConstants.kMaxLEDCount / 2];
         for (int i = 0; i < pixels.length; i++) {
             if (i < pixels.length * Util.limit(percentageFull, 0.0, 1.0)) {
                 pixels[i] = state;
@@ -115,10 +114,10 @@ public class LedSubsystem extends SubsystemBase {
     }
 
     private LedState[] mirror(LedState[] pixels) {
-        LedState[] fullPixels = new LedState[Constants.LEDConstants.kMaxLEDCount];
+        LedState[] fullPixels = new LedState[LedConstants.kMaxLEDCount];
 
-        for (int i = Constants.LEDConstants.kCandleLEDCount; i < Constants.LEDConstants.kCandleLEDCount
-                + (Constants.LEDConstants.kNonCandleLEDCount / 2); i++) {
+        for (int i = LedConstants.kCandleLEDCount; i < LedConstants.kCandleLEDCount
+                + (LedConstants.kNonCandleLEDCount / 2); i++) {
             fullPixels[fullPixels.length - i - 1] = pixels[i];
             fullPixels[i] = pixels[i];
         }
