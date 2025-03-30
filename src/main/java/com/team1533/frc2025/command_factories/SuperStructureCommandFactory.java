@@ -7,7 +7,14 @@
 
 package com.team1533.frc2025.command_factories;
 
+import java.io.Console;
+
+import com.google.protobuf.WireFormat;
+import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.RobotContainer;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -15,11 +22,22 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class SuperStructureCommandFactory {
 
-  private final Trigger wristBlockElevator = new Trigger(null, null);
+  private final static RobotContainer container = RobotContainer.getInstance();
 
-  private final Trigger armBlockWrist = new Trigger(null);
+  //TODO: find the actual values for these triggers
+  public final static Trigger wristBlockFunnel = new Trigger(null);
 
-  private final Trigger elevatorZeroRequest = new Trigger(null);
+  public final static Trigger funnelBlockElevator = new Trigger(null);
+
+  public final static Trigger elevatorBlockWristDown = new Trigger(null);
+
+  public final static Trigger wristBlockElevatorUp = new Trigger(null);
+
+  public final static Trigger wristCollision = new Trigger(null);
+
+  public final static Trigger funnelBlockWrist = new Trigger(null);
+
+  public final static Trigger elevatorZeroRequest = new Trigger(container.getElevatorSubsystem()::isZerod).onFalse(zeroElevator());
 
   // Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a
   // setpoint
@@ -28,6 +46,7 @@ public class SuperStructureCommandFactory {
       double elevatorSetpointMeters,
       double wristSetpointRotations,
       double funnelSetpointRotations) {
+
 
     return new SequentialCommandGroup(
         moveArmOnly(0.21),
@@ -58,11 +77,14 @@ public class SuperStructureCommandFactory {
   }
 
   public static Command zeroElevator() {
-    return new SequentialCommandGroup(
-        moveArmOnly(0.21),
-        moveWristOnly(0.22),
-        new ParallelDeadlineGroup(
-            ElevatorFactory.resetZero(), ArmFactory.hold(), WristFactory.hold()));
+    
+    // return new SequentialCommandGroup(
+    //     moveArmOnly(0.21),
+    //     moveWristOnly(0.22),
+    //     new ParallelDeadlineGroup(
+    //         ElevatorFactory.resetZero(), ArmFactory.hold(), WristFactory.hold()));
+// TODO: fix the command factories but in the case that I am not there in person this is an example of how I think they should look
+    return moveWristOnly(0.3).onlyIf(wristBlockFunnel).andThen(moveFunnelOnly(0.25)).onlyIf(funnelBlockElevator).andThen(new ParallelCommandGroup(ArmFactory.hold(), WristFactory.hold(), FunnelFactory.hold()).raceWith(ElevatorFactory.resetZero()));
   }
 
   // Climb Sequence?

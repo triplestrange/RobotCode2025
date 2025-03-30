@@ -65,7 +65,7 @@ public class Constants {
       double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {}
 
   public record SuperStructureState(
-      double armGoalRots, double elevGoalMeters, double wristGoalRots) {}
+      double armGoalRots, double elevGoalMeters, double wristGoalRots, double funnelGoalRots) {}
 
   public static final Pose2d REEF_OFFSET =
       new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
@@ -120,24 +120,24 @@ public class Constants {
 
   @RequiredArgsConstructor
   public enum SuperStructureStates {
-    STOW(new SuperStructureState(0, 0, 0)),
-    L1(new SuperStructureState(0, 0, 0)),
-    L2(new SuperStructureState(0.1, 0.086995, 0.145)),
-    L3(new SuperStructureState(0.16, 0.387106, 0.22)),
-    L4(new SuperStructureState(0.205, 1.07, 0.337)),
-    BARGE(new SuperStructureState(0.24, 1.07, 0.3)),
-    PROCESSOR(new SuperStructureState(0.08, 0.1, 0.5)),
-    FEEDER(new SuperStructureState(0.15, 0.043, 0.71)),
-    INTAKE_CORAL(new SuperStructureState(0, 0, 0)),
-    INTAKE_ALGAE(new SuperStructureState(0, 0, 0)),
-    DL2(new SuperStructureState(0.155, 0.055, 0.455)),
-    DL3(new SuperStructureState(0.18, 0.48, 0.52)),
-    POOP_ALGAE(new SuperStructureState(0, 0, 0)),
-    POOP_CORAL(new SuperStructureState(0, 0, 0)),
-    FEEDER_CLEARANCE(new SuperStructureState(0.175, Units.inchesToMeters(1.5), 0.71)),
-    REEF_CLEARANCE(new SuperStructureState(0, 0, 0.5)),
-    CLIMB_PREP(new SuperStructureState(0.25, 0, 0.5)),
-    CLIMB(new SuperStructureState(0, 0, 0.4));
+    STOW(new SuperStructureState(0, 0, 0, 0)),
+    L1(new SuperStructureState(0, 0, 0, 0)),
+    L2(new SuperStructureState(0.1, 0.086995, 0.145, 0)),
+    L3(new SuperStructureState(0.16, 0.387106, 0.22, 0)),
+    L4(new SuperStructureState(0.205, 1.07, 0.337, 0)),
+    BARGE(new SuperStructureState(0.24, 1.07, 0.3, 0)),
+    PROCESSOR(new SuperStructureState(0.08, 0.1, 0.5, 0)),
+    FEEDER(new SuperStructureState(0.15, 0.043, 0.71, 0)),
+    INTAKE_CORAL(new SuperStructureState(0, 0, 0, 0)),
+    INTAKE_ALGAE(new SuperStructureState(0, 0, 0, 0)),
+    DL2(new SuperStructureState(0.155, 0.055, 0.455, 0)),
+    DL3(new SuperStructureState(0.18, 0.48, 0.52, 0)),
+    POOP_ALGAE(new SuperStructureState(0, 0, 0, 0)),
+    POOP_CORAL(new SuperStructureState(0, 0, 0, 0)),
+    FEEDER_CLEARANCE(new SuperStructureState(0.175, Units.inchesToMeters(1.5), 0.71, 0)),
+    REEF_CLEARANCE(new SuperStructureState(0, 0, 0.5, 0)),
+    CLIMB_PREP(new SuperStructureState(0.25, 0, 0.5, 0)),
+    CLIMB(new SuperStructureState(0, 0, 0.4, 0));
 
     @Getter private final SuperStructureState state;
   }

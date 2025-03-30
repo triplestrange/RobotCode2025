@@ -7,6 +7,7 @@
 
 package com.team1533.frc2025;
 
+import com.team1533.frc2025.subsystems.arm.ArmConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem.VisionConsumer;
@@ -313,7 +314,7 @@ public class RobotState implements VisionConsumer {
   }
 
   public void updateMech2dViz() {
-    arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations()));
+    arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations() - ArmConstants.absEncoderOffset));
     elev.setLength(getLatestElevPositionMeters());
     wrist1.setAngle(Units.rotationsToDegrees(-getLatestWristPositionRotations()) + .388);
     funnel2.setAngle(
