@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -7,24 +7,12 @@
 
 package com.team1533.frc2025;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.IntSupplier;
-
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
-
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem.VisionConsumer;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.ConcurrentTimeInterpolatableBuffer;
 import com.team1533.lib.util.MathHelpers;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,286 +22,306 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
-import edu.wpi.first.wpilibj.Timer;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.IntSupplier;
 import lombok.Getter;
 import lombok.Setter;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
+import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class RobotState implements VisionConsumer {
-    // TODO: if cpu utilization is still high then lower this
-    public final static double LOOKBACK_TIME = 1.0;
+  // TODO: if cpu utilization is still high then lower this
+  public static final double LOOKBACK_TIME = 1.0;
 
-    // Kinematic Frames
-    private final ConcurrentTimeInterpolatableBuffer<Pose2d> fieldToRobot = ConcurrentTimeInterpolatableBuffer
-            .createBuffer(LOOKBACK_TIME);
-    private final AtomicReference<ChassisSpeeds> measuredRobotRelativeChassisSpeeds = new AtomicReference<>(
-            new ChassisSpeeds());
-    private final AtomicReference<ChassisSpeeds> measuredFieldRelativeChassisSpeeds = new AtomicReference<>(
-            new ChassisSpeeds());
-    private final AtomicReference<ChassisSpeeds> desiredFieldRelativeChassisSpeeds = new AtomicReference<>(
-            new ChassisSpeeds());
-    private final AtomicReference<ChassisSpeeds> fusedFieldRelativeChassisSpeeds = new AtomicReference<>(
-            new ChassisSpeeds());
+  // Kinematic Frames
+  private final ConcurrentTimeInterpolatableBuffer<Pose2d> fieldToRobot =
+      ConcurrentTimeInterpolatableBuffer.createBuffer(LOOKBACK_TIME);
+  private final AtomicReference<ChassisSpeeds> measuredRobotRelativeChassisSpeeds =
+      new AtomicReference<>(new ChassisSpeeds());
+  private final AtomicReference<ChassisSpeeds> measuredFieldRelativeChassisSpeeds =
+      new AtomicReference<>(new ChassisSpeeds());
+  private final AtomicReference<ChassisSpeeds> desiredFieldRelativeChassisSpeeds =
+      new AtomicReference<>(new ChassisSpeeds());
+  private final AtomicReference<ChassisSpeeds> fusedFieldRelativeChassisSpeeds =
+      new AtomicReference<>(new ChassisSpeeds());
 
-    private final AtomicInteger iteration = new AtomicInteger(0);
+  private final AtomicInteger iteration = new AtomicInteger(0);
 
-    private double lastUsedMegatagTimestamp = 0;
-    @Getter
-    private double lastTriggeredIntakeSensorTimestamp = 0;
-    @Getter
-    private double lastTriggeredIntakeLaserTimestamp = 0;
+  private double lastUsedMegatagTimestamp = 0;
+  @Getter private double lastTriggeredIntakeSensorTimestamp = 0;
+  @Getter private double lastTriggeredIntakeLaserTimestamp = 0;
 
-    private ConcurrentTimeInterpolatableBuffer<Double> driveYawAngularVelocity = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> driveYawAngularVelocity =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
 
-    private ConcurrentTimeInterpolatableBuffer<Double> driveYawRads = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
-    private ConcurrentTimeInterpolatableBuffer<Double> accelX = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
-    private ConcurrentTimeInterpolatableBuffer<Double> accelY = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> driveYawRads =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> accelX =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> accelY =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
 
-    private ConcurrentTimeInterpolatableBuffer<Double> armRots = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> armRots =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
 
-    private ConcurrentTimeInterpolatableBuffer<Double> elevExtensionM = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
+  private ConcurrentTimeInterpolatableBuffer<Double> elevExtensionM =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
 
-    private ConcurrentTimeInterpolatableBuffer<Double> wristRots = ConcurrentTimeInterpolatableBuffer
-            .createDoubleBuffer(LOOKBACK_TIME);
-@Getter
-@Setter
-    private double funnelRots = 0.0;
+  private ConcurrentTimeInterpolatableBuffer<Double> wristRots =
+      ConcurrentTimeInterpolatableBuffer.createDoubleBuffer(LOOKBACK_TIME);
+  @Getter @Setter private double funnelRots = 0.0;
 
-    private Translation2d superstructureOrigin2d = new Translation2d(0.089153, 0.219531);
+  private Translation2d superstructureOrigin2d = new Translation2d(0.089153, 0.219531);
 
-    public LoggedMechanism2d mechanism = new LoggedMechanism2d(Units.inchesToMeters(
-            29.750000), Units.feetToMeters(7.0), new Color8Bit(Color.kDarkBlue));
+  public LoggedMechanism2d mechanism =
+      new LoggedMechanism2d(
+          Units.inchesToMeters(29.750000), Units.feetToMeters(7.0), new Color8Bit(Color.kDarkBlue));
 
-    LoggedMechanismRoot2d root = mechanism.getRoot(
-            "Superstructure Root", superstructureOrigin2d.getX(), superstructureOrigin2d.getY());
+  LoggedMechanismRoot2d root =
+      mechanism.getRoot(
+          "Superstructure Root", superstructureOrigin2d.getX(), superstructureOrigin2d.getY());
 
-    public LoggedMechanismLigament2d arm = root
-            .append(new LoggedMechanismLigament2d("arm", 0.66089, 0, 4, new Color8Bit(Color.kBlue)));
-    public LoggedMechanismLigament2d elev = arm.append(
-            new LoggedMechanismLigament2d("elev", 0.5, 0, 4, new Color8Bit(Color.kBlack)));
-    public LoggedMechanismLigament2d wrist1 = elev
-            .append(new LoggedMechanismLigament2d("wrist1", 0.097401, 0, 4, new Color8Bit(Color.kCrimson)));
-    public LoggedMechanismLigament2d wrist2 = wrist1
-            .append(new LoggedMechanismLigament2d("wrist2", 0.18561, -86.308414, 0, new Color8Bit(Color.kCrimson)));
-    public LoggedMechanismLigament2d wrist3 = wrist2
-            .append(new LoggedMechanismLigament2d("wrist3", 0.165042, 180 - 68.159446, 4,
-                    new Color8Bit(Color.kAntiqueWhite)));
-    public LoggedMechanismLigament2d funnel1 = arm.append(new LoggedMechanismLigament2d("Funnel1", 0.358,  180-19.18, 0, new Color8Bit(Color.kCrimson)));
-    public LoggedMechanismLigament2d funnel2 = funnel1.append(new LoggedMechanismLigament2d("Funnel2", 0.296, 0, 4, new Color8Bit(Color.kAntiqueWhite)));
+  public LoggedMechanismLigament2d arm =
+      root.append(new LoggedMechanismLigament2d("arm", 0.66089, 0, 4, new Color8Bit(Color.kBlue)));
+  public LoggedMechanismLigament2d elev =
+      arm.append(new LoggedMechanismLigament2d("elev", 0.5, 0, 4, new Color8Bit(Color.kBlack)));
+  public LoggedMechanismLigament2d wrist1 =
+      elev.append(
+          new LoggedMechanismLigament2d("wrist1", 0.097401, 0, 4, new Color8Bit(Color.kCrimson)));
+  public LoggedMechanismLigament2d wrist2 =
+      wrist1.append(
+          new LoggedMechanismLigament2d(
+              "wrist2", 0.18561, -86.308414, 0, new Color8Bit(Color.kCrimson)));
+  public LoggedMechanismLigament2d wrist3 =
+      wrist2.append(
+          new LoggedMechanismLigament2d(
+              "wrist3", 0.165042, 180 - 68.159446, 4, new Color8Bit(Color.kAntiqueWhite)));
+  public LoggedMechanismLigament2d funnel1 =
+      arm.append(
+          new LoggedMechanismLigament2d(
+              "Funnel1", 0.358, 180 - 19.18, 0, new Color8Bit(Color.kCrimson)));
+  public LoggedMechanismLigament2d funnel2 =
+      funnel1.append(
+          new LoggedMechanismLigament2d(
+              "Funnel2", 0.296, 0, 4, new Color8Bit(Color.kAntiqueWhite)));
 
-    private double autoStartTime;
+  private double autoStartTime;
 
-    @Getter
-    private static RobotState instance;
+  @Getter private static RobotState instance;
 
-    /** Adds a new timestamped vision measurement. */
-    @Override
-    public void accept(
-            PoseObservation observation,
-            Matrix<N3, N1> visionMeasurementStdDevs) {
-        updatePoseObservation(observation, visionMeasurementStdDevs);
+  /** Adds a new timestamped vision measurement. */
+  @Override
+  public void accept(PoseObservation observation, Matrix<N3, N1> visionMeasurementStdDevs) {
+    updatePoseObservation(observation, visionMeasurementStdDevs);
+  }
+
+  public RobotState() {
+    instance = this;
+
+    // Add one sample to protect callers against null
+    fieldToRobot.addSample(0.0, MathHelpers.kPose2dZero);
+    driveYawAngularVelocity.addSample(0.0, 0.0);
+    armRots.addSample(0.0, 0.0);
+    elevExtensionM.addSample(0.0, 0.0);
+    wristRots.addSample(0.0, 0.0);
+    driveYawRads.addSample(0.0, 0.0);
+  }
+
+  public void setAutoStartTime(double timestamp) {
+    autoStartTime = timestamp;
+  }
+
+  public double getAutoStartTime() {
+    return autoStartTime;
+  }
+
+  public void addOdometryMeasurement(double timestamp, Pose2d pose) {
+    fieldToRobot.addSample(timestamp, pose);
+  }
+
+  public void incrementIterationCount() {
+    iteration.incrementAndGet();
+  }
+
+  public int getIteration() {
+    return iteration.get();
+  }
+
+  public IntSupplier getIterationSupplier() {
+    return () -> getIteration();
+  }
+
+  public void addDriveMotionMeasurements(
+      double timestamp,
+      double angularYawRadsPerS,
+      double accelX,
+      double accelY,
+      ChassisSpeeds desiredFieldRelativeSpeeds,
+      ChassisSpeeds measuredSpeeds,
+      ChassisSpeeds measuredFieldRelativeSpeeds,
+      ChassisSpeeds fusedFieldRelativeSpeeds) {
+    this.driveYawAngularVelocity.addSample(timestamp, angularYawRadsPerS);
+    this.accelY.addSample(timestamp, accelY);
+    this.accelX.addSample(timestamp, accelX);
+    this.desiredFieldRelativeChassisSpeeds.set(desiredFieldRelativeSpeeds);
+    this.measuredRobotRelativeChassisSpeeds.set(measuredSpeeds);
+    this.measuredFieldRelativeChassisSpeeds.set(measuredFieldRelativeSpeeds);
+    this.fusedFieldRelativeChassisSpeeds.set(fusedFieldRelativeSpeeds);
+  }
+
+  public void addYawMeasurements(Rotation2d yaw, double timestamp) {
+    this.driveYawRads.addSample(timestamp, yaw.getRadians());
+  }
+
+  public void addArmUpdate(double timestamp, double rots) {
+    armRots.addSample(timestamp, rots);
+  }
+
+  public double getLatestArmPositionRotations() {
+    return this.armRots.getInternalBuffer().lastEntry().getValue();
+  }
+
+  public void addElevUpdate(double timestamp, double extM) {
+    elevExtensionM.addSample(timestamp, extM);
+  }
+
+  public double getLatestElevPositionMeters() {
+    return this.elevExtensionM.getInternalBuffer().lastEntry().getValue();
+  }
+
+  public void addWristUpdate(double timestamp, double rots) {
+    wristRots.addSample(timestamp, rots);
+  }
+
+  public double getLatestWristPositionRotations() {
+    return this.wristRots.getInternalBuffer().lastEntry().getValue();
+  }
+
+  public Map.Entry<Double, Pose2d> getLatestFieldToRobot() {
+    return fieldToRobot.getLatest();
+  }
+
+  public Map.Entry<Double, Double> getLatestYawRads() {
+    return driveYawRads.getLatest();
+  }
+
+  public Pose2d getPredictedFieldToRobot(double lookaheadTimeS) {
+    var maybeFieldToRobot = getLatestFieldToRobot();
+    Pose2d fieldToRobot =
+        maybeFieldToRobot == null ? MathHelpers.kPose2dZero : maybeFieldToRobot.getValue();
+    // check if this should be in field relative
+    var delta = getLatestRobotRelativeChassisSpeed();
+    delta = delta.times(lookaheadTimeS);
+    return fieldToRobot.exp(
+        new Twist2d(delta.vxMetersPerSecond, delta.vyMetersPerSecond, delta.omegaRadiansPerSecond));
+  }
+
+  public Optional<Pose2d> getFieldToRobot(double timestamp) {
+    return fieldToRobot.getSample(timestamp);
+  }
+
+  public Optional<Double> getYawRads(double timestamp) {
+    return driveYawRads.getSample(timestamp);
+  }
+
+  public ChassisSpeeds getLatestMeasuredFieldRelativeChassisSpeeds() {
+    return measuredFieldRelativeChassisSpeeds.get();
+  }
+
+  public ChassisSpeeds getLatestRobotRelativeChassisSpeed() {
+    return measuredRobotRelativeChassisSpeeds.get();
+  }
+
+  public ChassisSpeeds getLatestDesiredFieldRelativeChassisSpeed() {
+    return desiredFieldRelativeChassisSpeeds.get();
+  }
+
+  public ChassisSpeeds getLatestFusedFieldRelativeChassisSpeed() {
+    return fusedFieldRelativeChassisSpeeds.get();
+  }
+
+  private Optional<Double> getMaxAbsValueInRange(
+      ConcurrentTimeInterpolatableBuffer<Double> buffer, double minTime, double maxTime) {
+    var submap = buffer.getInternalBuffer().subMap(minTime, maxTime).values();
+    var max = submap.stream().max(Double::compare);
+    var min = submap.stream().min(Double::compare);
+    if (max.isEmpty() || min.isEmpty()) return Optional.empty();
+    if (Math.abs(max.get()) >= Math.abs(min.get())) return max;
+    else return min;
+  }
+
+  public Optional<Double> getMaxAbsDriveYawAngularVelocityInRange(double minTime, double maxTime) {
+    // Gyro yaw rate not set in sim.
+    if (Robot.isReal()) return getMaxAbsValueInRange(driveYawAngularVelocity, minTime, maxTime);
+    return Optional.of(measuredRobotRelativeChassisSpeeds.get().omegaRadiansPerSecond);
+  }
+
+  public void updatePoseObservation(
+      PoseObservation poseObservation, Matrix<N3, N1> visionMeasurementStdDevs) {
+
+    if (poseObservation.type() == PoseObservationType.SOLVE_PNP)
+      lastUsedMegatagTimestamp = Timer.getFPGATimestamp();
+    RobotContainer.getInstance()
+        .getDriveSubsystem()
+        .getPoseEstimator()
+        .addVisionMeasurement(
+            poseObservation.pose().toPose2d(),
+            poseObservation.timestamp(),
+            visionMeasurementStdDevs);
+  }
+
+  public void updateLastTriggeredIntakeSensorTimestamp(boolean triggered) {
+    if (triggered) lastTriggeredIntakeSensorTimestamp = RobotTime.getTimestampSeconds();
+  }
+
+  public void updateLastTriggeredIntakeLaserTimestamp(boolean triggered) {
+    if (triggered) lastTriggeredIntakeLaserTimestamp = RobotTime.getTimestampSeconds();
+  }
+
+  public double lastUsedMegatagTimestamp() {
+    return lastUsedMegatagTimestamp;
+  }
+
+  public void updateLogger() {
+    if (this.driveYawAngularVelocity.getInternalBuffer().lastEntry() != null) {
+      Logger.recordOutput(
+          "RobotState/YawAngularVelocity",
+          this.driveYawAngularVelocity.getInternalBuffer().lastEntry().getValue());
     }
-
-    public RobotState() {
-        instance = this;
-
-        // Add one sample to protect callers against null
-        fieldToRobot.addSample(0.0, MathHelpers.kPose2dZero);
-        driveYawAngularVelocity.addSample(0.0, 0.0);
-        armRots.addSample(0.0, 0.0);
-        elevExtensionM.addSample(0.0, 0.0);
-        wristRots.addSample(0.0, 0.0);
-        driveYawRads.addSample(0.0, 0.0);
+    if (this.accelX.getInternalBuffer().lastEntry() != null) {
+      Logger.recordOutput(
+          "RobotState/AccelX", this.accelX.getInternalBuffer().lastEntry().getValue());
     }
-
-    public void setAutoStartTime(double timestamp) {
-        autoStartTime = timestamp;
+    if (this.accelY.getInternalBuffer().lastEntry() != null) {
+      Logger.recordOutput(
+          "RobotState/AccelY", this.accelY.getInternalBuffer().lastEntry().getValue());
     }
+    Logger.recordOutput(
+        "RobotState/DesiredChassisSpeedFieldFrame", getLatestDesiredFieldRelativeChassisSpeed());
+    Logger.recordOutput(
+        "RobotState/MeasuredChassisSpeedFieldFrame", getLatestMeasuredFieldRelativeChassisSpeeds());
+    Logger.recordOutput(
+        "RobotState/FusedChassisSpeedFieldFrame", getLatestFusedFieldRelativeChassisSpeed());
+  }
 
-    public double getAutoStartTime() {
-        return autoStartTime;
-    }
-
-    public void addOdometryMeasurement(double timestamp, Pose2d pose) {
-        fieldToRobot.addSample(timestamp, pose);
-    }
-
-    public void incrementIterationCount() {
-        iteration.incrementAndGet();
-    }
-
-
-    public int getIteration() {
-        return iteration.get();
-    }
-
-    public IntSupplier getIterationSupplier() {
-        return () -> getIteration();
-    }
-
-    public void addDriveMotionMeasurements(double timestamp,
-            double angularYawRadsPerS,
-            double accelX,
-            double accelY,
-            ChassisSpeeds desiredFieldRelativeSpeeds,
-            ChassisSpeeds measuredSpeeds,
-            ChassisSpeeds measuredFieldRelativeSpeeds,
-            ChassisSpeeds fusedFieldRelativeSpeeds) {
-        this.driveYawAngularVelocity.addSample(timestamp, angularYawRadsPerS);
-        this.accelY.addSample(timestamp, accelY);
-        this.accelX.addSample(timestamp, accelX);
-        this.desiredFieldRelativeChassisSpeeds.set(desiredFieldRelativeSpeeds);
-        this.measuredRobotRelativeChassisSpeeds.set(measuredSpeeds);
-        this.measuredFieldRelativeChassisSpeeds.set(measuredFieldRelativeSpeeds);
-        this.fusedFieldRelativeChassisSpeeds.set(fusedFieldRelativeSpeeds);
-    }
-
-    public void addYawMeasurements(Rotation2d yaw, double timestamp) {
-        this.driveYawRads.addSample(timestamp, yaw.getRadians());
-    }
-
-    public void addArmUpdate(double timestamp, double rots) {
-        armRots.addSample(timestamp, rots);
-    }
-
-    public double getLatestArmPositionRotations() {
-        return this.armRots.getInternalBuffer().lastEntry().getValue();
-    }
-
-    public void addElevUpdate(double timestamp, double extM) {
-        elevExtensionM.addSample(timestamp, extM);
-    }
-
-    public double getLatestElevPositionMeters() {
-        return this.elevExtensionM.getInternalBuffer().lastEntry().getValue();
-    }
-
-    public void addWristUpdate(double timestamp, double rots) {
-        wristRots.addSample(timestamp, rots);
-    }
-
-    public double getLatestWristPositionRotations() {
-        return this.wristRots.getInternalBuffer().lastEntry().getValue();
-    }
-
-    public Map.Entry<Double, Pose2d> getLatestFieldToRobot() {
-        return fieldToRobot.getLatest();
-    }
-
-    public Map.Entry<Double, Double> getLatestYawRads() {
-        return driveYawRads.getLatest();
-    }
-
-    public Pose2d getPredictedFieldToRobot(double lookaheadTimeS) {
-        var maybeFieldToRobot = getLatestFieldToRobot();
-        Pose2d fieldToRobot = maybeFieldToRobot == null ? MathHelpers.kPose2dZero : maybeFieldToRobot.getValue();
-        // check if this should be in field relative
-        var delta = getLatestRobotRelativeChassisSpeed();
-        delta = delta.times(lookaheadTimeS);
-        return fieldToRobot
-                .exp(new Twist2d(delta.vxMetersPerSecond, delta.vyMetersPerSecond, delta.omegaRadiansPerSecond));
-    }
-
-    public Optional<Pose2d> getFieldToRobot(double timestamp) {
-        return fieldToRobot.getSample(timestamp);
-    }
-
-    public Optional<Double> getYawRads(double timestamp) {
-        return driveYawRads.getSample(timestamp);
-    }
-
-    public ChassisSpeeds getLatestMeasuredFieldRelativeChassisSpeeds() {
-        return measuredFieldRelativeChassisSpeeds.get();
-    }
-
-    public ChassisSpeeds getLatestRobotRelativeChassisSpeed() {
-        return measuredRobotRelativeChassisSpeeds.get();
-    }
-
-    public ChassisSpeeds getLatestDesiredFieldRelativeChassisSpeed() {
-        return desiredFieldRelativeChassisSpeeds.get();
-    }
-
-    public ChassisSpeeds getLatestFusedFieldRelativeChassisSpeed() {
-        return fusedFieldRelativeChassisSpeeds.get();
-    }
-    
-    private Optional<Double> getMaxAbsValueInRange(ConcurrentTimeInterpolatableBuffer<Double> buffer, double minTime,
-            double maxTime) {
-        var submap = buffer.getInternalBuffer().subMap(minTime, maxTime).values();
-        var max = submap.stream().max(Double::compare);
-        var min = submap.stream().min(Double::compare);
-        if (max.isEmpty() || min.isEmpty())
-            return Optional.empty();
-        if (Math.abs(max.get()) >= Math.abs(min.get()))
-            return max;
-        else
-            return min;
-    }
-
-    public Optional<Double> getMaxAbsDriveYawAngularVelocityInRange(double minTime, double maxTime) {
-        // Gyro yaw rate not set in sim.
-        if (Robot.isReal())
-            return getMaxAbsValueInRange(driveYawAngularVelocity, minTime, maxTime);
-        return Optional.of(measuredRobotRelativeChassisSpeeds.get().omegaRadiansPerSecond);
-    }
-
-    public void updatePoseObservation(PoseObservation poseObservation, Matrix<N3, N1> visionMeasurementStdDevs) {
-
-        if (poseObservation.type() == PoseObservationType.SOLVE_PNP)
-            lastUsedMegatagTimestamp = Timer.getFPGATimestamp();
-        RobotContainer.getInstance().getDriveSubsystem().getPoseEstimator().addVisionMeasurement(
-                poseObservation.pose().toPose2d(),
-                poseObservation.timestamp(), visionMeasurementStdDevs);
-    }
-
-    public void updateLastTriggeredIntakeSensorTimestamp(boolean triggered) {
-        if (triggered)
-            lastTriggeredIntakeSensorTimestamp = RobotTime.getTimestampSeconds();
-    }
-
-    public void updateLastTriggeredIntakeLaserTimestamp(boolean triggered) {
-        if (triggered)
-            lastTriggeredIntakeLaserTimestamp = RobotTime.getTimestampSeconds();
-    }
-
-    public double lastUsedMegatagTimestamp() {
-        return lastUsedMegatagTimestamp;
-    }
-
-    public void updateLogger() {
-        if (this.driveYawAngularVelocity.getInternalBuffer().lastEntry() != null) {
-            Logger.recordOutput("RobotState/YawAngularVelocity",
-                    this.driveYawAngularVelocity.getInternalBuffer().lastEntry().getValue());
-        }
-        if (this.accelX.getInternalBuffer().lastEntry() != null) {
-            Logger.recordOutput("RobotState/AccelX", this.accelX.getInternalBuffer().lastEntry().getValue());
-        }
-        if (this.accelY.getInternalBuffer().lastEntry() != null) {
-            Logger.recordOutput("RobotState/AccelY", this.accelY.getInternalBuffer().lastEntry().getValue());
-        }
-        Logger.recordOutput("RobotState/DesiredChassisSpeedFieldFrame", getLatestDesiredFieldRelativeChassisSpeed());
-        Logger.recordOutput("RobotState/MeasuredChassisSpeedFieldFrame", getLatestMeasuredFieldRelativeChassisSpeeds());
-        Logger.recordOutput("RobotState/FusedChassisSpeedFieldFrame", getLatestFusedFieldRelativeChassisSpeed());
-    }
-
-    public void updateMech2dViz() {
-        arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations()));
-        elev.setLength(getLatestElevPositionMeters());
-        wrist1.setAngle(Units.rotationsToDegrees(-getLatestWristPositionRotations()) +.388);
-        funnel2.setAngle(Units.rotationsToDegrees(getFunnelRots() - Units.degreesToRotations( 180 - 19.18)));
-        // arm.setAngle(Constants.SuperStructureStates.FEEDER.getState().armGoalRots() * 360);
-        // elev.setLength(Constants.SuperStructureStates.FEEDER.getState().elevGoalMeters());
-        // wrist1.setAngle(Constants.SuperStructureStates.FEEDER.getState().wristGoalRots() * 360 * 0);
-        // funnel2.setAngle(90 - 180 + 19.18);
-        Logger.recordOutput("score mech", mechanism);
-    }
-
+  public void updateMech2dViz() {
+    arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations()));
+    elev.setLength(getLatestElevPositionMeters());
+    wrist1.setAngle(Units.rotationsToDegrees(-getLatestWristPositionRotations()) + .388);
+    funnel2.setAngle(
+        Units.rotationsToDegrees(getFunnelRots() - Units.degreesToRotations(180 - 19.18)));
+    // arm.setAngle(Constants.SuperStructureStates.FEEDER.getState().armGoalRots() * 360);
+    // elev.setLength(Constants.SuperStructureStates.FEEDER.getState().elevGoalMeters());
+    // wrist1.setAngle(Constants.SuperStructureStates.FEEDER.getState().wristGoalRots() * 360 * 0);
+    // funnel2.setAngle(90 - 180 + 19.18);
+    Logger.recordOutput("score mech", mechanism);
+  }
 }

@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -18,15 +18,15 @@ import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 
 /**
- * Physics sim implementation of module IO. The sim models are configured using
- * a set of module
+ * Physics sim implementation of module IO. The sim models are configured using a set of module
  * constants from Phoenix. Simulation is always based on voltage control.
  */
 public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
   private final SwerveModuleSimulation simulation;
 
   public ModuleIOTalonFXSim(
-      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
+      SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
+          constants,
       SwerveModuleSimulation simulation) {
     super(constants);
 
@@ -50,9 +50,10 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
     // Update odometry inputs
     inputs.odometryTimestamps = PhoenixUtil.getSimulationOdometryTimeStamps();
 
-    inputs.odometryDrivePositionsRad = Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
-        .mapToDouble(angle -> angle.in(Radians))
-        .toArray();
+    inputs.odometryDrivePositionsRad =
+        Arrays.stream(simulation.getCachedDriveWheelFinalPositions())
+            .mapToDouble(angle -> angle.in(Radians))
+            .toArray();
 
     inputs.odometryTurnPositions = simulation.getCachedSteerAbsolutePositions();
   }

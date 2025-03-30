@@ -223,30 +223,43 @@ createVersionFile.dependsOn(eventDeploy)
 
 // Spotless formatting
 project.compileJava.dependsOn(spotlessApply)
-
 spotless {
 java {
 target fileTree(".") {
-include "/*.java"
+include "src/**/*.java"
 exclude "/build/", "/build-/"
 }
+  toggleOffOn()
+        googleJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        licenseHeader("// Copyright (c) 2025 FRC 1533\n// http://github.com/triplestrange\n//\n// Use of this source code is governed by an MIT-style\n// license that can be found in the LICENSE file at\n// the root directory of this project.\n\n")
 }
 groovyGradle {
 target fileTree(".") {
 include "/.gradle"
 exclude "/build/", "/build-*/"
 }
+    greclipse()
+        indentWithSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
 }
 json {
 target fileTree(".") {
 include "/*.json"
 exclude "/build/", "/build-/"
 }
+    gson().indentWithSpaces(2)
 }
 format "misc", {
 target fileTree(".") {
 include "/.md", "/.gitignore"
 exclude "/build/", "/build-*/**"
 }
+   trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
 }
 }

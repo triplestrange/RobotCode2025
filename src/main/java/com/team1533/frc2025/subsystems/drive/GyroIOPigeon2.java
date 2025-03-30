@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -18,14 +18,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
-
 import java.util.Queue;
 
 /** IO implementation for Pigeon 2. */
 public class GyroIOPigeon2 implements GyroIO {
-  private final Pigeon2 pigeon = new Pigeon2(
-      TunerConstants.DrivetrainConstants.Pigeon2Id,
-      TunerConstants.DrivetrainConstants.CANBusName);
+  private final Pigeon2 pigeon =
+      new Pigeon2(
+          TunerConstants.DrivetrainConstants.Pigeon2Id,
+          TunerConstants.DrivetrainConstants.CANBusName);
 
   private final StatusSignal<Angle> yaw = pigeon.getYaw();
 
@@ -47,10 +47,9 @@ public class GyroIOPigeon2 implements GyroIO {
     pigeon.getConfigurator().setYaw(0.0);
 
     yaw.setUpdateFrequency(DriveConstants.ODOMETRY_FREQUENCY);
-  
 
     yawVelocity.setUpdateFrequency(DriveConstants.ODOMETRY_FREQUENCY);
-   
+
     accelX.setUpdateFrequency(DriveConstants.ODOMETRY_FREQUENCY);
     accelY.setUpdateFrequency(DriveConstants.ODOMETRY_FREQUENCY);
 
@@ -59,35 +58,41 @@ public class GyroIOPigeon2 implements GyroIO {
     timestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
 
     yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(pigeon.getYaw());
-   
 
-    yawVelocityQueue = PhoenixOdometryThread.getInstance().registerSignalVelocity(pigeon.getAngularVelocityZWorld());
+    yawVelocityQueue =
+        PhoenixOdometryThread.getInstance()
+            .registerSignalVelocity(pigeon.getAngularVelocityZWorld());
 
-
-    accelXQueue = PhoenixOdometryThread.getInstance().registerSignalAcceleration(pigeon.getAccelerationX());
-    accelYQueue = PhoenixOdometryThread.getInstance().registerSignalAcceleration(pigeon.getAccelerationY());
-
+    accelXQueue =
+        PhoenixOdometryThread.getInstance().registerSignalAcceleration(pigeon.getAccelerationX());
+    accelYQueue =
+        PhoenixOdometryThread.getInstance().registerSignalAcceleration(pigeon.getAccelerationY());
   }
 
   @Override
   public void updateInputs(GyroIOInputs inputs) {
-    inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity, accelX, accelY)
-        .equals(StatusCode.OK);
+    inputs.connected =
+        BaseStatusSignal.refreshAll(yaw, yawVelocity, accelX, accelY).equals(StatusCode.OK);
 
     inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
-    inputs.yawPosition = Rotation2d.fromDegrees(BaseStatusSignal.getLatencyCompensatedValueAsDouble(yaw, yawVelocity));
+    inputs.yawPosition =
+        Rotation2d.fromDegrees(
+            BaseStatusSignal.getLatencyCompensatedValueAsDouble(yaw, yawVelocity));
 
     inputs.accelX = accelX.getValueAsDouble();
     inputs.accelY = accelY.getValueAsDouble();
 
-    inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
+    inputs.odometryTimestamps =
+        timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
 
-    inputs.odometryYawPositions = yawPositionQueue.stream()
-        .map((Double value) -> Rotation2d.fromDegrees(value))
-        .toArray(Rotation2d[]::new);
+    inputs.odometryYawPositions =
+        yawPositionQueue.stream()
+            .map((Double value) -> Rotation2d.fromDegrees(value))
+            .toArray(Rotation2d[]::new);
 
-    inputs.odometryYawVelocityRadPerSecs = yawVelocityQueue.stream().mapToDouble(Double::doubleValue).toArray();
+    inputs.odometryYawVelocityRadPerSecs =
+        yawVelocityQueue.stream().mapToDouble(Double::doubleValue).toArray();
 
     inputs.odometryAccelXs = accelXQueue.stream().mapToDouble(Double::doubleValue).toArray();
     inputs.odometryAccelYs = accelYQueue.stream().mapToDouble(Double::doubleValue).toArray();
@@ -95,12 +100,9 @@ public class GyroIOPigeon2 implements GyroIO {
     timestampQueue.clear();
     yawPositionQueue.clear();
 
-
     yawVelocityQueue.clear();
-  
 
     accelXQueue.clear();
     accelYQueue.clear();
-
   }
 }

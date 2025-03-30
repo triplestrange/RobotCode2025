@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -7,6 +7,9 @@
 
 package com.team1533.frc2025.subsystems.vision;
 
+import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.RobotState;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -18,11 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.photonvision.PhotonCamera;
-import com.team1533.frc2025.Constants;
-import com.team1533.frc2025.RobotContainer;
-import com.team1533.frc2025.RobotState;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {
@@ -33,7 +32,7 @@ public class VisionIOPhotonVision implements VisionIO {
   /**
    * Creates a new VisionIOPhotonVision.
    *
-   * @param name             The configured name of the camera.
+   * @param name The configured name of the camera.
    * @param rotationSupplier The 3D position of the camera relative to the robot.
    */
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
@@ -51,37 +50,42 @@ public class VisionIOPhotonVision implements VisionIO {
     for (var result : camera.getAllUnreadResults()) {
       // Update latest target observation
       if (result.hasTargets()) {
-        inputs.latestTargetObservation = new TargetObservation(
-            Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
-            Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
+        inputs.latestTargetObservation =
+            new TargetObservation(
+                Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
+                Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
 
         for (var target : result.targets) {
-          
+
           // Pinhole model using sensed tag distance instead of height difference
           Optional<Pose3d> tagPose = Constants.aprilTagLayout.getTagPose(target.fiducialId);
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
-          if (tagPose.isEmpty())
-            continue;
+          if (tagPose.isEmpty()) continue;
 
           // calculate direction vector using pitch/yaw
-          Translation3d cameraToTag = new Translation3d(1, -Math.tan(Math.toRadians(target.getYaw())),
-              Math.tan(Math.toRadians(target.getPitch())));
+          Translation3d cameraToTag =
+              new Translation3d(
+                  1,
+                  -Math.tan(Math.toRadians(target.getYaw())),
+                  Math.tan(Math.toRadians(target.getPitch())));
           // rescale to measured tag distance
           cameraToTag = cameraToTag.times(tagDistance / cameraToTag.getNorm());
 
           Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
           robotToTag = robotToTag.plus(robotToCamera.getTranslation());
 
-          Rotation2d robotRotation = state.getYawRads(result.getTimestampSeconds())
-              .isPresent()
+          Rotation2d robotRotation =
+              state.getYawRads(result.getTimestampSeconds()).isPresent()
                   ? Rotation2d.fromRadians(state.getYawRads(result.getTimestampSeconds()).get())
                   : RobotContainer.getInstance().getDriveSubsystem().getRotation();
           // rotate to field coordinates
           Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
-          Translation2d fieldToRobot = tagPose.get().getTranslation().toTranslation2d().minus(robotToTagFC);
+          Translation2d fieldToRobot =
+              tagPose.get().getTranslation().toTranslation2d().minus(robotToTagFC);
 
-          Pose3d robotPose = new Pose3d(new Translation3d(fieldToRobot), new Rotation3d(robotRotation));
+          Pose3d robotPose =
+              new Pose3d(new Translation3d(fieldToRobot), new Rotation3d(robotRotation));
 
           poseObservations.add(
               new PoseObservation(
@@ -93,9 +97,6 @@ public class VisionIOPhotonVision implements VisionIO {
                   PoseObservationType.PINHOLE)); // Observation type
 
           tagIds.add((short) target.fiducialId);
-
-          
-
         }
       } else {
         inputs.latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
@@ -109,8 +110,7 @@ public class VisionIOPhotonVision implements VisionIO {
         // Calculate robot pose
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
-        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(),
-            fieldToRobot.getRotation());
+        Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
         // Calculate average tag distance
         double totalTagDistance = 0.0;
@@ -131,7 +131,6 @@ public class VisionIOPhotonVision implements VisionIO {
                 totalTagDistance / result.targets.size(), // Average tag distance
                 PoseObservationType.SOLVE_PNP)); // Observation type
       }
-
     }
 
     // Save pose observations to inputs object
