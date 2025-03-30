@@ -307,11 +307,11 @@ public class RobotContainer {
                                 .genericPreset( 0.08, 0, 0.5));
 
                 // Low Reef Algae
-                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.155, 0.055, 0.455));
+                driveController.cross().and(inAlgaeMode).onTrue(SuperStructureCommandFactory.genericPreset( 0.155, 0.055, 0.44));
 
                 // High Reef Algae
                 driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-                                .genericPreset( 0.18, 0.48, 0.52));
+                                .genericPreset( 0.18, 0.48, 0.47));
 
                 // Barge Algae
                 driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
