@@ -7,6 +7,7 @@
 
 package com.team1533.frc2025.command_factories;
 
+import com.team1533.frc2025.Constants.SuperStructureStates;
 import com.team1533.frc2025.RobotContainer;
 import com.team1533.frc2025.subsystems.arm.ArmConstants;
 import com.team1533.frc2025.subsystems.arm.ArmSubsystem;
@@ -19,6 +20,11 @@ public class ArmFactory {
 
   public static Command moveArmMotionMagic(DoubleSupplier setpoint) {
     return arm.motionMagicPositionCommand(setpoint)
+        .until(arm.atSetpoint(ArmConstants.toleranceRotations));
+  }
+
+  public static Command moveArmMotionMagic(SuperStructureStates setpoint) {
+    return arm.motionMagicPositionCommand(setpoint.getState()::armGoalRots)
         .until(arm.atSetpoint(ArmConstants.toleranceRotations));
   }
 

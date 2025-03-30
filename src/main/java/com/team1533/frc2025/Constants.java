@@ -121,6 +121,7 @@ public class Constants {
   @RequiredArgsConstructor
   public enum SuperStructureStates {
     STOW(new SuperStructureState(0, 0, 0, 0)),
+    SAFE(new SuperStructureState(0.21, Units.inchesToMeters(1.5), 0.22, .25)),
     L1(new SuperStructureState(0, 0, 0, 0)),
     L2(new SuperStructureState(0.1, 0.086995, 0.145, 0)),
     L3(new SuperStructureState(0.16, 0.387106, 0.22, 0)),
@@ -128,16 +129,14 @@ public class Constants {
     BARGE(new SuperStructureState(0.24, 1.07, 0.3, 0)),
     PROCESSOR(new SuperStructureState(0.08, 0.1, 0.5, 0)),
     FEEDER(new SuperStructureState(0.15, 0.043, 0.71, 0)),
-    INTAKE_CORAL(new SuperStructureState(0, 0, 0, 0)),
-    INTAKE_ALGAE(new SuperStructureState(0, 0, 0, 0)),
-    DL2(new SuperStructureState(0.155, 0.055, 0.455, 0)),
-    DL3(new SuperStructureState(0.18, 0.48, 0.52, 0)),
-    POOP_ALGAE(new SuperStructureState(0, 0, 0, 0)),
-    POOP_CORAL(new SuperStructureState(0, 0, 0, 0)),
-    FEEDER_CLEARANCE(new SuperStructureState(0.175, Units.inchesToMeters(1.5), 0.71, 0)),
-    REEF_CLEARANCE(new SuperStructureState(0, 0, 0.5, 0)),
+    GROUND_ALGAE(new SuperStructureState(0, 0, 0, 0)),
+    ALGAELOWER(new SuperStructureState(0.155, 0.055, 0.455, 0)),
+    ALGAEUPPER(new SuperStructureState(0.18, 0.48, 0.52, 0)),
     CLIMB_PREP(new SuperStructureState(0.25, 0, 0.5, 0)),
-    CLIMB(new SuperStructureState(0, 0, 0.4, 0));
+    CLIMB(new SuperStructureState(0, 0, 0.4, 0)),
+    REEF_CLEARANCE(new SuperStructureState(0, 0, 0.5, 0)),
+    ELEVATOR_CLEARANCE(new SuperStructureState(0.175, Units.inchesToMeters(1.5), 0.71, 0)),
+    WRIST_CLEARANCE(new SuperStructureState(0, 0.043, 0, 0.04));
 
     @Getter private final SuperStructureState state;
   }

@@ -32,8 +32,8 @@ public class ElevatorConstants {
   public static final double motionMagicAcceleration = 18;
   public static final double motionMagicJerk = 60;
   // TODO: Tune these
-  public static final double motionMagicExpo_kA = 0;
-  public static final double motionMagicExpo_kV = 0;
+  public static final double motionMagicExpo_kA = 12 / 18;
+  public static final double motionMagicExpo_kV = 12 / 2;
 
   public static final double reverseSoftLimitThreshold = 0;
   public static final double forwardSoftLimitThreshold = 1.07;

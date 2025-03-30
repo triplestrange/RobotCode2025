@@ -135,6 +135,16 @@ public class WristSubsystem extends SubsystemBase implements IStatusSignalLoop {
         .withName("Wrist Motion Magic Setpoint Command");
   }
 
+  public Command motionMagicPositionUntilCommand(DoubleSupplier rotationsFromHorizontal) {
+    return run(() -> {
+          double setpoint = rotationsFromHorizontal.getAsDouble();
+          setMotionMagicSetpointImpl(setpoint);
+          wristSetpointRotations = setpoint;
+        })
+        .until(atSetpoint(WristConstants.toleranceRotations))
+        .withName("Wrist Motion Magic Setpoint Command");
+  }
+
   public double getSetpoint() {
     return wristSetpointRotations;
   }

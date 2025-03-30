@@ -13,6 +13,7 @@ import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCame
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
+// import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
 import com.team1533.frc2025.subsystems.arm.ArmIO;
 import com.team1533.frc2025.subsystems.arm.ArmIOReal;
@@ -93,7 +94,7 @@ public class RobotContainer {
 
   private final RobotState state;
 
-  private final StatusSignalLoop fastLoop = new StatusSignalLoop(50, "Fast Looper");
+  private final StatusSignalLoop fastLoop = new StatusSignalLoop(250, "Fast Looper");
 
   public RobotContainer() {
     instance = this;
@@ -195,22 +196,24 @@ public class RobotContainer {
         break;
     }
 
-    NamedCommands.registerCommand(
-        "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337,
+    // 0.25).asProxy());
 
-    NamedCommands.registerCommand(
-        "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
+    // NamedCommands.registerCommand(
+    //     "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
 
-    NamedCommands.registerCommand(
-        "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22, 0.25).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22,
+    // 0.25).asProxy());
 
-    NamedCommands.registerCommand(
-        "Arm Feeder While Moving",
-        SuperStructureCommandFactory.forcedPos(0.15, 0.045, 0.71).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Feeder While Moving",
+    //     SuperStructureCommandFactory.forcedPos(0.15, 0.045, 0.71).asProxy());
 
-    NamedCommands.registerCommand(
-        "Arm Feeder",
-        SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.25).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Feeder",
+    //     SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.25).asProxy());
 
     NamedCommands.registerCommand(
         "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.3));
@@ -274,11 +277,8 @@ public class RobotContainer {
     // // Climb Sequence
     // driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence());
 
-    // L4 Coral Automation
-    driveController
-        .triangle()
-        .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25));
+    // // L4 Coral Automation
+    driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory.L4());
 
     // // L3 Coral Automation
     // driveController.circle().and(inCoralMode)
@@ -366,7 +366,7 @@ public class RobotContainer {
                         * ((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)));
 
     // Operator Elevator Zero
-    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+    // operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
 
     operatorController
         .square()

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -81,7 +82,7 @@ public class Robot extends LoggedRobot {
     // the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
-    initializeTracerLogging();
+    initializeCommandLogging();
     RobotController.setBrownoutVoltage(6.0);
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our
@@ -92,6 +93,34 @@ public class Robot extends LoggedRobot {
   @Override
   public void loopFunc() {
     Tracer.trace("Robot/LoopFunc", super::loopFunc);
+  }
+
+  private void initializeCommandLogging() {
+    Map<String, Integer> commandCounts = new HashMap<>();
+    BiConsumer<Command, Boolean> logCommandFunction =
+        (Command command, Boolean active) -> {
+          String name = command.getName();
+          int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+          commandCounts.put(name, count);
+          Logger.recordOutput(
+              "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), active);
+          Logger.recordOutput("CommandsAll/" + name, count > 0);
+        };
+    CommandScheduler.getInstance()
+        .onCommandInitialize(
+            (Command command) -> {
+              logCommandFunction.accept(command, true);
+            });
+    CommandScheduler.getInstance()
+        .onCommandFinish(
+            (Command command) -> {
+              logCommandFunction.accept(command, false);
+            });
+    CommandScheduler.getInstance()
+        .onCommandInterrupt(
+            (Command command) -> {
+              logCommandFunction.accept(command, false);
+            });
   }
 
   private void initializeTracerLogging() {

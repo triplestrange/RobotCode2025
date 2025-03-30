@@ -139,6 +139,16 @@ public class ArmSubsystem extends SubsystemBase implements IStatusSignalLoop {
         .withName("Arm Motion Magic Setpoint Command");
   }
 
+  public Command motionMagicPositionUntilCommand(DoubleSupplier rotationsFromHorizontal) {
+    return run(() -> {
+          double setpoint = rotationsFromHorizontal.getAsDouble();
+          setMotionMagicSetpointImpl(setpoint);
+          armSetpointRotations = setpoint;
+        })
+        .until(atSetpoint(ArmConstants.toleranceRotations))
+        .withName("Arm Motion Magic Setpoint Command");
+  }
+
   public double getCurrentPosition() {
     return state.getLatestArmPositionRotations();
   }

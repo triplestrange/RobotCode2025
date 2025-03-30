@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import lombok.Getter;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoop {
@@ -35,7 +36,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoo
 
   private final LinearFilter currentFilter = LinearFilter.movingAverage(5);
   public double currentFilterValue = 0.0;
-  @Getter private boolean zerod = false;
+  @Getter @AutoLogOutput private boolean zerod = false;
   @Getter private double elevatorSetpointMeters = 0.0;
 
   public ElevatorSubsystem(final ElevatorIO io) {
@@ -135,6 +136,16 @@ public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoo
           setMotionMagicSetpointImpl(setpoint);
           elevatorSetpointMeters = setpoint;
         })
+        .withName("Elevator Motion Magic Setpoint Command");
+  }
+
+  public Command motionMagicPositionUntilCommand(DoubleSupplier metersFromBottom) {
+    return run(() -> {
+          double setpoint = metersFromBottom.getAsDouble();
+          setMotionMagicSetpointImpl(setpoint);
+          elevatorSetpointMeters = setpoint;
+        })
+        .until(atSetpoint(ElevatorConstants.toleranceMeters))
         .withName("Elevator Motion Magic Setpoint Command");
   }
 

@@ -240,6 +240,8 @@ public class DriveSubsystem extends SubsystemBase {
           measuredRobotRelativeChassisSpeeds,
           measuredFieldRelativeChassisSpeeds,
           fusedFieldRelativeChassisSpeeds);
+
+      state.addYawMeasurements(rawYawRotation, sampleTimestamps[i]);
     }
 
     // Update gyro alert

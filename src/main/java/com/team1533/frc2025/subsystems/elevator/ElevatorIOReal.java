@@ -131,7 +131,7 @@ public class ElevatorIOReal implements ElevatorIO {
     CTREUtil.applyConfiguration(leaderTalon, config);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        10,
+        50,
         leaderPositionSignal,
         leaderVelocitySignal,
         leaderVoltsSignal,

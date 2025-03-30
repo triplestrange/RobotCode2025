@@ -314,7 +314,8 @@ public class RobotState implements VisionConsumer {
   }
 
   public void updateMech2dViz() {
-    arm.setAngle(Units.rotationsToDegrees(getLatestArmPositionRotations() - ArmConstants.absEncoderOffset));
+    arm.setAngle(
+        Units.rotationsToDegrees(getLatestArmPositionRotations() - ArmConstants.absEncoderOffset));
     elev.setLength(getLatestElevPositionMeters());
     wrist1.setAngle(Units.rotationsToDegrees(-getLatestWristPositionRotations()) + .388);
     funnel2.setAngle(
