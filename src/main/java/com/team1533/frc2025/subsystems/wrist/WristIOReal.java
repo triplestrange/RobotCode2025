@@ -102,6 +102,8 @@ public class WristIOReal implements WristIO {
     config.MotionMagic.MotionMagicCruiseVelocity = WristConstants.motionMagicCruiseVelocity;
     config.MotionMagic.MotionMagicAcceleration = WristConstants.motionMagicAcceleration;
     config.MotionMagic.MotionMagicJerk = WristConstants.motionMagicJerk;
+    config.MotionMagic.MotionMagicExpo_kA = WristConstants.motionMagicExpo_kA;
+    config.MotionMagic.MotionMagicExpo_kV = WristConstants.motionMagicExpo_kV;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = WristConstants.forwardSoftLimitThreshold;

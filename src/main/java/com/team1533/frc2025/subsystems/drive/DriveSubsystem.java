@@ -72,7 +72,7 @@ public class DriveSubsystem extends SubsystemBase {
           DriveConstants.PP_CONFIG, DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
 
   private final AlignController alignController =
-      new AlignController(5, Constants.kRealDt, this::getPose);
+      new AlignController(7, Constants.kRealDt, this::getPose);
 
   private Rotation2d rawYawRotation = new Rotation2d();
 
@@ -448,8 +448,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Yuckers Maybe?
     if (RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
-      speedX *= 0.5;
-      speedY *= 0.5;
+      speedX *= 0.25;
+      speedY *= 0.25;
       speedR *= 0.2;
     }
 

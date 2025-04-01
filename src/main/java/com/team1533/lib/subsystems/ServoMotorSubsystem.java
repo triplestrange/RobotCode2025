@@ -13,6 +13,7 @@ import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.Util;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -47,6 +48,10 @@ public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends Moto
     Logger.processInputs(getName(), inputs);
     Logger.recordOutput(
         getName() + "/latencyPeriodicSec", RobotTime.getTimestampSeconds() - timestamp);
+
+    if (DriverStation.isDisabled()) {
+      positionSetpoint = getCurrentPosition();
+    }
   }
 
   protected void setOpenLoopDutyCycleImpl(double dutyCycle) {

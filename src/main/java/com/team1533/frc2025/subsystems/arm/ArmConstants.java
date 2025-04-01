@@ -32,8 +32,8 @@ public class ArmConstants {
   public static final double motionMagicAcceleration = 2;
   public static final double motionMagicJerk = 10;
   // TODO: Tune these tommorrow
-  public static final double motionMagicExpo_kA = 0;
-  public static final double motionMagicExpo_kV = 0;
+  public static final double motionMagicExpo_kA = 12.0 / 2;
+  public static final double motionMagicExpo_kV = 12.0 / 0.375;
 
   public static final double absEncoderOffset = -0.177246;
   public static final double absEncoderDiscontinuity = 0.8;

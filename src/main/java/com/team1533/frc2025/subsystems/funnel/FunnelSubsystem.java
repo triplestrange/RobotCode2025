@@ -29,6 +29,6 @@ public class FunnelSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
   }
 
   public void setTeleopDefaultCommand() {
-    setDefaultCommand(motionMagicSetpointCommand(() -> .25).withName("Stow Funnel"));
+    this.setDefaultCommand(holdSetpointCommand().withName("Funnel Maintain SetPoint"));
   }
 }

@@ -54,7 +54,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import lombok.Getter;
@@ -278,27 +277,38 @@ public class RobotContainer {
     // driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence());
 
     // // L4 Coral Automation
-    driveController.triangle().and(inCoralMode).onTrue(SuperStructureCommandFactory.L4());
+    driveController
+        .triangle()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25));
 
-    // // L3 Coral Automation
-    // driveController.circle().and(inCoralMode)
-    //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
+    // L3 Coral Automation
+    driveController
+        .circle()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22, 0.25));
 
-    // // L2 Coral Automation
-    // driveController.cross().and(inCoralMode)
-    //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
+    // L2 Coral Automation
+    driveController
+        .cross()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145, 0.25));
 
-    // // L1 Coral Automation
-    // driveController.povRight().and(inCoralMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0.15, 0.0445, 0.71));
+    // L1 Coral Automation
+    driveController
+        .povRight()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.07, 0.086995, 0.07, 0.25));
 
     // // Zero Preset
     // driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0, 0, 0));
+    //                 .genericPreset(0, 0, 0,0.25));
 
-    // // Coral Feeder Automation
-    // driveController.square().and(inCoralMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0.15, 0.043, 0.71));
+    // Coral Feeder Automation
+    driveController
+        .square()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.15, 0.043, 0.71, 0.30));
 
     // Coral Intake
     driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -306,21 +316,29 @@ public class RobotContainer {
     // Coral Outtake
     driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
 
-    // // Processor Algae
-    // driveController.square().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0.08, 0.1, 0.5));
+    // Processor Algae
+    driveController
+        .square()
+        .and(inAlgaeMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.08, 0.1, 0.5, 0.25));
 
-    // // Low Reef Algae
-    // driveController.cross().and(inAlgaeMode)
-    //                 .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.455));
+    // Low Reef Algae
+    driveController
+        .cross()
+        .and(inAlgaeMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44, 0.25));
 
-    // // High Reef Algae
-    // driveController.circle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0.18, 0.48, 0.52));
+    // High Reef Algae
+    driveController
+        .circle()
+        .and(inAlgaeMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47, 0.25));
 
-    // // Barge Algae
-    // driveController.triangle().and(inAlgaeMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0.24, 1.07, 0.3));
+    // Barge Algae
+    driveController
+        .triangle()
+        .and(inAlgaeMode)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3, 0.25));
 
     // Algae Intake
     driveController
@@ -332,13 +350,15 @@ public class RobotContainer {
     // Algae Outtake
     driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
 
-    // // Auto Align Arm Neutral Pos
-    // driveController.L2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-    //                 .onTrue(SuperStructureCommandFactory
-    //                                 .genericPreset(0.21, 0.043, 0.22));
-    // driveController.R2().and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-    //                 .onTrue(SuperStructureCommandFactory
-    //                                 .genericPreset(0.21, 0.045, 0.22));
+    // Auto Align Arm Neutral Pos
+    driveController
+        .L2()
+        .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.043, 0.22, 0.25));
+    driveController
+        .R2()
+        .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.045, 0.22, 0.25));
 
     // Auto Align Options
     driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
@@ -366,16 +386,16 @@ public class RobotContainer {
                         * ((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)));
 
     // Operator Elevator Zero
-    // operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
 
-    operatorController
-        .square()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  setRight(false);
-                  setLeft(false);
-                }));
+    // operatorController
+    //     .square()
+    //     .onTrue(
+    //         new InstantCommand(
+    //             () -> {
+    //               setRight(false);
+    //               setLeft(false);
+    //             }));
   }
 
   /**

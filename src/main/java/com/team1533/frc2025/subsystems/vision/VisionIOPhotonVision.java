@@ -75,10 +75,13 @@ public class VisionIOPhotonVision implements VisionIO {
           Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
           robotToTag = robotToTag.plus(robotToCamera.getTranslation());
 
-          Rotation2d robotRotation =
-              state.getYawRads(result.getTimestampSeconds()).isPresent()
-                  ? Rotation2d.fromRadians(state.getYawRads(result.getTimestampSeconds()).get())
-                  : RobotContainer.getInstance().getDriveSubsystem().getRotation();
+          // Rotation2d robotRotation =
+          //     state.getYawRads(result.getTimestampSeconds()).isPresent()
+          //         ? Rotation2d.fromRadians(state.getYawRads(result.getTimestampSeconds()).get())
+          //         : RobotContainer.getInstance().getDriveSubsystem().getRotation();
+
+          Rotation2d robotRotation = RobotContainer.getInstance().getDriveSubsystem().getRotation();
+
           // rotate to field coordinates
           Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
           Translation2d fieldToRobot =

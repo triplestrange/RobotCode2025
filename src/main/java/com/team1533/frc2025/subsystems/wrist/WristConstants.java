@@ -32,8 +32,8 @@ public class WristConstants {
   public static final double motionMagicAcceleration = 2;
   public static final double motionMagicJerk = 10;
   // TODO: tune these values
-  public static final double motionMagicExpo_kA = 0;
-  public static final double motionMagicExpo_kV = 0;
+  public static final double motionMagicExpo_kA = 12.0 / 2;
+  public static final double motionMagicExpo_kV = 12.0 / 3.9;
 
   public static final double absEncoderOffset = 0.875 - 0.005859375;
   public static final double absEncoderDiscontinuity = 0.9;
@@ -46,7 +46,7 @@ public class WristConstants {
   public static final Gains gains =
       switch (Constants.getRobot()) {
         case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(60, 0.0, 1, 0, 0.0, 0.0, 0);
+        case COMPBOT -> new Gains(60, 0.0, 3.75, 0, 0.0, 0.0, 0);
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
       };
 }
