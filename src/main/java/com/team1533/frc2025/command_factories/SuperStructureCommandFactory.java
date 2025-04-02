@@ -70,6 +70,7 @@ public class SuperStructureCommandFactory {
 
   //   Generic Preset - Sets the SuperStructure to Neutral Pos, the moves it to a
   //   setpoint
+
   public static Command genericPreset(
       double armSetpointRotations,
       double elevatorSetpointMeters,
@@ -83,6 +84,56 @@ public class SuperStructureCommandFactory {
         moveElevatorOnly(elevatorSetpointMeters),
         moveWristOnly(wristSetpointRotations),
         moveArmOnly(armSetpointRotations));
+  }
+
+  public static Command stowedPreset(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return new SequentialCommandGroup(
+        moveArmOnly(0.21),
+        moveWristOnly(0.22),
+        moveFunnelOnly(0.25),
+        moveElevatorOnly(elevatorSetpointMeters),
+        moveFunnelOnly(0.05),
+        moveWristOnly(0.005),
+        moveFunnelOnly(funnelSetpointRotations),
+        moveArmOnly(armSetpointRotations));
+  }
+
+  public static Command climbPrep(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return new SequentialCommandGroup(
+        moveArmOnly(0.21),
+        moveWristOnly(0.22),
+        moveFunnelOnly(0.25),
+        moveElevatorOnly(elevatorSetpointMeters),
+        moveFunnelOnly(0.005),
+        moveWristOnly(wristSetpointRotations),
+        moveArmOnly(armSetpointRotations));
+  }
+
+  public static Command climbPreset(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return (new ParallelCommandGroup(
+            ArmFactory.moveArmMotionMagic(() -> 0.125),
+            WristFactory.moveWristMotionMagic(() -> 0.125),
+            ElevatorFactory.moveElevMotionMagic(() -> 0.22))
+        .andThen(
+            new ParallelCommandGroup(
+                ArmFactory.moveArmMotionMagic(() -> 0.007),
+                ElevatorFactory.moveElevMotionMagic(() -> 0.3),
+                WristFactory.moveWristMotionMagic(() -> 0.01))));
   }
 
   // Neutral Pos - Default Pos of the SuperStructure. Elevator setpoint can be any

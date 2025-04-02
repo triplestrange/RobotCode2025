@@ -31,8 +31,8 @@ public class FunnelConstants {
   public static final double supplyCurrentLowerLimitTime = 1;
   // TODO: tune these
   public static final double motionMagicCruiseVelocity = 0;
-  public static final double MotionMagicExpo_kA = 0;
-  public static final double MotionMagicExpo_kV = 0;
+  public static final double MotionMagicExpo_kA = 12.0 / 63.28;
+  public static final double MotionMagicExpo_kV = 12.0 / 13.23;
 
   public static final double reverseSoftLimitThreshold = 0;
   public static final double forwardSoftLimitThreshold = 0.712;

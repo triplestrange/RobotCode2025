@@ -267,14 +267,11 @@ public class RobotContainer {
     // Gyro Rotation Reset
     driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-    // // Climb Prep
-    // driveController.povUp().onTrue(SuperStructureCommandFactory.genericPreset(0.25, 0, 0.5));
+    // Climb Prep
+    driveController.povUp().onTrue(SuperStructureCommandFactory.climbPrep(0.25, 0.22, 0.5, 0.05));
 
-    // // Climb Prep
-    // driveController.povRight().onTrue(SuperStructureCommandFactory.climbPrep());
-
-    // // Climb Sequence
-    // driveController.povDown().onTrue(SuperStructureCommandFactory.climbSequence());
+    // Climb Sequence
+    driveController.povDown().onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
     // // L4 Coral Automation
     driveController
@@ -298,11 +295,13 @@ public class RobotContainer {
     driveController
         .povRight()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.07, 0.086995, 0.07, 0.25));
+        .onTrue(SuperStructureCommandFactory.stowedPreset(0.036, 0, 0, 0));
 
-    // // Zero Preset
-    // driveController.povLeft().and(inCoralMode).onTrue(SuperStructureCommandFactory
-    //                 .genericPreset(0, 0, 0,0.25));
+    // Zero Preset
+    driveController
+        .povLeft()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.stowedPreset(0, 0, 0, 0));
 
     // Coral Feeder Automation
     driveController
@@ -344,11 +343,11 @@ public class RobotContainer {
     driveController
         .R1()
         .and(inAlgaeMode)
-        .whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.75))
-        .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.5));
+        .whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.9))
+        .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.7));
 
     // Algae Outtake
-    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
+    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 1));
 
     // Auto Align Arm Neutral Pos
     driveController
