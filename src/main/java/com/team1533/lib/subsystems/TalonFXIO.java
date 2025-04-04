@@ -66,6 +66,7 @@ public class TalonFXIO implements MotorIO {
     CTREUtil.tryUntilOK(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(50.0, signals), talon.getDeviceID());
     CTREUtil.tryUntilOK(() -> talon.optimizeBusUtilization(), talon.getDeviceID());
+    talon.setPosition(0);
   }
 
   private double rotorToUnits(double rotor) {

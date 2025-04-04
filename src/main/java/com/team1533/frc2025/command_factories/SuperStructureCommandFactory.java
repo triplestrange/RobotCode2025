@@ -86,6 +86,66 @@ public class SuperStructureCommandFactory {
         moveArmOnly(armSetpointRotations));
   }
 
+  public static Command reefToFeeder(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return (new ParallelCommandGroup(
+            ElevatorFactory.hold(),
+            FunnelFactory.hold()
+                .raceWith(
+                    ArmFactory.moveArmMotionMagic(() -> 0.21),
+                    WristFactory.moveWristMotionMagic(() -> 0.24)))
+        .andThen(
+            new ParallelCommandGroup(
+                ArmFactory.moveArmMotionMagic(() -> 0.15),
+                WristFactory.moveWristMotionMagic(() -> 0.71),
+                ElevatorFactory.moveElevMotionMagic(() -> 0.043),
+                FunnelFactory.moveFunnelMotionMagic(() -> 0.30))));
+  }
+
+  public static Command feederToReef(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return (new ParallelCommandGroup(
+            ElevatorFactory.hold(), FunnelFactory.hold(), WristFactory.hold())
+        .raceWith(ArmFactory.moveArmMotionMagic(() -> 0.21))
+        .andThen(
+            new ParallelCommandGroup(
+                    ElevatorFactory.hold(),
+                    FunnelFactory.hold(),
+                    ArmFactory.moveArmMotionMagic(() -> armSetpointRotations))
+                .raceWith(WristFactory.moveWristMotionMagic(() -> 0.2)))
+        .andThen(
+            new ParallelCommandGroup(
+                    WristFactory.hold(),
+                    ArmFactory.hold(),
+                    FunnelFactory.moveFunnelMotionMagic(() -> funnelSetpointRotations))
+                .raceWith(ElevatorFactory.moveElevMotionMagic(() -> elevatorSetpointMeters)))
+        .andThen(
+            new ParallelCommandGroup(
+                    ElevatorFactory.hold(), FunnelFactory.hold(), ArmFactory.hold())
+                .raceWith(WristFactory.moveWristMotionMagic(() -> wristSetpointRotations))));
+  }
+
+  public static Command autoPreset(
+      double armSetpointRotations,
+      double elevatorSetpointMeters,
+      double wristSetpointRotations,
+      double funnelSetpointRotations) {
+
+    return new SequentialCommandGroup(
+        moveFunnelOnly(funnelSetpointRotations),
+        moveArmOnly(armSetpointRotations),
+        moveElevatorOnly(elevatorSetpointMeters),
+        moveWristOnly(wristSetpointRotations));
+  }
+
   public static Command stowedPreset(
       double armSetpointRotations,
       double elevatorSetpointMeters,
@@ -97,7 +157,7 @@ public class SuperStructureCommandFactory {
         moveWristOnly(0.22),
         moveFunnelOnly(0.25),
         moveElevatorOnly(elevatorSetpointMeters),
-        moveFunnelOnly(0.05),
+        moveFunnelOnly(0.017),
         moveWristOnly(0.005),
         moveFunnelOnly(funnelSetpointRotations),
         moveArmOnly(armSetpointRotations));

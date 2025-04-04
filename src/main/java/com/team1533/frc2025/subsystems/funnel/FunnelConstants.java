@@ -20,7 +20,7 @@ public class FunnelConstants {
 
   public static final boolean leaderInverted = false;
 
-  public static final double reduction = 64. / 11.;
+  public static final double reduction = 64.0 / 11.0;
 
   public static final double frictionVoltage = 0.25;
 
@@ -64,7 +64,7 @@ public class FunnelConstants {
 
     config.name = "Funnel";
 
-    config.unitToRotorRatio = 1. / reduction;
+    config.unitToRotorRatio = 1.0 / reduction;
 
     config.talonCANID = funnelTalon;
 

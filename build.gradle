@@ -251,7 +251,7 @@ target fileTree(".") {
 include "/*.json"
 exclude "/build/", "/build-/"
 }
-    gson().indentWithSpaces(2)
+    gson().indentWithSpaces(2);
 }
 format "misc", {
 target fileTree(".") {

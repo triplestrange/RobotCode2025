@@ -195,27 +195,33 @@ public class RobotContainer {
         break;
     }
 
-    // NamedCommands.registerCommand(
-    //     "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337,
-    // 0.25).asProxy());
-
-    // NamedCommands.registerCommand(
-    //     "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.2)).withTimeout(0.75));
-
-    // NamedCommands.registerCommand(
-    //     "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22,
-    // 0.25).asProxy());
-
-    // NamedCommands.registerCommand(
-    //     "Arm Feeder While Moving",
-    //     SuperStructureCommandFactory.forcedPos(0.15, 0.045, 0.71).asProxy());
-
-    // NamedCommands.registerCommand(
-    //     "Arm Feeder",
-    //     SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.25).asProxy());
+    NamedCommands.registerCommand(
+        "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25).asProxy());
 
     NamedCommands.registerCommand(
-        "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.3));
+        "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25).asProxy());
+
+    NamedCommands.registerCommand(
+        "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0, 0).asProxy());
+
+    NamedCommands.registerCommand(
+        "Arm in Drive", SuperStructureCommandFactory.autoPreset(0.21, 0.8, 0.22, 0.25).asProxy());
+
+    NamedCommands.registerCommand(
+        "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.3)).withTimeout(0.5));
+
+    NamedCommands.registerCommand(
+        "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22, 0.25).asProxy());
+
+    NamedCommands.registerCommand(
+        "Arm Feeder While Moving",
+        SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.3).asProxy());
+
+    NamedCommands.registerCommand(
+        "Arm Feeder", SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.3).asProxy());
+
+    NamedCommands.registerCommand(
+        "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
 
     NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
 
@@ -225,7 +231,10 @@ public class RobotContainer {
 
     autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
     autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
-    autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Left 2 Piece"));
+    autoChooser.addOption("Asheville Auto", AutoBuilder.buildAuto("Left 2 Piece"));
+    autoChooser.addOption("3 Piece", AutoBuilder.buildAuto("3PL4"));
+    autoChooser.addOption("Test Path", AutoBuilder.buildAuto("test"));
+    autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Big Boi"));
 
     // configure buetton bindings
     configureButtonBindings();
@@ -273,11 +282,17 @@ public class RobotContainer {
     // Climb Sequence
     driveController.povDown().onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
-    // // L4 Coral Automation
+    // L4 Coral Automation
     driveController
         .triangle()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25));
+
+    // // L4 Coral Automation
+    // driveController
+    //     .triangle()
+    //     .and(inCoralMode)
+    //     .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
 
     // L3 Coral Automation
     driveController

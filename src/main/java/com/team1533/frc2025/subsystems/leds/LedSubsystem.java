@@ -23,6 +23,7 @@ import java.util.function.Supplier;
  * and percentage-based LED displays.
  */
 public class LedSubsystem extends SubsystemBase {
+
   private final LedIO io;
 
   public record PercentageSetpoint(double pct, LedState color) {}
