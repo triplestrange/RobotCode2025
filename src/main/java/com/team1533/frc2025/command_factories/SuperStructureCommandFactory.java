@@ -11,6 +11,7 @@ import static com.team1533.frc2025.Constants.SuperStructureStates;
 
 import com.team1533.frc2025.Constants.SuperStructureStates;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -35,6 +36,19 @@ public class SuperStructureCommandFactory {
             container.getElevatorSubsystem().resetZeroPoint(),
             container.getArmSubsystem().holdSetpointCommand(),
             container.getWristSubsystem().holdSetpointCommand()));
+  }
+
+  public static Command zeroFunnel() {
+    return new SequentialCommandGroup(
+        moveArmOnly(0.21).until(container.getArmSubsystem().atSetpoint(0.03)),
+        moveWristOnly(0.22).until(container.getWristSubsystem().atSetpoint(0.02)),
+        moveElevatorOnly(0)
+            .until(container.getElevatorSubsystem().atSetpoint(ElevatorConstants.toleranceMeters)),
+        new ParallelDeadlineGroup(
+            container.getFunnelSubsystem().resetZeroPoint(),
+            container.getArmSubsystem().holdSetpointCommand(),
+            container.getWristSubsystem().holdSetpointCommand(),
+            container.getElevatorSubsystem().holdSetpointCommand()));
   }
 
   public static BooleanSupplier wristCollidesRobot =

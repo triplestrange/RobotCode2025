@@ -38,6 +38,7 @@ public class FunnelConstants {
   public static final double forwardSoftLimitThreshold = 0.712;
 
   public static final double toleranceRotations = 0.05;
+  public static final double blockedCurrent = 60;
 
   public static final Gains gains =
       switch (Constants.getRobot()) {
