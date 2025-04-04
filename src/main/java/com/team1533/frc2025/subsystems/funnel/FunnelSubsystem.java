@@ -12,6 +12,8 @@ import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.MotorInputsAutoLogged;
 import com.team1533.lib.subsystems.ServoMotorSubsystem;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.Command;
 
 public class FunnelSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, MotorIO> {
 
@@ -30,5 +32,19 @@ public class FunnelSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, 
 
   public void setTeleopDefaultCommand() {
     this.setDefaultCommand(holdSetpointCommand().withName("Funnel Maintain SetPoint"));
+  }
+
+  public Command resetZeroPoint() {
+
+    return runEnd(
+            (() -> io.setOpenLoopDutyCycle(-.07)),
+            () -> {
+              io.setCurrentPositionAsZero();
+            })
+        .until(
+            () ->
+                (inputs.currentStatorAmps > FunnelConstants.blockedCurrent
+                    && MathUtil.isNear(0, inputs.velocityUnitsPerSecond, 0.1)))
+        .withName("Funnel Zero Command");
   }
 }
