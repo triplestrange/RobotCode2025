@@ -25,7 +25,7 @@ public class LedConstants {
 
   static {
     // TODO: find the actual settings im guessing
-    config.brightnessScalar = 0.1;
+    config.brightnessScalar = 0.5;
     config.disableWhenLOS = false;
     config.enableOptimizations = true;
     config.statusLedOffWhenActive = false;

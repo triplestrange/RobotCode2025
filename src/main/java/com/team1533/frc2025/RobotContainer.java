@@ -285,7 +285,10 @@ public class RobotContainer {
         .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5));
 
     // Climb Sequence
-    driveController.povDown().onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
+    driveController
+        .povDown()
+        .and(() -> wristSubsystem.getCurrentPosition() < 0.55)
+        .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
     // L4 Coral Automation
     driveController
@@ -388,7 +391,7 @@ public class RobotContainer {
             intakeSubsystem
                 ::hasReefAtBannerLaser); // Only activate if in Algae mode or not in Coral mode
     laserActivated.whileTrue(
-        ledSubsystem.commandBlinkingState(LedState.kRed, LedState.kOff, .1, .1));
+        ledSubsystem.commandBlinkingState(LedState.kRed, LedState.kOff, .05, .05));
     // Auto Align Arm Neutral Pos
     driveController
         .L2()

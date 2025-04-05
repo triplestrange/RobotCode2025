@@ -171,7 +171,7 @@ public class SuperStructureCommandFactory {
         moveWristOnly(0.22),
         moveFunnelOnly(0.25),
         moveElevatorOnly(elevatorSetpointMeters),
-        moveFunnelOnly(0.017),
+        moveFunnelOnly(0.02),
         moveWristOnly(0.005),
         moveFunnelOnly(funnelSetpointRotations),
         moveArmOnly(armSetpointRotations));
