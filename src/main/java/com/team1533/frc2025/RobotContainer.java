@@ -386,7 +386,7 @@ public class RobotContainer {
 
     // Operator Manual Wrist Override
     new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-        .and(() -> operatorController.getRightY() > 0)
+        .and(() -> operatorController.getRightY() < 0)
         .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()));
 
     // // Operator Manual Elevator Override
