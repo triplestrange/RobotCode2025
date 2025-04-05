@@ -412,24 +412,36 @@ public class RobotContainer {
 
     // Operator Binds
 
-    // Operator Manual Arm Override
-    new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3 * operatorController.getLeftY()));
+    // // Operator Manual Arm Override
+    // new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
+    //     .whileTrue(armSubsystem.runDutyCycle(() -> 0.3 * operatorController.getLeftY()));
 
     // Operator Manual Wrist Override
     new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
+        .and(() -> operatorController.getRightY() < 0)
         .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()));
 
-    // Operator Manual Elevator Override
-    new Trigger(
-            () ->
-                Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)
-                    > 0.1)
-        .whileTrue(
-            elevatorSubsystem.runDutyCycle(
-                () ->
-                    0.25
-                        * ((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)));
+    // // Operator Manual Elevator Override
+    // new Trigger(
+    //         () ->
+    //             Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)
+    //                 > 0.1)
+    //     .whileTrue(
+    //         elevatorSubsystem
+    //             .runDutyCycle(
+    //                 () ->
+    //                     0.25
+    //                         * ((operatorController.getR2Axis() - operatorController.getL2Axis())
+    //                             / 2))
+    //             ).and(
+    //                 () ->
+    //                     (((elevatorSubsystem.getCurrentPosition() < Units.inchesToMeters(14))
+    //                             || (armSubsystem.getCurrentPosition() > .125)))
+    //                         || (0.25
+    //                                 * ((operatorController.getR2Axis()
+    //                                         - operatorController.getL2Axis())
+    //                                     / 2))
+    //                             < 0);
 
     // Operator Elevator Zero
     operatorController
