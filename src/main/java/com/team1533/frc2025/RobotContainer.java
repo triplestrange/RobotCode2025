@@ -283,7 +283,7 @@ public class RobotContainer {
     // Climb Prep
     driveController
         .povUp()
-        .onTrue(SuperStructureCommandFactory.climbPrep(0.225, 0.22, 0.65, 0.05))
+        .onTrue(SuperStructureCommandFactory.climbPrep(0.215, 0.22, 0.65, 0.05))
         .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5));
 
     // Climb Sequence
