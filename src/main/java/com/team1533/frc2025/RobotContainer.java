@@ -292,7 +292,7 @@ public class RobotContainer {
         .triangle()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // // L4 Coral Automation
     // driveController
@@ -305,21 +305,21 @@ public class RobotContainer {
         .circle()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22, 0.25))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // L2 Coral Automation
     driveController
         .cross()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145, 0.25))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // L1 Coral Automation
     driveController
         .povRight()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.stowedPreset(0.036, 0, 0, 0))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // Zero Preset
     driveController
@@ -344,25 +344,28 @@ public class RobotContainer {
         .square()
         .and(inAlgaeMode)
         .onTrue(SuperStructureCommandFactory.genericPreset(0.08, 0.1, 0.5, 0.25))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
 
     // Low Reef Algae
     driveController
         .cross()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44, 0.25))
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
 
     // High Reef Algae
     driveController
         .circle()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47, 0.25))
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
 
     // Barge Algae
     driveController
         .triangle()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3, 0.25))
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
 
     // Algae Intake
     driveController
@@ -432,7 +435,7 @@ public class RobotContainer {
     operatorController
         .cross()
         .onTrue(SuperStructureCommandFactory.zeroElevator())
-        .whileTrue(
+        .onTrue(
             ledSubsystem.commandBlinkingState(
                 LedState.kYellow, LedState.kOff, 0.5, 0.5)); // Reset LED state
 
