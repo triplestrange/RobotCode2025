@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "RL2 Middle"
@@ -25,7 +31,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Arm Feeder"
+            "name": "Arm Neutral"
           }
         }
       ]
