@@ -12,6 +12,7 @@ import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCame
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 // import com.team1533.frc2025.command_factories.SuperStructureCommandFactory;
 import com.team1533.frc2025.generated.TunerConstants;
@@ -236,7 +237,8 @@ public class RobotContainer {
     autoChooser.addOption("Asheville Auto", AutoBuilder.buildAuto("Left 2 Piece"));
     autoChooser.addOption("3 Piece", AutoBuilder.buildAuto("3PL4"));
     autoChooser.addOption("Test Path", AutoBuilder.buildAuto("test"));
-    autoChooser.addOption("Big Boi Auto", AutoBuilder.buildAuto("Big Boi"));
+    autoChooser.addOption("Big Boi Left", AutoBuilder.buildAuto("Big Boi"));
+    autoChooser.addOption("Big Boi Right", new PathPlannerAuto("Big Boi", true));
 
     // configure buetton bindings
     configureButtonBindings();
