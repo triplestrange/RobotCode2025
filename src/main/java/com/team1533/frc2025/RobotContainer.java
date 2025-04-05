@@ -283,13 +283,13 @@ public class RobotContainer {
     // Climb Prep
     driveController
         .povUp()
-        .onTrue(SuperStructureCommandFactory.climbPrep(0.25, 0.22, 0.6, 0.05))
+        .onTrue(SuperStructureCommandFactory.climbPrep(0.25, 0.22, 0.65, 0.05))
         .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5));
 
     // Climb Sequence
     driveController
         .povDown()
-        .and(() -> wristSubsystem.getCurrentPosition() < 0.65)
+        .and(() -> wristSubsystem.getCurrentPosition() < 0.69)
         .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
     // L4 Coral Automation
