@@ -387,7 +387,10 @@ public class RobotContainer {
 
     // Operator Manual Wrist Override
     new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()).onlyWhile(() -> (armSubsystem.getCurrentPosition() > .125)));
+        .whileTrue(
+            wristSubsystem
+                .runDutyCycle(() -> 0.15 * operatorController.getRightY())
+                .onlyWhile(() -> (armSubsystem.getCurrentPosition() > .125)));
 
     // Operator Manual Elevator Override
     new Trigger(
@@ -395,10 +398,18 @@ public class RobotContainer {
                 Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)
                     > 0.1)
         .whileTrue(
-            elevatorSubsystem.runDutyCycle(
-                () ->
-                    0.25
-                        * ((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)).onlyWhile(() -> ((elevatorSubsystem.getCurrentPosition() < Units.inchesToMeters(14)) || (armSubsystem.getCurrentPosition() > .125))));
+            elevatorSubsystem
+                .runDutyCycle(
+                    () ->
+                        0.25
+                            * ((operatorController.getR2Axis() - operatorController.getL2Axis())
+                                / 2))
+                .onlyWhile(
+                    () ->
+                        (((elevatorSubsystem.getCurrentPosition() < Units.inchesToMeters(14))
+                            || (armSubsystem.getCurrentPosition() > .125))) || (0.25
+                            * ((operatorController.getR2Axis() - operatorController.getL2Axis())
+                                / 2)) < 0));
 
     // Operator Elevator Zero
     operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
