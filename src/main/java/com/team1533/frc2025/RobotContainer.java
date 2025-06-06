@@ -293,17 +293,17 @@ public class RobotContainer {
         .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
     // L4 Coral Automation
-    driveController
-        .triangle()
-        .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
-
-    // // L4 Coral Automation
     // driveController
     //     .triangle()
     //     .and(inCoralMode)
-    //     .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
+    //     .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
+    //     .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+
+    // // L4 Coral Automation
+    driveController
+        .triangle()
+        .and(inCoralMode)
+        .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
 
     // L3 Coral Automation
     driveController
