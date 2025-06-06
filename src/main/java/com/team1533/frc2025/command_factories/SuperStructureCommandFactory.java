@@ -134,7 +134,7 @@ public class SuperStructureCommandFactory {
                     ElevatorFactory.hold(),
                     FunnelFactory.hold(),
                     ArmFactory.moveArmMotionMagic(() -> armSetpointRotations))
-                .raceWith(WristFactory.moveWristMotionMagic(() -> 0.2)))
+                .raceWith(WristFactory.moveWristMotionMagic(() -> 0.35)))
         .andThen(
             new ParallelCommandGroup(
                     WristFactory.hold(),
