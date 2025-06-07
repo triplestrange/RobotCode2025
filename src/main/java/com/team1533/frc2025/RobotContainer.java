@@ -292,8 +292,7 @@ public class RobotContainer {
         .and(() -> wristSubsystem.getCurrentPosition() < 0.69)
         .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
-
-    //Parallel Command Stuff
+    // Parallel Command Stuff
 
     // L4 Coral Automation
     driveController
@@ -307,9 +306,8 @@ public class RobotContainer {
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.feederToReef(0.16, 0.387106, 0.22, 0.25));
 
+    // Sequential Command Stuff
 
-    //Sequential Command Stuff
-    
     // L4 Coral Automation
     // driveController
     //     .triangle()
