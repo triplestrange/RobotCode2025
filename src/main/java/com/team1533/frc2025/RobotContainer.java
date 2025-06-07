@@ -302,7 +302,7 @@ public class RobotContainer {
 
     // L3 Coral Automation
     driveController
-        .triangle()
+        .circle()
         .and(inCoralMode)
         .onTrue(SuperStructureCommandFactory.feederToReef(0.16, 0.387106, 0.22, 0.25));
 
