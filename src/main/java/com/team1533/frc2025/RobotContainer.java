@@ -292,35 +292,35 @@ public class RobotContainer {
         .and(() -> wristSubsystem.getCurrentPosition() < 0.69)
         .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
 
-    // Parallel Command Stuff
+    // // Parallel Command Stuff
+
+    // // L4 Coral Automation
+    // driveController
+    //     .triangle()
+    //     .and(inCoralMode)
+    //     .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
+
+    // // L3 Coral Automation
+    // driveController
+    //     .circle()
+    //     .and(inCoralMode)
+    //     .onTrue(SuperStructureCommandFactory.feederToReef(0.16, 0.387106, 0.22, 0.25));
+
+    // Sequential Command Stuff
 
     // L4 Coral Automation
     driveController
         .triangle()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // L3 Coral Automation
     driveController
         .circle()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.feederToReef(0.16, 0.387106, 0.22, 0.25));
-
-    // Sequential Command Stuff
-
-    // L4 Coral Automation
-    // driveController
-    //     .triangle()
-    //     .and(inCoralMode)
-    //     .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
-    //     .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
-
-    // L3 Coral Automation
-    // driveController
-    //     .circle()
-    //     .and(inCoralMode)
-    //     .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22, 0.25))
-    //     .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22, 0.25))
+        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
 
     // L2 Coral Automation
     driveController
