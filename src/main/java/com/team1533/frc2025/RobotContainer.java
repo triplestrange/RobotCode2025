@@ -29,17 +29,13 @@ import com.team1533.frc2025.subsystems.drive.ModuleIO;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXReal;
 import com.team1533.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import com.team1533.frc2025.subsystems.elevator.*;
-import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
-import com.team1533.frc2025.subsystems.funnel.FunnelSubsystem;
+// import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
+// import com.team1533.frc2025.subsystems.funnel.FunnelSubsystem;
 import com.team1533.frc2025.subsystems.intake.IntakeConstants;
 import com.team1533.frc2025.subsystems.intake.IntakeSensorIO;
 import com.team1533.frc2025.subsystems.intake.IntakeSensorIOReal;
 import com.team1533.frc2025.subsystems.intake.IntakeSensorIOSim;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
-import com.team1533.frc2025.subsystems.leds.LedIO;
-import com.team1533.frc2025.subsystems.leds.LedIOHardware;
-import com.team1533.frc2025.subsystems.leds.LedState;
-import com.team1533.frc2025.subsystems.leds.LedSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -72,6 +68,7 @@ public class RobotContainer {
   private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
   @AutoLogOutput @Getter private boolean algaeMode = false;
+  @AutoLogOutput @Getter private boolean troughMode = false;
   @Getter @AutoLogOutput @Setter private boolean left = true;
   @Getter @AutoLogOutput @Setter private boolean right = true;
 
@@ -85,8 +82,9 @@ public class RobotContainer {
   @Getter private final ElevatorSubsystem elevatorSubsystem;
   @Getter private final WristSubsystem wristSubsystem;
   @Getter private final IntakeSubsystem intakeSubsystem;
-  @Getter private final FunnelSubsystem funnelSubsystem;
-  @Getter private final LedSubsystem ledSubsystem;
+  // @Getter private final ClimbSubsystem climbSubsystem;
+  // @Getter private final FunnelSubsystem funnelSubsystem;
+  // @Getter private final LedSubsystem ledSubsystem;
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -125,10 +123,6 @@ public class RobotContainer {
                 IntakeConstants.config,
                 new TalonFXIO(IntakeConstants.config),
                 new IntakeSensorIOReal());
-        funnelSubsystem =
-            new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
-        new TalonFXIO(IntakeConstants.config);
-        ledSubsystem = new LedSubsystem(new LedIOHardware());
 
         break;
 
@@ -160,10 +154,6 @@ public class RobotContainer {
                 IntakeConstants.config,
                 new SimTalonFXIO(IntakeConstants.config),
                 new IntakeSensorIOSim());
-        funnelSubsystem =
-            new FunnelSubsystem(FunnelConstants.config, new SimTalonFXIO(FunnelConstants.config));
-        new SimTalonFXIO(IntakeConstants.config);
-        ledSubsystem = new LedSubsystem(new LedIOHardware());
 
         break;
 
@@ -190,22 +180,19 @@ public class RobotContainer {
                 new TalonFXIO(IntakeConstants.config) {},
                 new IntakeSensorIO() {});
 
-        funnelSubsystem =
-            new FunnelSubsystem(FunnelConstants.config, new TalonFXIO(FunnelConstants.config));
-
-        ledSubsystem = new LedSubsystem(new LedIO() {});
+        // ledSubsystem = new LedSubsystem(new LedIO() {});
 
         break;
     }
 
     NamedCommands.registerCommand(
-        "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25).asProxy());
+        "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337).asProxy());
 
     NamedCommands.registerCommand(
-        "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25).asProxy());
+        "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337).asProxy());
 
     NamedCommands.registerCommand(
-        "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0, 0).asProxy());
+        "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0).asProxy());
 
     NamedCommands.registerCommand(
         "Arm in Drive", SuperStructureCommandFactory.autoPreset(0.21, 0.8, 0.22, 0.25).asProxy());
@@ -214,14 +201,14 @@ public class RobotContainer {
         "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.3)).withTimeout(0.5));
 
     NamedCommands.registerCommand(
-        "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22, 0.25).asProxy());
+        "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22).asProxy());
 
     NamedCommands.registerCommand(
         "Arm Feeder While Moving",
-        SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.3).asProxy());
+        SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
 
     NamedCommands.registerCommand(
-        "Arm Feeder", SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71, 0.3).asProxy());
+        "Arm Feeder", SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
 
     NamedCommands.registerCommand(
         "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
@@ -244,7 +231,7 @@ public class RobotContainer {
     configureButtonBindings();
     fastLoop.register(armSubsystem);
     fastLoop.register(elevatorSubsystem);
-    fastLoop.register(intakeSubsystem);
+    // fastLoop.register(intakeSubsystem);
     fastLoop.register(wristSubsystem);
     fastLoop.start();
   }
@@ -254,10 +241,15 @@ public class RobotContainer {
 
     // Driver Binds
 
-    // Mode Toggle
+    // Algae Mode Toggle
     driveController
         .R3()
         .whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
+
+    // Trough Mode Toggle
+    driveController
+        .L3()
+        .whileTrue(Commands.startEnd(() -> troughMode = true, () -> troughMode = false));
 
     // Arm Stop
     driveController
@@ -281,16 +273,14 @@ public class RobotContainer {
     driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
     // Climb Prep
-    driveController
-        .povUp()
-        .onTrue(SuperStructureCommandFactory.climbPrep(0.215, 0.22, 0.65, 0.05))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5));
+    driveController.povUp().onTrue(SuperStructureCommandFactory.climbPrep(0.215, 0.22, 0.65));
+    // .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5))
 
     // Climb Sequence
     driveController
         .povDown()
         .and(() -> wristSubsystem.getCurrentPosition() < 0.69)
-        .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0, 0));
+        .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0));
 
     // // Parallel Command Stuff
 
@@ -308,33 +298,32 @@ public class RobotContainer {
 
     // Sequential Command Stuff
 
+    // LED Command Coral
+    // .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5))
+
     // L4 Coral Automation
     driveController
         .triangle()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337));
 
     // L3 Coral Automation
     driveController
         .circle()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
 
     // L2 Coral Automation
     driveController
         .cross()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
 
     // L1 Coral Automation
     driveController
         .povRight()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.stowedPreset(0.036, 0, 0, 0))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.stowedPreset(0.036, 0, 0, 0));
 
     // Zero Preset
     driveController
@@ -346,7 +335,7 @@ public class RobotContainer {
     driveController
         .square()
         .and(inCoralMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.15, 0.043, 0.71, 0.30));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.15, 0.043, 0.71));
 
     // Coral Intake
     driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
@@ -358,72 +347,58 @@ public class RobotContainer {
     driveController
         .square()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.08, 0.1, 0.5, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.08, 0.1, 0.5));
 
     // Low Reef Algae
     driveController
         .cross()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44));
 
     // High Reef Algae
     driveController
         .circle()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47));
 
     // Barge Algae
     driveController
         .triangle()
         .and(inAlgaeMode)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3, 0.25))
-        .onTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3));
 
     // Algae Intake
     driveController
         .R1()
         .and(inAlgaeMode)
         .whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.9))
-        .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.7))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+        .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.7));
 
     // Algae Outtake
-    driveController
-        .L1()
-        .and(inAlgaeMode)
-        .whileTrue(intakeSubsystem.dutyCycleCommand(() -> 1))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kGreen, LedState.kOff, .5, .5));
+    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 1));
 
-    // Laser Activation
-    laserActivated =
-        new Trigger(
-            intakeSubsystem
-                ::hasReefAtBannerLaser); // Only activate if in Algae mode or not in Coral mode
-    laserActivated.whileTrue(
-        ledSubsystem.commandBlinkingState(LedState.kRed, LedState.kOff, .05, .05));
+    // // Laser Activation
+    // laserActivated =
+    //     new Trigger(
+    //         intakeSubsystem
+    //             ::hasReefAtBannerLaser); // Only activate if in Algae mode or not in Coral mode
+    // laserActivated.whileTrue(
+    //     ledSubsystem.commandBlinkingState(LedState.kRed, LedState.kOff, .05, .05));
+
     // Auto Align Arm Neutral Pos
     driveController
         .L2()
         .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.043, 0.22, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.043, 0.22));
     driveController
         .R2()
         .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.045, 0.22, 0.25));
+        .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.045, 0.22));
 
     // Auto Align Options
-    driveController
-        .L2()
-        .whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kBlue, LedState.kOff, 0.5, 0.5));
+    driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
 
-    driveController
-        .R2()
-        .whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)))
-        .whileTrue(ledSubsystem.commandBlinkingState(LedState.kBlue, LedState.kOff, 0.5, 0.5));
+    driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
 
     // Operator Binds
 
@@ -459,20 +434,17 @@ public class RobotContainer {
     //                             < 0);
 
     // Operator Elevator Zero
-    operatorController
-        .cross()
-        .onTrue(SuperStructureCommandFactory.zeroElevator())
-        .onTrue(
-            ledSubsystem.commandBlinkingState(
-                LedState.kYellow, LedState.kOff, 0.5, 0.5)); // Reset LED state
+    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+    // .onTrue(ledSubsystem.commandBlinkingState(LedState.kYellow, LedState.kOff, 0.5, 0.5))
+    // Reset LED state
 
     // Operator Funnel Zero
-    operatorController
-        .circle()
-        .onTrue(SuperStructureCommandFactory.zeroFunnel())
-        .onTrue(
-            ledSubsystem.commandBlinkingState(
-                LedState.kYellow, LedState.kOff, 0.5, 0.5)); // Reset LED state
+    // operatorController
+    //     .circle()
+    //     .onTrue(SuperStructureCommandFactory.zeroFunnel())
+    //     .onTrue(
+    //         ledSubsystem.commandBlinkingState(
+    //             LedState.kYellow, LedState.kOff, 0.5, 0.5)); // Reset LED state
 
     // operatorController
     //     .square()

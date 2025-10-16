@@ -5,6 +5,6 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package com.team1533.frc2025.subsystems.intake;
+package com.team1533.frc2025.subsystems.climb;
 
-public class IntakeSensorIOReal implements IntakeSensorIO {}
+public interface ClimbIO {}

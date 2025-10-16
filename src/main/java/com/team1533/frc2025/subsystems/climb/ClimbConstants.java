@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package com.team1533.frc2025.subsystems.intake;
+package com.team1533.frc2025.subsystems.climb;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -14,28 +14,20 @@ import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.drivers.CANDeviceId;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
-public class IntakeConstants {
-  public static final CANDeviceId intakeTalonCanID = new CANDeviceId(21);
-  public static final CANDeviceId rRollerTalonCanID = new CANDeviceId(22);
-  public static final CANDeviceId lRollerTalonCanID = new CANDeviceId(23);
-  public static final CANDeviceId fCanrangeCanID = new CANDeviceId(24);
-  public static final CANDeviceId rCanrangeCanID = new CANDeviceId(25);
-  public static final CANDeviceId lCanrangeCanID = new CANDeviceId(26);
-  public static final CANDeviceId bCanrangeCanID = new CANDeviceId(27);
-  public static final String canBUS = "rio";
+public class ClimbConstants {
+  public static final CANDeviceId intakeTalon = new CANDeviceId(26, "rio");
 
-  // public static final boolean leaderInverted = true;
+  public static final boolean leaderInverted = true;
 
-  public static final double intakereduction = 1.;
-  public static final double rollerreduction = 1.;
-  // public static final double rotorToSensorRatio = 1.;
-  // public static final double sensorToMechanismRatio = 1.;
+  public static final double reduction = 1.;
+  public static final double rotorToSensorRatio = 1.;
+  public static final double sensorToMechanismRatio = 1.;
 
-  // public static final int kIntakeLaserSensorPort = 0;
-  // public static final double kIntakeLaserDebounceTime = 0.05;
+  public static final int kIntakeLaserSensorPort = 0;
+  public static final double kIntakeLaserDebounceTime = 0.05;
 
-  // public static final int kIntakeBannerSensorPort = 1;
-  // public static final double kIntakeBannerDebounceTime = 0.0;
+  public static final int kIntakeBannerSensorPort = 1;
+  public static final double kIntakeBannerDebounceTime = 0.0;
 
   public static final Gains gains =
       switch (Constants.getRobot()) {
@@ -48,8 +40,8 @@ public class IntakeConstants {
 
   static {
     // Feedback Configs
-    // config.fxConfig.Feedback.RotorToSensorRatio = rotorToSensorRatio;
-    // config.fxConfig.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
+    config.fxConfig.Feedback.RotorToSensorRatio = rotorToSensorRatio;
+    config.fxConfig.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
 
     config.fxConfig.TorqueCurrent.PeakForwardTorqueCurrent = 40;
     config.fxConfig.TorqueCurrent.PeakReverseTorqueCurrent = -40;
@@ -64,15 +56,13 @@ public class IntakeConstants {
     config.fxConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
     config.fxConfig.CurrentLimits.SupplyCurrentLowerTime = 1;
 
-    config.name = "Intake";
+    config.name = "Climb";
 
     config.kMinPositionUnits = 0;
     config.kMaxPositionUnits = 0;
     config.momentOfInertia = 1;
 
-    config.talonCANID = intakeTalonCanID;
-    config.talonCANID = rRollerTalonCanID;
-    config.talonCANID = lRollerTalonCanID;
-    config.unitToRotorRatio = intakereduction;
+    config.talonCANID = intakeTalon;
+    config.unitToRotorRatio = reduction;
   }
 }

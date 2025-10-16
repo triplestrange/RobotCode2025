@@ -11,9 +11,9 @@ import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Gains;
 
 public class ArmConstants {
-  public static final int leaderTalonCanID = 21;
-  public static final int followerTalonCanID = 22;
-  public static final int pivotEncoderCanID = 27;
+  public static final int leaderTalonCanID = 14;
+  public static final int followerTalonCanID = 15;
+  public static final int pivotEncoderCanID = 16;
   public static final String canBUS = "rio";
 
   public static final boolean leaderInverted = true;

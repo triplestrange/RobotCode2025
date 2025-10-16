@@ -11,8 +11,8 @@ import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Gains;
 
 public class ElevatorConstants {
-  public static final int leaderTalonCanID = 23;
-  public static final int followerTalonCanID = 24;
+  public static final int leaderTalonCanID = 17;
+  public static final int followerTalonCanID = 18;
   public static final String canBUS = "rio";
 
   public static final boolean leaderInverted = true;

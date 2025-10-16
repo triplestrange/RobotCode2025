@@ -9,7 +9,7 @@ package com.team1533.lib.subsystems;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
-import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
+// import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
 import com.team1533.lib.time.RobotTime;
 import com.team1533.lib.util.Util;
 import edu.wpi.first.math.MathUtil;
@@ -153,15 +153,15 @@ public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends Moto
         .withName(getName() + " motionMagicSetpointCommand");
   }
 
-  public Command motionMagicSetpointUntilOnTargetCommand(DoubleSupplier unitSupplier) {
-    return runEnd(
-            () -> {
-              setMotionMagicSetpointImpl(unitSupplier.getAsDouble());
-            },
-            () -> {})
-        .until(atSetpoint(FunnelConstants.toleranceRotations))
-        .withName(getName() + " motionMagicSetpointCommand");
-  }
+  // public Command motionMagicSetpointUntilOnTargetCommand(DoubleSupplier unitSupplier) {
+  //   return runEnd(
+  //           () -> {
+  //             setMotionMagicSetpointImpl(unitSupplier.getAsDouble());
+  //           },
+  //           () -> {})
+  //       .until(atSetpoint(FunnelConstants.toleranceRotations))
+  //       .withName(getName() + " motionMagicSetpointCommand");
+  // }
 
   public Command holdSetpointCommand() {
     return run(() -> {

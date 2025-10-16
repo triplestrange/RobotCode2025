@@ -5,29 +5,20 @@
 // license that can be found in the LICENSE file at
 // the root directory of this project.
 
-package com.team1533.frc2025.subsystems.intake;
+package com.team1533.frc2025.subsystems.climb;
 
 import com.team1533.frc2025.RobotState;
 import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.MotorInputsAutoLogged;
 import com.team1533.lib.subsystems.ServoMotorSubsystem;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
-// import edu.wpi.first.math.filter.Debouncer;
-// import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IntakeSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, MotorIO> {
-
-  private IntakeSensorInputsAutoLogged inputsSensors = new IntakeSensorInputsAutoLogged();
-  private IntakeSensorIO ioSensors;
-  private AtomicBoolean laserHasReef = new AtomicBoolean(false);
+public class ClimbSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, MotorIO> {
 
   private final RobotState state;
 
-  public IntakeSubsystem(
-      ServoMotorSubsystemConfig c, final MotorIO io, final IntakeSensorIO sensorIO) {
+  public ClimbSubsystem(ServoMotorSubsystemConfig c, final MotorIO io, final ClimbIO sensorIO) {
     super(c, new MotorInputsAutoLogged(), io);
-    this.ioSensors = sensorIO;
     this.state = RobotState.getInstance();
   }
 
