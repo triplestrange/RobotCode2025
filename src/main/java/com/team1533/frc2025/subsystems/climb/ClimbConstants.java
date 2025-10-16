@@ -15,19 +15,14 @@ import com.team1533.lib.drivers.CANDeviceId;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
 public class ClimbConstants {
-  public static final CANDeviceId intakeTalon = new CANDeviceId(26, "rio");
+  public static final CANDeviceId climbTalon = new CANDeviceId(28, "rio");
 
   public static final boolean leaderInverted = true;
 
+  //Add Reduction
   public static final double reduction = 1.;
   public static final double rotorToSensorRatio = 1.;
   public static final double sensorToMechanismRatio = 1.;
-
-  public static final int kIntakeLaserSensorPort = 0;
-  public static final double kIntakeLaserDebounceTime = 0.05;
-
-  public static final int kIntakeBannerSensorPort = 1;
-  public static final double kIntakeBannerDebounceTime = 0.0;
 
   public static final Gains gains =
       switch (Constants.getRobot()) {
@@ -49,7 +44,7 @@ public class ClimbConstants {
     config.fxConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.fxConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    config.fxConfig.CurrentLimits.StatorCurrentLimit = 60;
+    config.fxConfig.CurrentLimits.StatorCurrentLimit = 40;
     config.fxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     config.fxConfig.CurrentLimits.SupplyCurrentLimit = 40;
     config.fxConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -62,7 +57,7 @@ public class ClimbConstants {
     config.kMaxPositionUnits = 0;
     config.momentOfInertia = 1;
 
-    config.talonCANID = intakeTalon;
+    config.talonCANID = climbTalon;
     config.unitToRotorRatio = reduction;
   }
 }

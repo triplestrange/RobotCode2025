@@ -18,7 +18,7 @@ public class WristConstants {
 
   public static final boolean leaderInverted = false;
 
-  public static final double reduction = (155 / 6);
+  public static final double reduction = (155.0 / 6);
   public static final double SensorToMechanismRatio = 1.0;
   public static final double frictionVoltage = 0.25;
 
