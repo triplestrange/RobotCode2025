@@ -47,8 +47,7 @@ public class ElevatorSubsystem extends SubsystemBase implements IStatusSignalLoo
 
   @Override
   public List<BaseStatusSignal> getStatusSignals() {
-    return io.getStatusSignals();
-  }
+    return io.getStatusSignals();}
 
   @Override
   public void onLoop() {

@@ -22,10 +22,10 @@ import java.util.function.DoubleSupplier;
 public class IntakeFactory {
   private static final RobotContainer container = RobotContainer.getInstance();
 
-  public static Command runIntake(DoubleSupplier intakeSpeed) {
-    return container
-        .getIntakeSubsystem()
-        .dutyCycleCommand(intakeSpeed)
-        .withName("Duty Cycle Intake");
-  }
+  // public static Command runIntake(DoubleSupplier intakeSpeed) {
+  //   return container
+  //       .getIntakeSubsystem()
+  //       .dutyCycleCommand(intakeSpeed)
+  //       .withName("Duty Cycle Intake");
+  // }
 }

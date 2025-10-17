@@ -42,8 +42,7 @@ public class ArmSubsystem extends SubsystemBase implements IStatusSignalLoop {
 
   @Override
   public List<BaseStatusSignal> getStatusSignals() {
-    return io.getStatusSignals();
-  }
+    return io.getStatusSignals();}
 
   @Override
   public void onLoop() {

@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class WristIOReal implements WristIO {
-  protected final TalonFX leaderTalon;
+  protected final TalonFX wristTalon;
   protected final CANcoder wristEncoder;
 
   private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
@@ -66,7 +66,7 @@ public class WristIOReal implements WristIO {
   private final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
 
   public WristIOReal() {
-    leaderTalon = new TalonFX(WristConstants.leaderTalonCanID, WristConstants.canBUS);
+    wristTalon = new TalonFX(WristConstants.leaderTalonCanID, WristConstants.canBUS);
     wristEncoder = new CANcoder(WristConstants.wristEncoderCanID, WristConstants.canBUS);
 
     // Leader motor configs
@@ -117,21 +117,21 @@ public class WristIOReal implements WristIO {
     encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
     // Base Status Signals
-    leaderPositionSignal = leaderTalon.getRotorPosition();
-    leaderVelocitySignal = leaderTalon.getRotorVelocity();
-    leaderVoltsSignal = leaderTalon.getMotorVoltage();
-    leaderCurrentStatorSignal = leaderTalon.getStatorCurrent();
-    leaderCurrentSupplySignal = leaderTalon.getSupplyCurrent();
-    leaderTemperatureSignal = leaderTalon.getDeviceTemp();
+    leaderPositionSignal = wristTalon.getRotorPosition();
+    leaderVelocitySignal = wristTalon.getRotorVelocity();
+    leaderVoltsSignal = wristTalon.getMotorVoltage();
+    leaderCurrentStatorSignal = wristTalon.getStatorCurrent();
+    leaderCurrentSupplySignal = wristTalon.getSupplyCurrent();
+    leaderTemperatureSignal = wristTalon.getDeviceTemp();
 
     encoderAbsolutePositionRotations = wristEncoder.getAbsolutePosition();
     encoderRelativePositionRotations = wristEncoder.getPosition();
-    wristVelocitySignal = leaderTalon.getVelocity();
-    wristAccelerationSignal = leaderTalon.getAcceleration();
+    wristVelocitySignal = wristTalon.getVelocity();
+    wristAccelerationSignal = wristTalon.getAcceleration();
 
-    fusedCancoderSignal = leaderTalon.getPosition();
+    fusedCancoderSignal = wristTalon.getPosition();
 
-    CTREUtil.applyConfiguration(leaderTalon, config);
+    CTREUtil.applyConfiguration(wristTalon, config);
     CTREUtil.applyConfiguration(wristEncoder, encoderConfig);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
@@ -148,7 +148,7 @@ public class WristIOReal implements WristIO {
     BaseStatusSignal.setUpdateFrequencyForAll(250, fusedCancoderSignal, wristVelocitySignal);
 
     // Optimize bus utilization
-    leaderTalon.optimizeBusUtilization(0, 1.0);
+    wristTalon.optimizeBusUtilization(0, 1.0);
     wristEncoder.optimizeBusUtilization(0, 1.0);
 
     voltageOut.EnableFOC = true;
@@ -156,11 +156,11 @@ public class WristIOReal implements WristIO {
     motionMagicExpoVoltage.EnableFOC = true;
   }
 
-  @Override
-  public List<BaseStatusSignal> getStatusSignals() {
+  //LEDs
+  //@Override
+  //public List<BaseStatusSignal> getStatusSignals() {
     // Only read position and velocity at 250 hz
-    return Arrays.asList(fusedCancoderSignal, wristVelocitySignal);
-  }
+    //return Arrays.asList(fusedCancoderSignal, wristVelocitySignal);}
 
   @Override
   public void updateFastInputs(FastWristIOInputs inputs) {
@@ -205,38 +205,38 @@ public class WristIOReal implements WristIO {
 
   @Override
   public void runVolts(double volts) {
-    leaderTalon.setControl(voltageOut.withOutput(volts));
+    wristTalon.setControl(voltageOut.withOutput(volts));
   }
 
   @Override
   public void setDutyCycleOut(double output) {
-    leaderTalon.setControl(dutyCycleOutControl.withOutput(output));
+    wristTalon.setControl(dutyCycleOutControl.withOutput(output));
   }
 
   @Override
   public void setPositionSetpoint(double positionRotations) {
-    leaderTalon.setControl(positionTorqueCurrentFOC.withPosition(positionRotations));
+    wristTalon.setControl(positionTorqueCurrentFOC.withPosition(positionRotations));
   }
 
   @Override
   public void setPositionSetpoint(double positionRotations, double rotationsPerSec) {
-    leaderTalon.setControl(
+    wristTalon.setControl(
         positionTorqueCurrentFOC.withPosition(positionRotations).withVelocity(rotationsPerSec));
   }
 
   @Override
   public void setCurrentSetpoint(double amps) {
-    leaderTalon.setControl(currentControl.withOutput(amps));
+    wristTalon.setControl(currentControl.withOutput(amps));
   }
 
   @Override
   public void setMotionMagicSetpoint(double positionRotations) {
-    leaderTalon.setControl(motionMagicExpoVoltage.withPosition(positionRotations));
+    wristTalon.setControl(motionMagicExpoVoltage.withPosition(positionRotations));
   }
 
   @Override
   public void setBrakeMode(boolean enabled) {
-    leaderTalon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+    wristTalon.setNeutralMode(enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast);
   }
 
   @Override
@@ -247,11 +247,11 @@ public class WristIOReal implements WristIO {
     config.Slot0.kG = gains.ffkG();
     config.Slot0.kS = gains.ffkS();
     config.Slot0.kV = gains.ffkV();
-    CTREUtil.applyConfiguration(leaderTalon, config);
+    CTREUtil.applyConfiguration(wristTalon, config);
   }
 
   @Override
   public void stop() {
-    leaderTalon.setControl(new NeutralOut());
+    wristTalon.setControl(new NeutralOut());
   }
 }

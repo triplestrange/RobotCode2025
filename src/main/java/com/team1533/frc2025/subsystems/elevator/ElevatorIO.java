@@ -9,9 +9,11 @@ package com.team1533.frc2025.subsystems.elevator;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.team1533.frc2025.Constants.Gains;
+import org.littletonrobotics.junction.AutoLog;
+
+//LEDs
 import java.util.Arrays;
 import java.util.List;
-import org.littletonrobotics.junction.AutoLog;
 
 public interface ElevatorIO {
 
@@ -44,11 +46,6 @@ public interface ElevatorIO {
     public double elevatorAccelMetersPerSecondPerSecond = 0.0;
   }
 
-  default List<BaseStatusSignal> getStatusSignals() {
-    return Arrays.asList();
-  }
-  ;
-
   default void updateInputs(ElevatorIOInputs inputs) {}
 
   default void updateFastInputs(FastElevatorIOInputs inputs) {}
@@ -76,4 +73,8 @@ public interface ElevatorIO {
   default void stop() {}
 
   default void zero() {}
+
+  //LEDs
+  default List<BaseStatusSignal> getStatusSignals() {
+    return Arrays.asList();};
 }

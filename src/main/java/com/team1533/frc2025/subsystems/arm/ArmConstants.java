@@ -38,8 +38,8 @@ public class ArmConstants {
   public static final double absEncoderOffset = -0.177246;
   public static final double absEncoderDiscontinuity = 0.8;
 
-  public static final double reverseSoftLimitThreshold = 0.01;
-  public static final double forwardSoftLimitThreshold = 0.25;
+  public static final double reverseSoftLimitThreshold = -7.0/360;
+  public static final double forwardSoftLimitThreshold = 100.0/360;
 
   public static final double toleranceRotations = 0.03;
 

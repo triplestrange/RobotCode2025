@@ -62,7 +62,7 @@ public class WristIOSim extends WristIOReal {
   }
 
   public void updateSimState() {
-    var motorSimState = leaderTalon.getSimState();
+    var motorSimState = wristTalon.getSimState();
     var encSimState = wristEncoder.getSimState();
 
     encSimState.setSupplyVoltage(12.0);
