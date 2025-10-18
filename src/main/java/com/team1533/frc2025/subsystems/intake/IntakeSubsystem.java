@@ -41,19 +41,65 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void intakeCoral() {
-    io.setIntakeDutyCycleOut(0.625);
+    io.setIntakeDutyCycleOut(0.75);
     if(inputs.lCANrangeRange && inputs.rCANrangeRange) {
-      io.setRRollerDutyCycleOut(-0.625);
-      io.setLRollerDutyCycleOut(-0.625);
+      io.setRRollerDutyCycleOut(-0.75);
+      io.setLRollerDutyCycleOut(-0.75);
     }
     else {
-      io.setRRollerDutyCycleOut(0.625);
-      io.setLRollerDutyCycleOut(-0.625);
+      io.setRRollerDutyCycleOut(0.75);
+      io.setLRollerDutyCycleOut(-0.75);
     }
   }
 
-  public Command intakeCoralCommand(){
+  public void outtakeCoralFront() {
+    io.setIntakeDutyCycleOut(0.625);
+    io.setRRollerDutyCycleOut(0.75);
+    io.setLRollerDutyCycleOut(-0.75);
+  }
+
+  public void outtakeCoralBack() {
+    io.setIntakeDutyCycleOut(-0.25);
+    io.setRRollerDutyCycleOut(-0.25);
+    io.setLRollerDutyCycleOut(0.25);
+  }
+
+  public void intakeAlgae() {
+    io.setIntakeDutyCycleOut(-0.75);
+  }
+
+  public void holdAlgae() {
+    io.setIntakeDutyCycleOut(-0.15);
+  }
+
+  public void outtakeAlgae() {
+    io.setIntakeDutyCycleOut(0.75);
+  }
+
+  //Commands
+
+  public Command intakeCoralCommand() {
     return run(this::intakeCoral).withName("Intake Coral");
+  }
+
+  public Command outtakeCoralFrontCommand() {
+    return run(this::outtakeCoralFront).withName("Outtake Coral Front");
+  }
+
+  public Command outtakeCoralBackCommand() {
+    return run(this::outtakeCoralBack).withName("Outtake Coral Back");
+  }
+
+  public Command intakeAlgaeCommand() {
+    return run(this::intakeAlgae).withName("Intake Algae");
+  }
+
+  public Command holdAlgaeCommand() {
+    return run(this::holdAlgae).withName("Hold Algae");
+  }
+
+  public Command outtakeAlgaeCommand() {
+    return run(this::outtakeAlgae).withName("Outtake Algae");
   }
 
 }

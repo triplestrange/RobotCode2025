@@ -69,11 +69,16 @@ public class RobotContainer {
 
   @AutoLogOutput @Getter private boolean algaeMode = false;
   @AutoLogOutput @Getter private boolean troughMode = false;
+  @AutoLogOutput @Getter private boolean coralMode = false;
   @Getter @AutoLogOutput @Setter private boolean left = true;
   @Getter @AutoLogOutput @Setter private boolean right = true;
+  @Getter @AutoLogOutput @Setter private boolean isFacingForward = true;
 
-  private Trigger inCoralMode = new Trigger(() -> !algaeMode);
+  private Trigger inCoralMode = new Trigger(() -> !algaeMode && !troughMode);
+  private Trigger inTroughMode = new Trigger(() -> troughMode);
   private Trigger inAlgaeMode = new Trigger(() -> algaeMode);
+  private Trigger facingForward = new Trigger(() -> isFacingForward);
+  private Trigger facingBackward = new Trigger(() -> !isFacingForward);
   
   @Getter private final DriveSubsystem driveSubsystem;
   @Getter private final VisionSubsystem visionSubsystem;
@@ -116,8 +121,7 @@ public class RobotContainer {
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
         wristSubsystem = new WristSubsystem(new WristIOReal());
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new TalonFXIO(ClimbConstants.config));
-        intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());
-                
+        intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());    
 
         break;
 
@@ -170,47 +174,49 @@ public class RobotContainer {
         break;
     }
 
-    NamedCommands.registerCommand(
-        "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337).asProxy());
+    //Auto Commands
 
-    NamedCommands.registerCommand(
-        "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337).asProxy());
 
-    NamedCommands.registerCommand(
-        "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337).asProxy());
 
-    NamedCommands.registerCommand(
-        "Arm in Drive", SuperStructureCommandFactory.autoPreset(0.21, 0.8, 0.22, 0.25).asProxy());
+    // NamedCommands.registerCommand(
+    //     "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0).asProxy());
+
+    // NamedCommands.registerCommand(
+    //     "Arm in Drive", SuperStructureCommandFactory.autoPreset(0.21, 0.8, 0.22, 0.25).asProxy());
 
     // NamedCommands.registerCommand(
     //     "Outtake", (intakeSubsystem.dutyCycleCommand(() -> -0.3)).withTimeout(0.5));
 
-    NamedCommands.registerCommand(
-        "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Neutral", SuperStructureCommandFactory.genericPreset(0.21, 0.4, 0.22).asProxy());
 
-    NamedCommands.registerCommand(
-        "Arm Feeder While Moving",
-        SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Feeder While Moving",
+    //     SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
 
-    NamedCommands.registerCommand(
-        "Arm Feeder", SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
+    // NamedCommands.registerCommand(
+    //     "Arm Feeder", SuperStructureCommandFactory.genericPreset(0.15, 0.045, 0.71).asProxy());
 
     // NamedCommands.registerCommand(
     //     "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
 
-    NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
+    // NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
     autoChooser.addDefaultOption("None", Commands.none());
 
-    autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
-    autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
-    autoChooser.addOption("Asheville Auto", AutoBuilder.buildAuto("Left 2 Piece"));
-    autoChooser.addOption("3 Piece", AutoBuilder.buildAuto("3PL4"));
-    autoChooser.addOption("Test Path", AutoBuilder.buildAuto("test"));
-    autoChooser.addOption("Big Boi Left", AutoBuilder.buildAuto("Big Boi"));
-    autoChooser.addOption("Big Boi Right", new PathPlannerAuto("Big Boi", true));
+    // autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
+    // autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
+    // autoChooser.addOption("Asheville Auto", AutoBuilder.buildAuto("Left 2 Piece"));
+    // autoChooser.addOption("3 Piece", AutoBuilder.buildAuto("3PL4"));
+    // autoChooser.addOption("Test Path", AutoBuilder.buildAuto("test"));
+    // autoChooser.addOption("Big Boi Left", AutoBuilder.buildAuto("Big Boi"));
+    // autoChooser.addOption("Big Boi Right", new PathPlannerAuto("Big Boi", true));
 
     // configure button bindings
     configureButtonBindings();
@@ -224,15 +230,20 @@ public class RobotContainer {
   // Button Binds
   private void configureButtonBindings() {
 
-//     // Driver Binds
+    // Driver Binds
 
     //Temp Climb
-    driveController.povUp().whileTrue(climbSubsystem.runUntilStall());
+    //driveController.povUp().whileTrue(climbSubsystem.runUntilStall());
 
-//     // Algae Mode Toggle
-//     driveController
-//         .R3()
-//         .whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
+    // Algae Mode Toggle
+    driveController
+        .R3()
+        .whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
+
+    // Trough Mode Toggle
+    driveController
+        .L3()
+        .whileTrue(Commands.startEnd(() -> troughMode = true, () -> troughMode = false));
 
 //     // Trough Mode Toggle
 //     driveController
@@ -260,127 +271,114 @@ public class RobotContainer {
     // Gyro Rotation Reset
     driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-    //Default Intake Pos?
-    driveController.square().onTrue(SuperStructureCommandFactory.defaultparallelPreset());
+    // //Default Intake Pos?
+    // driveController.square().onTrue(SuperStructureCommandFactory.defaultparallelPreset());
 
-    //Default Intake Pos?
-    driveController.povRight().onTrue(SuperStructureCommandFactory.neutralparallelPreset());
+    // //Default Intake Pos?
+    // driveController.povRight().onTrue(SuperStructureCommandFactory.neutralparallelPreset());
 
     //Intake Coral
+    //Works
     driveController.R1().whileTrue(intakeSubsystem.intakeCoralCommand());
 
-//     // Climb Prep
-//     driveController.povUp().onTrue(SuperStructureCommandFactory.climbPrep(0.215, 0.22, 0.65));
-//     // .onTrue(ledSubsystem.commandBlinkingState(LedState.kCyan, LedState.kOff, .5, .5))
+    //Outtake Coral
+    //Works; not automated
+    //driveController.L1().whileTrue(intakeSubsystem.outtakeCoralBackCommand());
+    driveController.L1().whileTrue(intakeSubsystem.outtakeCoralFrontCommand());
 
-//     // Climb Sequence
-//     driveController
-//         .povDown()
-//         .and(() -> wristSubsystem.getCurrentPosition() < 0.69)
-//         .onTrue(SuperStructureCommandFactory.climbPreset(0, 0, 0));
+    // Algae Intake
+    driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.intakeAlgaeCommand())
+        .onFalse(intakeSubsystem.holdAlgaeCommand());
 
-//     // // Parallel Command Stuff
+    // Algae Outtake
+    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.outtakeAlgaeCommand());
 
-//     // // L4 Coral Automation
-//     // driveController
-//     //     .triangle()
-//     //     .and(inCoralMode)
-//     //     .onTrue(SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337, 0.25));
+    //Coral Ground Intake Pos
 
-//     // // L3 Coral Automation
-//     // driveController
-//     //     .circle()
-//     //     .and(inCoralMode)
-//     //     .onTrue(SuperStructureCommandFactory.feederToReef(0.16, 0.387106, 0.22, 0.25));
+    //Algae Ground Intake Pos
 
-//     // Sequential Command Stuff
+    //Front L4
+    driveController
+    .triangle()
+    .and(inCoralMode)
+    //.and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.196, 1.03, 0.275));
 
-//     // LED Command Coral
-//     // .onTrue(ledSubsystem.commandBlinkingState(LedState.kWhite, LedState.kOff, .5, .5))
+    //Front L3
 
-//     // L4 Coral Automation
-//     driveController
-//         .triangle()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337));
+    //Front L2
 
-//     // L3 Coral Automation
-//     driveController
-//         .circle()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.16, 0.387106, 0.22));
+    //Front High Algae
+    driveController
+    .circle()
+    .and(inAlgaeMode)
+    //.and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.188, 0.445, 0.545));
 
-//     // L2 Coral Automation
-//     driveController
-//         .cross()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.1, 0.086995, 0.145));
+    //Front Low Algae
+    driveController
+    .cross()
+    .and(inAlgaeMode)
+    //.and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.164, 0.2, 0.565));
 
-//     // L1 Coral Automation
-//     driveController
-//         .povRight()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.stowedPreset(0.036, 0, 0, 0));
 
-//     // Zero Preset
-//     driveController
-//         .povLeft()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.stowedPreset(0, 0, 0, 0));
 
-//     // Coral Feeder Automation
-//     driveController
-//         .square()
-//         .and(inCoralMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.15, 0.043, 0.71));
+//Good Presets
 
-//     // Coral Intake
-//     driveController.R1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 0.5));
+    // //Back L4
+    //driveController
+    //.triangle()
+    // .and(inCoralMode)
+    // //.and(facingBackward)
+    // .onTrue(
+    //     SuperStructureCommandFactory.defaultparallelPreset(0.243, 1.085, 0));
 
-//     // Coral Outtake
-//     driveController.L1().and(inCoralMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.2));
+    // //Back L3
+    // driveController
+    // .circle()
+    // .and(inCoralMode)
+    // //.and(facingBackward)
+    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.24, 0.34, 19.75/360));
 
-//     // Processor Algae
-//     driveController
-//         .square()
-//         .and(inAlgaeMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.08, 0.1, 0.5));
+    // //Back L2
+    // driveController
+    // .cross()
+    // .and(inCoralMode)
+    // //.and(facingBackward)
+    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.225, 0, 10.0/360));
 
-//     // Low Reef Algae
-//     driveController
-//         .cross()
-//         .and(inAlgaeMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.155, 0.055, 0.44));
+    // //Back High Algae
+    // driveController
+    // .circle()
+    // .and(inAlgaeMode)
+    // //.and(facingBackward)
+    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.23, 0.36, 0.2));
 
-//     // High Reef Algae
-//     driveController
-//         .circle()
-//         .and(inAlgaeMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.18, 0.48, 0.47));
+    // //Back Low Algae
+    // driveController
+    // .cross()
+    // .and(inAlgaeMode)
+    // //.and(facingBackward)
+    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.23, 0, 0.2));
 
-//     // Barge Algae
-//     driveController
-//         .triangle()
-//         .and(inAlgaeMode)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.24, 1.07, 0.3));
 
-//     // Algae Intake
-//     driveController
-//         .R1()
-//         .and(inAlgaeMode)
-//         .whileTrue(intakeSubsystem.dutyCycleCommand(() -> -0.9))
-//         .onFalse(intakeSubsystem.dutyCycleCommand(() -> -0.7));
+    //Processor
 
-//     // Algae Outtake
-//     driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.dutyCycleCommand(() -> 1));
+    //Barge
+    
+    
+    //Default Pos
+    driveController.povRight().onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.2, 0.2, 0));
 
-//     // // Laser Activation
-//     // laserActivated =
-//     //     new Trigger(
-//     //         intakeSubsystem
-//     //             ::hasReefAtBannerLaser); // Only activate if in Algae mode or not in Coral mode
-//     // laserActivated.whileTrue(
-//     //     ledSubsystem.commandBlinkingState(LedState.kRed, LedState.kOff, .05, .05));
+    //Stow
+    driveController.povLeft().onTrue(SuperStructureCommandFactory.stow());
+
+    //Intake Pos
+    driveController.square().onTrue(SuperStructureCommandFactory.defaultparallelPreset(-5.0/360, 0.065, 0.374));
+
+
+
 
 //     // Auto Align Arm Neutral Pos
 //     driveController
@@ -394,64 +392,27 @@ public class RobotContainer {
 
 //     // Auto Align Options
 //     driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
-
 //     driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
 
-//     // Operator Binds
+// Operator Binds
 
-//     // // Operator Manual Arm Override
-//     // new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-//     //     .whileTrue(armSubsystem.runDutyCycle(() -> 0.3 * operatorController.getLeftY()));
 
-//     // Operator Manual Wrist Override
-//     new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-//         .and(() -> operatorController.getRightY() < 0)
-//         .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15 * operatorController.getRightY()));
+//Operator Manual Arm Override
+new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
+        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
 
-//     // // Operator Manual Elevator Override
-//     // new Trigger(
-//     //         () ->
-//     //             Math.abs((operatorController.getR2Axis() - operatorController.getL2Axis()) / 2)
-//     //                 > 0.1)
-//     //     .whileTrue(
-//     //         elevatorSubsystem
-//     //             .runDutyCycle(
-//     //                 () ->
-//     //                     0.25
-//     //                         * ((operatorController.getR2Axis() - operatorController.getL2Axis())
-//     //                             / 2))
-//     //             ).and(
-//     //                 () ->
-//     //                     (((elevatorSubsystem.getCurrentPosition() < Units.inchesToMeters(14))
-//     //                             || (armSubsystem.getCurrentPosition() > .125)))
-//     //                         || (0.25
-//     //                                 * ((operatorController.getR2Axis()
-//     //                                         - operatorController.getL2Axis())
-//     //                                     / 2))
-//     //                             < 0);
+//Operator Manual Wrist Override        
+new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
+        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
 
-//     // Operator Elevator Zero
-//     operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
-//     // .onTrue(ledSubsystem.commandBlinkingState(LedState.kYellow, LedState.kOff, 0.5, 0.5))
-//     // Reset LED state
+//Operator Manual Elevator Override
+new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
+        .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
 
-//     // Operator Funnel Zero
-//     // operatorController
-//     //     .circle()
-//     //     .onTrue(SuperStructureCommandFactory.zeroFunnel())
-//     //     .onTrue(
-//     //         ledSubsystem.commandBlinkingState(
-//     //             LedState.kYellow, LedState.kOff, 0.5, 0.5)); // Reset LED state
 
-//     // operatorController
-//     //     .square()
-//     //     .onTrue(
-//     //         new InstantCommand(
-//     //             () -> {
-//     //               setRight(false);
-//     //               setLeft(false);
-//     //             }));
-  }
+    // Operator Elevator Zero
+    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+}
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

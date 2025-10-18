@@ -36,7 +36,7 @@ public class ElevatorConstants {
   public static final double motionMagicExpo_kV = 12.0 / 1.7;
 
   public static final double reverseSoftLimitThreshold = 0;
-  public static final double forwardSoftLimitThreshold = 1.07;
+  public static final double forwardSoftLimitThreshold = 1.09;
   // TODO: tune this because we changed it to use a linear filter
   public static final double blockedCurrent = 100;
 
