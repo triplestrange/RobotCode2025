@@ -364,6 +364,22 @@ public class RobotContainer {
 
 
 
+    //Back High Algae
+    driveController
+    .circle()
+    .and(inAlgaeMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.246, 0.536, 0.1323));
+
+    //Back Low Algae
+    driveController
+    .cross()
+    .and(inAlgaeMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0, 0.2));
+
+
+
     //The other shit .tm
 
     // //driveController
@@ -423,19 +439,7 @@ public class RobotContainer {
     .and(facingBackward)
     .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.225, 0, 10.0/360, false));
 
-    //Back High Algae
-    driveController
-    .circle()
-    .and(inAlgaeMode)
-    .and(facingBackward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.246, 0.536, 0.1323));
-
-    //Back Low Algae
-    driveController
-    .cross()
-    .and(inAlgaeMode)
-    .and(facingBackward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0, 0.2));
+    
 
     //Processor
 
