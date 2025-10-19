@@ -34,12 +34,14 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.processInputs("Intake", inputs);
   }
 
+  //Stop All Rollers
   public void stopAll() {
     io.stopIntake();
     io.stopLRoller();
     io.stopRRoller();
   }
 
+  //Intake Coral
   public void intakeCoral() {
     io.setIntakeDutyCycleOut(0.75);
     if(inputs.lCANrangeRange && inputs.rCANrangeRange) {
@@ -52,29 +54,76 @@ public class IntakeSubsystem extends SubsystemBase {
     }
   }
 
-  public void outtakeCoralFront() {
-    io.setIntakeDutyCycleOut(0.625);
-    io.setRRollerDutyCycleOut(0.75);
-    io.setLRollerDutyCycleOut(-0.75);
+  //Intake Trough
+  public void intakeTrough() {
+    if(inputs.fCANrangeRange && inputs.rCANrangeRange && inputs.lCANrangeRange) {
+      io.setIntakeDutyCycleOut(0.75);
+      io.setRRollerDutyCycleOut(0);
+      io.setLRollerDutyCycleOut(0);
+    }
+    
+    
+    else if(inputs.rCANrangeRange && !inputs.lCANrangeRange) {
+      io.setIntakeDutyCycleOut(0.75);
+      io.setRRollerDutyCycleOut(0.625);
+      io.setLRollerDutyCycleOut(0.625);
+    }
+    
+    else if(inputs.lCANrangeRange && !inputs.rCANrangeRange) {
+      io.setIntakeDutyCycleOut(0.75);
+      io.setRRollerDutyCycleOut(-0.625);
+      io.setLRollerDutyCycleOut(-0.625);
+    }
+
+    else {
+      io.setIntakeDutyCycleOut(0.625);
+      io.setRRollerDutyCycleOut(0.25);
+      io.setLRollerDutyCycleOut(0.25);
+    }
   }
 
-  public void outtakeCoralBack() {
-    io.setIntakeDutyCycleOut(-0.25);
-    io.setRRollerDutyCycleOut(-0.25);
-    io.setLRollerDutyCycleOut(0.25);
+ //Coral Shifting
+ public void coralShift(boolean isFacingForward) {
+  if(isFacingForward) {
+    if(inputs.bCANrangeRange) {
+    io.setIntakeDutyCycleOut(-0.05);
+    io.setRRollerDutyCycleOut(-0.05);
+    io.setLRollerDutyCycleOut(0.05);
+    System.out.println("BACKKK");
+  }
+  
+    else {
+    io.setIntakeDutyCycleOut(0.05);
+    io.setRRollerDutyCycleOut(0.05);
+    io.setLRollerDutyCycleOut(-0.05);
+    System.out.println("not BACKKK");
+  }}
+
+  else {
+    if(inputs.fCANrangeRange) {
+      io.setIntakeDutyCycleOut(0.05);
+      io.setRRollerDutyCycleOut(0.05);
+      io.setLRollerDutyCycleOut(-0.05);}
+    
+      else {
+      io.setIntakeDutyCycleOut(-0.05);
+      io.setRRollerDutyCycleOut(-0.05);
+      io.setLRollerDutyCycleOut(0.05);}
+  }
+}
+
+  //Spin All Rollers
+  public void spinCoralRollers(double setIntakeDutyCycleOut, double setRRollerDutyCycleOut, double setLRollerDutyCycleOut) {
+    io.setIntakeDutyCycleOut(setIntakeDutyCycleOut);
+    io.setRRollerDutyCycleOut(setRRollerDutyCycleOut);
+    io.setLRollerDutyCycleOut(setLRollerDutyCycleOut);
   }
 
-  public void intakeAlgae() {
-    io.setIntakeDutyCycleOut(-0.75);
+  //Spin Algae Rollers
+  public void spinAlgaeRollers(double setIntakeDutyCycleOut) {
+    io.setIntakeDutyCycleOut(setIntakeDutyCycleOut);
   }
 
-  public void holdAlgae() {
-    io.setIntakeDutyCycleOut(-0.15);
-  }
-
-  public void outtakeAlgae() {
-    io.setIntakeDutyCycleOut(0.75);
-  }
 
   //Commands
 
@@ -82,24 +131,19 @@ public class IntakeSubsystem extends SubsystemBase {
     return run(this::intakeCoral).withName("Intake Coral");
   }
 
-  public Command outtakeCoralFrontCommand() {
-    return run(this::outtakeCoralFront).withName("Outtake Coral Front");
+  public Command intakeTroughCommand() {
+    return run(this::intakeTrough).withName("Intake Trough");
   }
 
-  public Command outtakeCoralBackCommand() {
-    return run(this::outtakeCoralBack).withName("Outtake Coral Back");
+  public Command coralShiftCommand(boolean isFacingForward) {
+    return run(() -> coralShift(isFacingForward));
   }
 
-  public Command intakeAlgaeCommand() {
-    return run(this::intakeAlgae).withName("Intake Algae");
+  public Command spinCoralRollersCommand(double setIntakeDutyCycleOut, double setRRollerDutyCycleOut, double setLRollerDutyCycleOut) {
+    return run(() -> spinCoralRollers(setIntakeDutyCycleOut, setRRollerDutyCycleOut, setLRollerDutyCycleOut)).withName("Spin Coral Rollers");
   }
 
-  public Command holdAlgaeCommand() {
-    return run(this::holdAlgae).withName("Hold Algae");
+  public Command spinAlgaeRollersCommand(double setIntakeDutyCycleOut) {
+    return run(() -> spinAlgaeRollers(setIntakeDutyCycleOut)).withName("Spin Algae Rollers");
   }
-
-  public Command outtakeAlgaeCommand() {
-    return run(this::outtakeAlgae).withName("Outtake Algae");
-  }
-
 }

@@ -38,14 +38,14 @@ public class WristIOReal implements WristIO {
   protected final TalonFX wristTalon;
   protected final CANcoder wristEncoder;
 
-  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true);
   private final DutyCycleOut dutyCycleOutControl =
-      new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);
+      new DutyCycleOut(0).withEnableFOC(true);
   private final PositionTorqueCurrentFOC positionTorqueCurrentFOC =
-      new PositionTorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
+      new PositionTorqueCurrentFOC(0);
+  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0);
   private final MotionMagicExpoVoltage motionMagicExpoVoltage =
-      new MotionMagicExpoVoltage(0.0).withEnableFOC(true).withUpdateFreqHz(0.0);
+      new MotionMagicExpoVoltage(0.0).withEnableFOC(true);
 
   private final StatusSignal<Angle> leaderPositionSignal;
   private final StatusSignal<AngularVelocity> leaderVelocitySignal;

@@ -288,6 +288,21 @@ public class DriveSubsystem extends SubsystemBase {
       }
     }
 
+    if (
+    Math.abs(
+       MathUtil.angleModulus(
+        bestPose.getRotation().minus(
+          RobotContainer.getInstance().getDriveSubsystem().getRotation()).getRadians()
+        )) > Math.PI/2) 
+    {
+    bestPose = new Pose2d(bestPose.getX(),bestPose.getY(),bestPose.getRotation().plus(Rotation2d.k180deg));
+      RobotContainer.getInstance().setFacingForward(false);
+    }
+
+    else{
+      RobotContainer.getInstance().setFacingForward(true);
+    }
+
     setAlignTarget(bestPose);
 
     if (!RobotContainer.getInstance().isLeft() && !RobotContainer.getInstance().isRight()) {

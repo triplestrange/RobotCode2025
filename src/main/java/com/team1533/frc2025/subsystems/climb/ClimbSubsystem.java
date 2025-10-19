@@ -44,7 +44,7 @@ public class ClimbSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, M
 //Fix
   public Command runUntilStall() {
 
-    return dutyCycleCommand(()-> -0.5)
+    return dutyCycleCommand(()-> -0.2)
         .until(
             () ->
                 (currentFilterValue > ClimbConstants.blockedCurrent

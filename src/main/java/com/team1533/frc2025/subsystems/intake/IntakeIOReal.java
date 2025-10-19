@@ -119,7 +119,7 @@ public IntakeIOReal() {
     fCANrangeIsDectected = fCANrange.getIsDetected();
     rCANrangeIsDectected = rCANrange.getIsDetected();
     lCANrangeIsDectected = lCANrange.getIsDetected();
-    bCANrangeIsDectected = rCANrange.getIsDetected();
+    bCANrangeIsDectected = bCANrange.getIsDetected();
 
     CTREUtil.applyConfiguration(intakeTalon, intakeConfig);
     BaseStatusSignal.setUpdateFrequencyForAll(10,

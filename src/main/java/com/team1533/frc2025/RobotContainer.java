@@ -9,6 +9,8 @@ package com.team1533.frc2025;
 
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.camera0Name;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera0;
+import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera1;
+import static com.team1533.frc2025.subsystems.vision.VisionConstants.robotToCamera2;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -68,14 +70,12 @@ public class RobotContainer {
   private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
   @AutoLogOutput @Getter private boolean algaeMode = false;
-  @AutoLogOutput @Getter private boolean troughMode = false;
   @AutoLogOutput @Getter private boolean coralMode = false;
   @Getter @AutoLogOutput @Setter private boolean left = true;
   @Getter @AutoLogOutput @Setter private boolean right = true;
   @Getter @AutoLogOutput @Setter private boolean isFacingForward = true;
 
-  private Trigger inCoralMode = new Trigger(() -> !algaeMode && !troughMode);
-  private Trigger inTroughMode = new Trigger(() -> troughMode);
+  private Trigger inCoralMode = new Trigger(() -> !algaeMode);
   private Trigger inAlgaeMode = new Trigger(() -> algaeMode);
   private Trigger facingForward = new Trigger(() -> isFacingForward);
   private Trigger facingBackward = new Trigger(() -> !isFacingForward);
@@ -115,7 +115,10 @@ public class RobotContainer {
 
         visionSubsystem =
             new VisionSubsystem(
-                state, new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0));
+                state,
+                new VisionIOPhotonVision(VisionConstants.camera0Name, robotToCamera0),
+                new VisionIOPhotonVision(VisionConstants.camera1Name, robotToCamera1),
+                new VisionIOPhotonVision(VisionConstants.camera2Name, robotToCamera2));
 
         armSubsystem = new ArmSubsystem(new ArmIOReal());
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
@@ -232,32 +235,14 @@ public class RobotContainer {
 
     // Driver Binds
 
-    //Temp Climb
-    //driveController.povUp().whileTrue(climbSubsystem.runUntilStall());
+
+    //The Basics .tm
 
     // Algae Mode Toggle
     driveController
         .R3()
         .whileTrue(Commands.startEnd(() -> algaeMode = true, () -> algaeMode = false));
-
-    // Trough Mode Toggle
-    driveController
-        .L3()
-        .whileTrue(Commands.startEnd(() -> troughMode = true, () -> troughMode = false));
-
-//     // Trough Mode Toggle
-//     driveController
-//         .L3()
-//         .whileTrue(Commands.startEnd(() -> troughMode = true, () -> troughMode = false));
-
-//     // Arm Stop
-//     driveController
-//         .PS()
-//         .onTrue(
-//             armSubsystem
-//                 .setSetpointHere()
-//                 .alongWith(elevatorSubsystem.setSetpointHere())
-//                 .alongWith(wristSubsystem.setSetpointHere()));
+        //.onTrue(Commands.runOnce(() -> algaeMode = !algaeMode));
 
     // Swerve Drive
     driveSubsystem.setDefaultCommand(
@@ -271,131 +256,152 @@ public class RobotContainer {
     // Gyro Rotation Reset
     driveController.options().onTrue(driveSubsystem.runOnce(driveSubsystem::teleopResetRotation));
 
-    // //Default Intake Pos?
-    // driveController.square().onTrue(SuperStructureCommandFactory.defaultparallelPreset());
+    // Auto Align Options
+    driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
+    driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
 
-    // //Default Intake Pos?
-    // driveController.povRight().onTrue(SuperStructureCommandFactory.neutralparallelPreset());
 
-    //Intake Coral
-    //Works
-    driveController.R1().whileTrue(intakeSubsystem.intakeCoralCommand());
+    //Intake Commands/Presets
 
-    //Outtake Coral
-    //Works; not automated
-    //driveController.L1().whileTrue(intakeSubsystem.outtakeCoralBackCommand());
-    driveController.L1().whileTrue(intakeSubsystem.outtakeCoralFrontCommand());
+    //Coral Intake
+    driveController
+    .R1()
+    .and(inCoralMode)
+    .whileTrue(SuperStructureCommandFactory.stow()
+    .andThen(SuperStructureCommandFactory.intakingIsBad(-5.0/360, 0.078, 0.377))
+    .andThen(intakeSubsystem.intakeCoralCommand()))
+    .onFalse(SuperStructureCommandFactory.moveWristOnly(0.3)
+    .andThen(SuperStructureCommandFactory.defaultPos()));
 
-    // Algae Intake
-    driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.intakeAlgaeCommand())
-        .onFalse(intakeSubsystem.holdAlgaeCommand());
-
-    // Algae Outtake
-    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.outtakeAlgaeCommand());
-
-    //Coral Ground Intake Pos
+    //Trough Intake
+    driveController
+    .L3()
+    .and(inCoralMode)
+    .whileTrue(SuperStructureCommandFactory.stow()
+    .andThen(SuperStructureCommandFactory.intakingIsBad(-5.0/360, 0.078, 0.377))
+    .andThen(intakeSubsystem.intakeTroughCommand()))
+    .onFalse(SuperStructureCommandFactory.moveWristOnly(0.3)
+    .andThen(SuperStructureCommandFactory.defaultPos()))
+    .onFalse(intakeSubsystem.spinAlgaeRollersCommand(0.25));
 
     //Algae Ground Intake Pos
+    driveController
+    .square()
+    .and(inAlgaeMode)
+    .onTrue(SuperStructureCommandFactory.stow().andThen(SuperStructureCommandFactory.intakingIsBad(0.05, 0.1687, 0.5781)))
+    .onFalse(SuperStructureCommandFactory.moveWristOnly(0.3)
+    .andThen(SuperStructureCommandFactory.defaultPos()));
+
+    //Outtake Coral Front
+    driveController
+    .L1().and(facingForward)
+    .whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.75, 0.75, -0.75));
+
+    //Outtake Coral Back
+    driveController.L1()
+    .and(facingBackward)
+    .whileTrue(intakeSubsystem.spinCoralRollersCommand(0.75,-0.75,0.75));
+
+    // Algae Intake
+    driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.spinAlgaeRollersCommand(-0.75))
+        .onFalse(intakeSubsystem.spinAlgaeRollersCommand(-0.15));
+
+    // Algae Outtake
+    driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.spinAlgaeRollersCommand(0.75));
+
+    //The other shit .tm
+
+    // L1/Trough
+    driveController.square()
+    .and(inCoralMode)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
 
     //Front L4
     driveController
     .triangle()
     .and(inCoralMode)
-    //.and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.196, 1.03, 0.275));
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.187, 1.054, 0.251, true));
 
     //Front L3
+    driveController
+    .circle()
+    .and(inCoralMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.145, 0.492, 0.128, true));
 
     //Front L2
+    driveController
+    .cross()
+    .and(inCoralMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.0863, 0.278, 0.0586, true));
 
     //Front High Algae
     driveController
     .circle()
     .and(inAlgaeMode)
-    //.and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.188, 0.445, 0.545));
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.188, 0.445, 0.545));
 
     //Front Low Algae
     driveController
     .cross()
     .and(inAlgaeMode)
-    //.and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.164, 0.2, 0.565));
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
 
-
-
-//Good Presets
-
-    // //Back L4
-    //driveController
-    //.triangle()
-    // .and(inCoralMode)
-    // //.and(facingBackward)
-    // .onTrue(
-    //     SuperStructureCommandFactory.defaultparallelPreset(0.243, 1.085, 0));
-
-    // //Back L3
-    // driveController
-    // .circle()
-    // .and(inCoralMode)
-    // //.and(facingBackward)
-    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.24, 0.34, 19.75/360));
-
-    // //Back L2
-    // driveController
-    // .cross()
-    // .and(inCoralMode)
-    // //.and(facingBackward)
-    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.225, 0, 10.0/360));
-
-    // //Back High Algae
-    // driveController
-    // .circle()
-    // .and(inAlgaeMode)
-    // //.and(facingBackward)
-    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.23, 0.36, 0.2));
-
-    // //Back Low Algae
-    // driveController
-    // .cross()
-    // .and(inAlgaeMode)
-    // //.and(facingBackward)
-    // .onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.23, 0, 0.2));
-
-
-    //Processor
-
-    //Barge
-    
-    
     //Default Pos
-    driveController.povRight().onTrue(SuperStructureCommandFactory.defaultparallelPreset(0.2, 0.2, 0));
+    driveController.povRight().onTrue(SuperStructureCommandFactory.defaultPos());
 
     //Stow
     driveController.povLeft().onTrue(SuperStructureCommandFactory.stow());
 
-    //Intake Pos
-    driveController.square().onTrue(SuperStructureCommandFactory.defaultparallelPreset(-5.0/360, 0.065, 0.374));
+    //Back L4
+    driveController
+    .triangle()
+    .and(inCoralMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.243, 1.085, 0, false));
 
+    //Back L3
+    driveController
+    .circle()
+    .and(inCoralMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.24, 0.34, 19.75/360, false));
 
+    //Back L2
+    driveController
+    .cross()
+    .and(inCoralMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.225, 0, 10.0/360, false));
 
+    //Back High Algae
+    driveController
+    .circle()
+    .and(inAlgaeMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0.36, 0.2));
 
-//     // Auto Align Arm Neutral Pos
-//     driveController
-//         .L2()
-//         .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.043, 0.22));
-//     driveController
-//         .R2()
-//         .and(() -> wristSubsystem.getCurrentPosition() > 0.65)
-//         .onTrue(SuperStructureCommandFactory.genericPreset(0.21, 0.045, 0.22));
+    //Back Low Algae
+    driveController
+    .cross()
+    .and(inAlgaeMode)
+    .and(facingBackward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0, 0.2));
 
-//     // Auto Align Options
-//     driveController.L2().whileTrue(Commands.runEnd(() -> setRight(false), () -> setRight(true)));
-//     driveController.R2().whileTrue(Commands.runEnd(() -> setLeft(false), () -> setLeft(true)));
+    //Processor
+
+    //Barge
+
+    //Climb
+    driveController
+    .povUp()
+    .onTrue(SuperStructureCommandFactory.climb());
 
 // Operator Binds
-
 
 //Operator Manual Arm Override
 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
@@ -409,9 +415,8 @@ new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
 new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
         .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
 
-
-    // Operator Elevator Zero
-    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+// Operator Elevator Zero
+operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
 }
 
   /**

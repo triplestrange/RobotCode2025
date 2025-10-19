@@ -41,14 +41,14 @@ public class ArmIOReal implements ArmIO {
   protected final TalonFX followerTalon;
   protected final CANcoder pivotEncoder;
 
-  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true);
   private final DutyCycleOut dutyCycleOutControl =
-      new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);
+      new DutyCycleOut(0).withEnableFOC(true);
   private final PositionTorqueCurrentFOC positionTorqueCurrentFOC =
-      new PositionTorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
+      new PositionTorqueCurrentFOC(0);
+  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0);
   private final MotionMagicExpoVoltage motionMagicVoltage =
-      new MotionMagicExpoVoltage(0.0).withUpdateFreqHz(0.0);
+      new MotionMagicExpoVoltage(0.0);
 
   private final StatusSignal<Angle> leaderPositionSignal;
   private final StatusSignal<AngularVelocity> leaderVelocitySignal;
