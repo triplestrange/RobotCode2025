@@ -179,11 +179,34 @@ public class RobotContainer {
 
     //Auto Commands
 
-    // NamedCommands.registerCommand(
-    //     "Arm L4", SuperStructureCommandFactory.genericPreset(0.205, 1.07, 0.337).asProxy());
+    NamedCommands.registerCommand(
+        "Arm L4 Front", SuperStructureCommandFactory.scoringParallelPreset(0.19775, 1.08203, 0.20361, true).asProxy());
+        
+    NamedCommands.registerCommand(
+        "Arm L4 Back", SuperStructureCommandFactory.scoringParallelPreset(0.243, 1.085, 0, false).asProxy());
 
-    // NamedCommands.registerCommand(
-    //     "Arm L4P", SuperStructureCommandFactory.feederToReef(0.205, 1.07, 0.337).asProxy());
+    NamedCommands.registerCommand(
+        "Arm Default", SuperStructureCommandFactory.defaultPos().asProxy());
+
+    NamedCommands.registerCommand(
+        "Arm Default To Intake", 
+        SuperStructureCommandFactory.stow()
+        .andThen(SuperStructureCommandFactory.intakingIsBad(-5.0/360, 0.078, 0.377)).asProxy());
+
+    NamedCommands.registerCommand(
+      "Arm Intake To Default", SuperStructureCommandFactory.moveWristOnly(0.3).andThen(SuperStructureCommandFactory.defaultPos()).asProxy());
+
+    NamedCommands.registerCommand(
+        "Intake Coral", intakeSubsystem.intakeCoralCommand().asProxy());
+
+    NamedCommands.registerCommand(
+        "Intake Off", intakeSubsystem.runOnce(intakeSubsystem::stopAll));
+
+    NamedCommands.registerCommand(
+        "Outtake Front", intakeSubsystem.spinCoralRollersCommand(0.75, 0.75, -0.75).withTimeout(0.5).asProxy());
+
+    NamedCommands.registerCommand(
+        "Outtake Back", intakeSubsystem.spinCoralRollersCommand(-0.75,-0.75,0.75).withTimeout(0.5).asProxy());
 
     // NamedCommands.registerCommand(
     //     "L4 to Feeder", SuperStructureCommandFactory.reefToFeeder(0, 0, 0).asProxy());
@@ -207,7 +230,7 @@ public class RobotContainer {
     // NamedCommands.registerCommand(
     //     "Intake", (intakeSubsystem.dutyCycleCommand(() -> 0.5)).withTimeout(1.5));
 
-    // NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
+    NamedCommands.registerCommand("Swerve Stop", driveSubsystem.runOnce(driveSubsystem::stop));
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 

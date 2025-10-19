@@ -89,14 +89,12 @@ public class IntakeSubsystem extends SubsystemBase {
     io.setIntakeDutyCycleOut(-0.05);
     io.setRRollerDutyCycleOut(-0.05);
     io.setLRollerDutyCycleOut(0.05);
-    System.out.println("BACKKK");
   }
   
     else {
     io.setIntakeDutyCycleOut(0.05);
     io.setRRollerDutyCycleOut(0.05);
     io.setLRollerDutyCycleOut(-0.05);
-    System.out.println("not BACKKK");
   }}
 
   else {
