@@ -453,9 +453,6 @@ public class RobotContainer {
     .and(facingForward)
     .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
 
-    
-    
-
 
 // Operator Binds
 
