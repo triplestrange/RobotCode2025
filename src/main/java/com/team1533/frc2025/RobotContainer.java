@@ -281,26 +281,32 @@ public class RobotContainer {
     .andThen(SuperStructureCommandFactory.intakingIsBad(-5.0/360, 0.078, 0.377))
     .andThen(intakeSubsystem.intakeTroughCommand()))
     .onFalse(SuperStructureCommandFactory.moveWristOnly(0.3)
-    .andThen(SuperStructureCommandFactory.defaultPos()))
+    .andThen(SuperStructureCommandFactory.stow()))
     .onFalse(intakeSubsystem.spinAlgaeRollersCommand(0.25));
 
-    //Algae Ground Intake Pos
+    //Algae Ground Intake
     driveController
-    .square()
+    .L3()
     .and(inAlgaeMode)
-    .onTrue(SuperStructureCommandFactory.stow().andThen(SuperStructureCommandFactory.intakingIsBad(0.05, 0.1687, 0.5781)))
-    .onFalse(SuperStructureCommandFactory.moveWristOnly(0.3)
-    .andThen(SuperStructureCommandFactory.defaultPos()));
+    .whileTrue
+    (SuperStructureCommandFactory.stow()
+    .andThen(SuperStructureCommandFactory.intakingIsBad(0.05, 0.1687, 0.5781))
+    .andThen(intakeSubsystem.spinAlgaeRollersCommand(-0.75)))
+    .onFalse(SuperStructureCommandFactory.moveWristOnly(0.25)
+    .andThen(SuperStructureCommandFactory.defaultPos()))
+    .onFalse(intakeSubsystem.spinAlgaeRollersCommand(-0.15));
 
     //Outtake Coral Front
     driveController
     .L1().and(facingForward)
-    .whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.75, 0.75, -0.75));
+    .whileTrue(intakeSubsystem.spinCoralRollersCommand(0.75, 0.75, -0.75))
+    .onFalse(SuperStructureCommandFactory.defaultPos());
 
     //Outtake Coral Back
     driveController.L1()
     .and(facingBackward)
-    .whileTrue(intakeSubsystem.spinCoralRollersCommand(0.75,-0.75,0.75));
+    .whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.75,-0.75,0.75))
+    .onFalse(SuperStructureCommandFactory.defaultPos());
 
     // Algae Intake
     driveController.R1().and(inAlgaeMode).whileTrue(intakeSubsystem.spinAlgaeRollersCommand(-0.75))
@@ -309,19 +315,8 @@ public class RobotContainer {
     // Algae Outtake
     driveController.L1().and(inAlgaeMode).whileTrue(intakeSubsystem.spinAlgaeRollersCommand(0.75));
 
-    //The other shit .tm
 
-    // L1/Trough
-    driveController.square()
-    .and(inCoralMode)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
-
-    //Front L4
-    driveController
-    .triangle()
-    .and(inCoralMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.187, 1.054, 0.251, true));
+    //The good shit .tm
 
     //Front L3
     driveController
@@ -336,6 +331,32 @@ public class RobotContainer {
     .and(inCoralMode)
     .and(facingForward)
     .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.0863, 0.278, 0.0586, true));
+
+
+
+    //The other shit .tm
+
+    // //driveController
+    // .triangle()
+    // .and(inCoralMode)
+    // .and(())
+    // Commands.either((intakesubsystem.fCANrangeRange))
+    //make method in intake subsystem to state if we have a coral
+    //give operator default intake/outake; take away manual override for comps
+    // .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19, 1.064, 0.255, true));
+
+    // L1/Trough
+    driveController.square()
+    .and(inCoralMode)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
+
+    //Front L4
+    driveController
+    .triangle()
+    .and(inCoralMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19775, 1.08203, 0.20361, true));
+    
 
     //Front High Algae
     driveController
@@ -395,6 +416,10 @@ public class RobotContainer {
     //Processor
 
     //Barge
+    driveController
+    .triangle()
+    .and(inAlgaeMode)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.2394, 1.086, 0.4406));
 
     //Climb
     driveController
@@ -402,6 +427,10 @@ public class RobotContainer {
     .onTrue(SuperStructureCommandFactory.climb());
 
 // Operator Binds
+
+//Operator Manual ONe of them
+    operatorController.R1().whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.5, -0.5, 0.5));
+    operatorController.L1().whileTrue(intakeSubsystem.spinCoralRollersCommand(0.5, 0.5, -0.5));
 
 //Operator Manual Arm Override
 new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
