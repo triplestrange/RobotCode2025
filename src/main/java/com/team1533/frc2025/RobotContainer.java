@@ -235,6 +235,9 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices");
 
     autoChooser.addDefaultOption("None", Commands.none());
+    
+    autoChooser.addOption("Bigger Boi Left", AutoBuilder.buildAuto("Bigger Boi Auto"));
+    // autoChooser.addOption("Bigger Boi Right", new PathPlannerAuto("Bigger Boi Auto", true));
 
     // autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
     // autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
@@ -378,46 +381,6 @@ public class RobotContainer {
     .and(facingBackward)
     .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0, 0.2));
 
-
-
-    //The other shit .tm
-
-    // //driveController
-    // .triangle()
-    // .and(inCoralMode)
-    // .and(())
-    // Commands.either((intakesubsystem.fCANrangeRange))
-    //make method in intake subsystem to state if we have a coral
-    //give operator default intake/outake; take away manual override for comps
-    // .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19, 1.064, 0.255, true));
-
-    // L1/Trough
-    driveController.square()
-    .and(inCoralMode)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
-
-    
-
-    //Front High Algae
-    driveController
-    .circle()
-    .and(inAlgaeMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.188, 0.445, 0.545));
-
-    //Front Low Algae
-    driveController
-    .cross()
-    .and(inAlgaeMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
-
-    //Default Pos
-    driveController.povRight().onTrue(SuperStructureCommandFactory.defaultPos());
-
-    //Stow
-    driveController.povLeft().onTrue(SuperStructureCommandFactory.stow());
-
     //Back L4
     driveController
     .triangle()
@@ -439,10 +402,6 @@ public class RobotContainer {
     .and(facingBackward)
     .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.225, 0, 10.0/360, false));
 
-    
-
-    //Processor
-
     //Barge
     driveController
     .triangle()
@@ -453,6 +412,50 @@ public class RobotContainer {
     driveController
     .povUp()
     .onTrue(SuperStructureCommandFactory.climb());
+
+    //Default Pos
+    driveController.povRight().onTrue(SuperStructureCommandFactory.defaultPos());
+
+    //Stow
+    driveController.povLeft().onTrue(SuperStructureCommandFactory.stow());
+
+    //Do Processor
+
+    //The other shit .tm
+
+    // //driveController
+    // .triangle()
+    // .and(inCoralMode)
+    // .and(())
+    // Commands.either((intakesubsystem.fCANrangeRange))
+    //make method in intake subsystem to state if we have a coral
+    //give operator default intake/outake; take away manual override for comps
+    // .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19, 1.064, 0.255, true));
+
+    // L1/Trough
+    driveController.square()
+    .and(inCoralMode)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
+
+    //Front High Algae
+    driveController
+    .circle()
+    .and(inAlgaeMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultPos()
+    .andThen(SuperStructureCommandFactory.stow())
+    .andThen(SuperStructureCommandFactory.algaeSucks(0.188, 0.445, 0.545)));
+
+    //Front Low Algae
+    driveController
+    .cross()
+    .and(inAlgaeMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
+
+    
+    
+
 
 // Operator Binds
 

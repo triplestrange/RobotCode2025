@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Bigger Boi Auto.0"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bigger Boi Auto.0"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Arm Default"
+                }
+              }
+            ]
           }
         },
         {

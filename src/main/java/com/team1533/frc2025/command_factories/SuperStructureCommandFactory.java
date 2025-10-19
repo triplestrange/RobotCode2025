@@ -94,6 +94,17 @@ public class SuperStructureCommandFactory {
         //.until(container.getArmSubsystem().atSetpoint(ArmConstants.toleranceRotations))
       }
 
+  public static Command algaeSucks(double armSetpointRotations, double elevatorSetpointMeters, double wristSetpointRotations) {
+    return new SequentialCommandGroup(
+      moveElevatorOnly(0.1),
+      new ParallelCommandGroup(
+        ArmFactory.moveArmMotionMagic(() -> armSetpointRotations),
+        ElevatorFactory.moveElevMotionMagic(() -> elevatorSetpointMeters),
+        WristFactory.moveWristMotionMagic(() -> wristSetpointRotations)
+      )
+    );
+  }
+
   public static Command climb() {
     return new SequentialCommandGroup(
       new ParallelCommandGroup(
