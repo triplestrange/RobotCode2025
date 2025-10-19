@@ -237,7 +237,7 @@ public class RobotContainer {
     autoChooser.addDefaultOption("None", Commands.none());
     
     autoChooser.addOption("Bigger Boi Left", AutoBuilder.buildAuto("Bigger Boi Auto"));
-    // autoChooser.addOption("Bigger Boi Right", new PathPlannerAuto("Bigger Boi Auto", true));
+    autoChooser.addOption("Bigger Boi Right", new PathPlannerAuto("Bigger Boi Auto", true));
 
     // autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
     // autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));
@@ -365,8 +365,6 @@ public class RobotContainer {
     .and(facingForward)
     .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.0863, 0.278, 0.0586, true));
 
-
-
     //Back High Algae
     driveController
     .circle()
@@ -411,7 +409,8 @@ public class RobotContainer {
     //Climb
     driveController
     .povUp()
-    .onTrue(SuperStructureCommandFactory.climb());
+    .onTrue(SuperStructureCommandFactory.stow().andThen(
+    SuperStructureCommandFactory.climb()));
 
     //Default Pos
     driveController.povRight().onTrue(SuperStructureCommandFactory.defaultPos());
@@ -435,23 +434,24 @@ public class RobotContainer {
     // L1/Trough
     driveController.square()
     .and(inCoralMode)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
+    .onTrue(SuperStructureCommandFactory.stow().andThen(
+        SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492)));
 
-    //Front High Algae
-    driveController
-    .circle()
-    .and(inAlgaeMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultPos()
-    .andThen(SuperStructureCommandFactory.stow())
-    .andThen(SuperStructureCommandFactory.algaeSucks(0.188, 0.445, 0.545)));
+    // //Front High Algae
+    // driveController
+    // .circle()
+    // .and(inAlgaeMode)
+    // .and(facingForward)
+    // .onTrue(SuperStructureCommandFactory.defaultPos()
+    // .andThen(SuperStructureCommandFactory.stow())
+    // .andThen(SuperStructureCommandFactory.algaeSucks(0.188, 0.445, 0.545)));
 
-    //Front Low Algae
-    driveController
-    .cross()
-    .and(inAlgaeMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
+    // //Front Low Algae
+    // driveController
+    // .cross()
+    // .and(inAlgaeMode)
+    // .and(facingForward)
+    // .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
 
 
 // Operator Binds
