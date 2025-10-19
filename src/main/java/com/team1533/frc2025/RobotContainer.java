@@ -318,6 +318,13 @@ public class RobotContainer {
 
     //The good shit .tm
 
+    //Front L4
+    driveController
+    .triangle()
+    .and(inCoralMode)
+    .and(facingForward)
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19775, 1.08203, 0.20361, true));
+
     //Front L3
     driveController
     .circle()
@@ -350,12 +357,6 @@ public class RobotContainer {
     .and(inCoralMode)
     .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.1206, 0.0742, 0.492));
 
-    //Front L4
-    driveController
-    .triangle()
-    .and(inCoralMode)
-    .and(facingForward)
-    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.19775, 1.08203, 0.20361, true));
     
 
     //Front High Algae
@@ -404,7 +405,7 @@ public class RobotContainer {
     .circle()
     .and(inAlgaeMode)
     .and(facingBackward)
-    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.23, 0.36, 0.2));
+    .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.246, 0.536, 0.1323));
 
     //Back Low Algae
     driveController
