@@ -384,14 +384,14 @@ public class RobotContainer {
     .triangle()
     .and(inCoralMode)
     .and(facingBackward)
-    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.243, 1.085, 0, false));
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.243, 1.085, 0.04, false));
 
     //Back L3
     driveController
     .circle()
     .and(inCoralMode)
     .and(facingBackward)
-    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.24, 0.34, 19.75/360, false));
+    .onTrue(SuperStructureCommandFactory.scoringParallelPreset(0.24, 0.384, 19.75/360, false));
 
     //Back L2
     driveController

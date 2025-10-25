@@ -109,13 +109,13 @@ public class SuperStructureCommandFactory {
     return new SequentialCommandGroup(
       new ParallelCommandGroup(
         ArmFactory.moveArmMotionMagic(() -> 95.0/360),
-        ElevatorFactory.moveElevMotionMagic(() -> 0.222),
+        ElevatorFactory.moveElevMotionMagic(() -> 0.232),
         WristFactory.moveWristMotionMagic(() -> 0.25)
         ),
       moveWristOnly(0.55),
       container.getClimbSubsystem().runUntilStall(),
       new ParallelCommandGroup(
-        ArmFactory.moveArmMotionMagic(() -> 15.0/360),
+        ArmFactory.moveArmMotionMagic(() -> 10.0/360),
         WristFactory.moveWristMotionMagic(() -> 0.27)
         ),
       new ParallelCommandGroup(

@@ -16,6 +16,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +63,9 @@ public class VisionIOPhotonVision implements VisionIO {
           Optional<Pose3d> tagPose = Constants.aprilTagLayout.getTagPose(target.fiducialId);
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
-          if (tagPose.isEmpty()) continue;
+          if (tagPose.isEmpty()
+          || tagPose.get().getZ() > Units.inchesToMeters(18) || tagDistance >2)
+          continue;
 
           // calculate direction vector using pitch/yaw
           Translation3d cameraToTag =

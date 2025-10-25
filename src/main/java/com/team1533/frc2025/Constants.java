@@ -101,7 +101,7 @@ public class Constants {
                             .getTranslation()
                             .rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
                     .plus(
-                        new Translation2d(Units.inchesToMeters(18.375), 0)
+                        new Translation2d(Units.inchesToMeters(16.375), 0)
                             .rotateBy(pose.getRotation())),
                 pose.getRotation().plus(Rotation2d.k180deg)));
       return AllianceFlipUtil.apply(
