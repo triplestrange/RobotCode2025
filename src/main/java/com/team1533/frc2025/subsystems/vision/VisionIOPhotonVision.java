@@ -64,7 +64,8 @@ public class VisionIOPhotonVision implements VisionIO {
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
           if (tagPose.isEmpty()
-          || tagPose.get().getZ() > Units.inchesToMeters(18) || tagDistance >2)
+          || tagPose.get().getZ() > Units.inchesToMeters(18) 
+          || tagDistance >2)
           continue;
 
           // calculate direction vector using pitch/yaw

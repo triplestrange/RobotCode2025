@@ -238,6 +238,7 @@ public class RobotContainer {
     
     autoChooser.addOption("Bigger Boi Left", AutoBuilder.buildAuto("Bigger Boi Auto"));
     autoChooser.addOption("Bigger Boi Right", new PathPlannerAuto("Bigger Boi Auto", true));
+    autoChooser.addOption("New Auto", new PathPlannerAuto("New Auto"));
 
     // autoChooser.addOption("Right Level 2 Middle ID 21", AutoBuilder.buildAuto("RL2 Mid"));
     // autoChooser.addOption("Left a lot of coral", AutoBuilder.buildAuto("2pl"));

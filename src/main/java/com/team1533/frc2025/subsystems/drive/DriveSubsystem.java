@@ -59,6 +59,8 @@ public class DriveSubsystem extends SubsystemBase {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
 
+// raw input from shaun
+  private ChassisSpeeds prePoofed = new ChassisSpeeds();
   private final SysIdRoutine sysId;
 
   private final Alert gyroDisconnectedAlert =
@@ -472,12 +474,13 @@ public class DriveSubsystem extends SubsystemBase {
       speedX = -speedX;
       speedY = -speedY;
     }
-
+    prePoofed =  ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation());
+    Logger.recordOutput("prePoofed", prePoofed);
     setpoint =
         generator.generateSetpoint(
             setpoint,
             alignController.update(
-                ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation())),
+               prePoofed),
             Constants.kRealDt);
     Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
     runVelocity(setpoint.robotRelativeSpeeds());
