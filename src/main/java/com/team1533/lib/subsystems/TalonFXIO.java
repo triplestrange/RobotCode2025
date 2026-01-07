@@ -16,7 +16,7 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.Robot;
-import com.team1533.lib.util.CTREUtil;
+import com.team1533.lib.util.CTREUtil;  
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;

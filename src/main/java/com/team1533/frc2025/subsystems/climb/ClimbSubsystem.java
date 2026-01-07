@@ -10,13 +10,11 @@ package com.team1533.frc2025.subsystems.climb;
 import org.littletonrobotics.junction.Logger;
 
 import com.team1533.frc2025.RobotState;
-import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
 import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.MotorInputsAutoLogged;
 import com.team1533.lib.subsystems.ServoMotorSubsystem;
 import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj2.command.Command;
 
