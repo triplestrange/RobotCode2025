@@ -51,6 +51,7 @@ public class ConstrainedSwerveDriveOdometry {
   private Rotation2d m_gyroOffset;
   private Rotation2d m_previousAngle;
   private final SwerveModulePosition[] m_previousWheelPositions;
+  private double m_lastTimestampSeconds = Double.NaN;
 
   /**
    * Constructs an Odometry object.
@@ -85,6 +86,7 @@ public class ConstrainedSwerveDriveOdometry {
     m_gyroOffset = m_gyroOffset.plus(poseMeters.getRotation().minus(m_poseMeters.getRotation()));
     m_poseMeters = poseMeters;
     m_previousAngle = m_poseMeters.getRotation();
+    m_lastTimestampSeconds = Double.NaN;
   }
 
   /**
@@ -94,6 +96,7 @@ public class ConstrainedSwerveDriveOdometry {
    */
   public void resetTranslation(Translation2d translation) {
     m_poseMeters = new Pose2d(translation, m_poseMeters.getRotation());
+    m_lastTimestampSeconds = Double.NaN;
   }
 
   /**
@@ -105,6 +108,7 @@ public class ConstrainedSwerveDriveOdometry {
     m_gyroOffset = m_gyroOffset.plus(rotation.minus(m_poseMeters.getRotation()));
     m_poseMeters = new Pose2d(m_poseMeters.getTranslation(), rotation);
     m_previousAngle = m_poseMeters.getRotation();
+    m_lastTimestampSeconds = Double.NaN;
   }
 
   /**
@@ -139,6 +143,7 @@ public class ConstrainedSwerveDriveOdometry {
     m_previousAngle = m_poseMeters.getRotation();
     m_gyroOffset = m_poseMeters.getRotation().minus(gyroAngle);
     m_kinematics.copyInto(modulePositions, m_previousWheelPositions);
+    m_lastTimestampSeconds = Double.NaN;
   }
 
   /**
@@ -155,19 +160,43 @@ public class ConstrainedSwerveDriveOdometry {
    * @return The new pose of the robot.
    */
   public Pose2d update(Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
+    return updateWithTime(MathSharedStore.getTimestamp(), gyroAngle, wheelPositions);
+  }
+
+  /**
+   * Updates the robot's position on the field using forward kinematics and integration of the pose
+   * over time.
+   *
+   * @param currentTimeSeconds Time at which this method was called, in seconds.
+   * @param gyroAngle The angle reported by the gyroscope.
+   * @param wheelPositions The current encoder readings.
+   * @return The new pose of the robot.
+   */
+  public Pose2d updateWithTime(
+      double currentTimeSeconds, Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
     if (wheelPositions.length != m_numModules) {
       throw new IllegalArgumentException(
           "Number of modules is not consistent with number of wheel locations provided in "
               + "constructor");
     }
 
+    double dtSeconds = Double.NaN;
+    if (Double.isFinite(m_lastTimestampSeconds)) {
+      dtSeconds = currentTimeSeconds - m_lastTimestampSeconds;
+    }
+    m_lastTimestampSeconds = currentTimeSeconds;
+
     boolean[] rejected = new boolean[wheelPositions.length];
     int numRejected = 0;
     var angle = gyroAngle.plus(m_gyroOffset);
 
     var twist = m_kinematics.toTwist2d(m_previousWheelPositions, wheelPositions);
+    twist.dtheta = angle.minus(m_previousAngle).getRadians();
+    var rawTwist = new Twist2d(twist.dx, twist.dy, twist.dtheta);
     // Converts twist back to module states
-    var kinematicsToWheelSpeeds = m_kinematics.toWheelSpeeds(new ChassisSpeeds(twist.dx, twist.dy, twist.dtheta));
+    var kinematicsToWheelSpeeds =
+        m_kinematics.toWheelSpeeds(
+            new ChassisSpeeds(rawTwist.dx, rawTwist.dy, rawTwist.dtheta));
     // check if wheel states match original wheel states
     for (int i = 0; (i < wheelPositions.length); i++) {
       rejected[i] = false;
@@ -193,7 +222,7 @@ public class ConstrainedSwerveDriveOdometry {
 
       Translation2d speed;
 
-      for (int i = 0; i > wheelPositions.length; i++) {
+      for (int i = 0; i < wheelPositions.length; i++) {
         if (rejected[i]) {
           wheelPositions[i].distanceMeters = m_previousWheelPositions[i].distanceMeters;
           wheelPositions[i].angle = m_previousWheelPositions[i].angle;
@@ -202,8 +231,7 @@ public class ConstrainedSwerveDriveOdometry {
         }
 
         speed = new Translation2d(
-            0,
-            wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters)
+            wheelPositions[i].distanceMeters - m_previousWheelPositions[i].distanceMeters, 0)
             .rotateBy(wheelPositions[i].angle);
         dx += speed.getX();
         dy += speed.getY();
@@ -217,6 +245,13 @@ public class ConstrainedSwerveDriveOdometry {
       Logger.recordOutput("Odometry/numRejected", numRejected);
       Logger.recordOutput("Odometry/Rejected Modules", rejected);
       Logger.recordOutput("Odometry/Rejected Poses", m_poseMeters);
+    }
+
+    if (numRejected > 0 && Double.isFinite(dtSeconds) && dtSeconds > 0.0) {
+      Logger.recordOutput(
+          "Odometry/RejectedChassisSpeeds",
+          new ChassisSpeeds(
+              rawTwist.dx / dtSeconds, rawTwist.dy / dtSeconds, rawTwist.dtheta / dtSeconds));
     }
 
     var newPose = m_poseMeters.exp(twist);

@@ -15,8 +15,8 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.estimator.ExtendedKalmanFilter;
 import edu.wpi.first.math.estimator.PoseEstimator;
-import edu.wpi.first.math.estimator.UnscentedKalmanFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -50,10 +50,12 @@ import org.littletonrobotics.junction.Logger;
  */
 public class UnscentedPoseEstimator {
   private final ConstrainedSwerveDriveOdometry m_odometry;
-  private UnscentedKalmanFilter<N3, N3, N3> kalman;
-  private final Matrix<N3, N1> m_q = new Matrix<>(Nat.N3(), Nat.N1());
-  private final Matrix<N3, N1> m_r = new Matrix<>(Nat.N3(), Nat.N1());
+  private ExtendedKalmanFilter<N3, N3, N3> kalman;
+  private final Matrix<N3, N1> m_stateStdDevs;
+  private Matrix<N3, N1> m_visionMeasurementStdDevs;
+  private Matrix<N3, N3> m_visionMeasurementCov = new Matrix<>(Nat.N3(), Nat.N3());
   private double m_loopPeriodicSecs;
+  private double m_lastTimestampSeconds = Double.NaN;
 
   private static final double kBufferDuration = 1.5;
   private static final int kObservationBufferSize = 50;
@@ -89,25 +91,12 @@ public class UnscentedPoseEstimator {
       Matrix<N3, N1> visionMeasurementStdDevs,
       double loopPeriodicSecs) {
     m_odometry = odometry;
-    this.m_loopPeriodicSecs = loopPeriodicSecs;
-    kalman =
-        new UnscentedKalmanFilter<>(
-            Nat.N3(),
-            Nat.N3(),
-            (x, u) -> VecBuilder.fill(0.0, 0.0, 0.0),
-            (x, u) -> x,
-            stateStdDevs,
-            visionMeasurementStdDevs,
-            loopPeriodicSecs);
+    m_loopPeriodicSecs = loopPeriodicSecs;
+    m_stateStdDevs = stateStdDevs;
+    setVisionMeasurementStdDevs(visionMeasurementStdDevs);
+    kalman = buildKalmanFilter();
 
     m_poseEstimate = m_odometry.getPoseMeters();
-
-    for (int i = 0; i < 3; ++i) {
-      m_q.set(i, 0, stateStdDevs.get(i, 0) * stateStdDevs.get(i, 0));
-    }
-    for (int i = 0; i < 3; ++i) {
-      m_r.set(i, 0, visionMeasurementStdDevs.get(i, 0) * visionMeasurementStdDevs.get(i, 0));
-    }
   }
 
   /**
@@ -120,15 +109,8 @@ public class UnscentedPoseEstimator {
    *     theta]ᵀ, with units in meters and radians.
    */
   public void resetKalmanFilters() {
-    kalman =
-        new UnscentedKalmanFilter<>(
-            Nat.N3(),
-            Nat.N3(),
-            (x, u) -> VecBuilder.fill(0.0, 0.0, 0.0),
-            (x, u) -> x,
-            m_q,
-            m_r,
-            m_loopPeriodicSecs);
+    kalman = buildKalmanFilter();
+    m_lastTimestampSeconds = Double.NaN;
   }
 
   /**
@@ -148,6 +130,7 @@ public class UnscentedPoseEstimator {
     m_odom_to_robot.clear();
     m_field_to_odom.clear();
     m_poseEstimate = m_odometry.getPoseMeters();
+    resetKalmanFilters();
   }
 
   /**
@@ -160,6 +143,7 @@ public class UnscentedPoseEstimator {
     m_odom_to_robot.clear();
     m_field_to_odom.clear();
     m_poseEstimate = m_odometry.getPoseMeters();
+    resetKalmanFilters();
   }
 
   /**
@@ -172,6 +156,7 @@ public class UnscentedPoseEstimator {
     m_odom_to_robot.clear();
     m_field_to_odom.clear();
     m_poseEstimate = m_odometry.getPoseMeters();
+    resetKalmanFilters();
   }
 
   /**
@@ -184,6 +169,7 @@ public class UnscentedPoseEstimator {
     m_odom_to_robot.clear();
     m_field_to_odom.clear();
     m_poseEstimate = m_odometry.getPoseMeters();
+    resetKalmanFilters();
   }
 
   /**
@@ -301,11 +287,15 @@ public class UnscentedPoseEstimator {
 
     // Step 4: Measure the twist between the old pose estimate and the vision pose.
     var twist = field_to_robot.get().log(visionRobotPoseMeters);
- try {
-    kalman.correct(
-        VecBuilder.fill(0.0, 0.0, 0.0), VecBuilder.fill(twist.dx, twist.dy, twist.dtheta));
-        
-        var scaledTwist = new Twist2d(kalman.getXhat(0), kalman.getXhat(1), kalman.getXhat(2));
+    try {
+      kalman.setXhat(VecBuilder.fill(0.0, 0.0, 0.0));
+      kalman.correct(
+          VecBuilder.fill(0.0, 0.0, 0.0),
+          VecBuilder.fill(twist.dx, twist.dy, twist.dtheta),
+          m_visionMeasurementCov);
+
+      var scaledTwist = new Twist2d(kalman.getXhat(0), kalman.getXhat(1), kalman.getXhat(2));
+      kalman.setXhat(VecBuilder.fill(0.0, 0.0, 0.0));
     // Step 7: Calculate and record the vision update.
     mLatestVisionUpdate = new VisionUpdate(field_to_robot.get().exp(scaledTwist), odometrySample.get());
 
@@ -319,10 +309,9 @@ public class UnscentedPoseEstimator {
     // vision update,
     // it's guaranteed to be the latest vision update.
     m_poseEstimate = mLatestVisionUpdate.compensate(m_odometry.getPoseMeters());
- }
- catch (Exception e) {
-  DriverStation.reportError("QR Decompsition failed: ", e.getStackTrace());
- }
+    } catch (RuntimeException e) {
+      DriverStation.reportError("EKF correction failed: " + e.getMessage(), e.getStackTrace());
+    }
   
   }
 
@@ -362,7 +351,10 @@ public class UnscentedPoseEstimator {
   }
 
   @Deprecated
-  public void setVisionMeasurementStdDevs(Matrix<N3, N1> visionMeasurementStdDevs) {}
+  public void setVisionMeasurementStdDevs(Matrix<N3, N1> visionMeasurementStdDevs) {
+    m_visionMeasurementStdDevs = visionMeasurementStdDevs;
+    m_visionMeasurementCov = buildVisionCovariance(visionMeasurementStdDevs);
+  }
 
   /**
    * Updates the pose estimator with wheel encoder and gyro information. This should be called every
@@ -387,7 +379,16 @@ public class UnscentedPoseEstimator {
    */
   public Pose2d updateWithTime(
       double currentTimeSeconds, Rotation2d gyroAngle, SwerveModulePosition[] wheelPositions) {
-    Pose2d odometryEstimate = m_odometry.update(gyroAngle, wheelPositions);
+    if (Double.isFinite(m_lastTimestampSeconds)) {
+      double dtSeconds = currentTimeSeconds - m_lastTimestampSeconds;
+      if (dtSeconds > 0.0) {
+        kalman.predict(VecBuilder.fill(0.0, 0.0, 0.0), dtSeconds);
+      }
+    }
+    m_lastTimestampSeconds = currentTimeSeconds;
+
+    Pose2d odometryEstimate =
+        m_odometry.updateWithTime(currentTimeSeconds, gyroAngle, wheelPositions);
     Logger.recordOutput("Odometry/Pure Odometry", odometryEstimate);
     m_odom_to_robot.addSample(currentTimeSeconds, odometryEstimate);
 
@@ -433,5 +434,25 @@ public class UnscentedPoseEstimator {
       var delta = pose.minus(this.odometryPose);
       return this.visionPose.plus(delta);
     }
+  }
+
+  private static Matrix<N3, N3> buildVisionCovariance(Matrix<N3, N1> visionMeasurementStdDevs) {
+    Matrix<N3, N3> covariance = new Matrix<>(Nat.N3(), Nat.N3());
+    for (int i = 0; i < 3; ++i) {
+      covariance.set(i, i, visionMeasurementStdDevs.get(i, 0) * visionMeasurementStdDevs.get(i, 0));
+    }
+    return covariance;
+  }
+
+  private ExtendedKalmanFilter<N3, N3, N3> buildKalmanFilter() {
+    return new ExtendedKalmanFilter<>(
+        Nat.N3(),
+        Nat.N3(),
+        Nat.N3(),
+        (x, u) -> VecBuilder.fill(0.0, 0.0, 0.0),
+        (x, u) -> x,
+        m_stateStdDevs,
+        m_visionMeasurementStdDevs,
+        m_loopPeriodicSecs);
   }
 }
