@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -30,7 +30,7 @@ public class TalonFXIO implements MotorIO {
   protected final DutyCycleOut dutyCycleControl = new DutyCycleOut(0.0);
   private final VelocityVoltage velocityVoltageControl = new VelocityVoltage(0.0);
   private final PositionVoltage positionVoltageControl = new PositionVoltage(0.0);
-  private final MotionMagicVoltage motionMagicPositionControl = new MotionMagicVoltage(0.0);
+  private final MotionMagicExpoVoltage motionMagicPositionControl = new MotionMagicExpoVoltage(0.0);
   private final StatusSignal<Angle> positionSignal;
   private final StatusSignal<AngularVelocity> velocitySignal;
   private final StatusSignal<Voltage> voltageSignal;
@@ -58,13 +58,15 @@ public class TalonFXIO implements MotorIO {
     currentStatorSignal = talon.getStatorCurrent();
     currentSupplySignal = talon.getSupplyCurrent();
 
-    signals = new BaseStatusSignal[] {
-        positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
-    };
+    signals =
+        new BaseStatusSignal[] {
+          positionSignal, velocitySignal, voltageSignal, currentStatorSignal, currentSupplySignal
+        };
 
     CTREUtil.tryUntilOK(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(50.0, signals), talon.getDeviceID());
     CTREUtil.tryUntilOK(() -> talon.optimizeBusUtilization(), talon.getDeviceID());
+    talon.setPosition(0);
   }
 
   private double rotorToUnits(double rotor) {

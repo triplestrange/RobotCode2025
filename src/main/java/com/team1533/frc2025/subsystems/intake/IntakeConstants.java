@@ -1,55 +1,26 @@
+// Copyright (c) 2025 FRC 1533
+// http://github.com/triplestrange
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file at
+// the root directory of this project.
+
 package com.team1533.frc2025.subsystems.intake;
 
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.team1533.frc2025.Constants;
-import com.team1533.frc2025.Constants.Gains;
-import com.team1533.lib.drivers.CANDeviceId;
-import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
-
 public class IntakeConstants {
-    public static final CANDeviceId intakeTalon = new CANDeviceId(26, "rio");
-    public static final CANDeviceId intakeCC = new CANDeviceId(342, "rio");
+  public static final int intakeTalonCanID = 21;
+  public static final int rRollerTalonCanID = 22;
+  public static final int lRollerTalonCanID = 23;
+  public static final int fCANrangeCanID = 24;
+  public static final int rCANrangeCanID = 25;
+  public static final int lCANrangeCanID = 26;
+  public static final int bCANrangeCanID = 27;
+  public static final String canBUS = "rio";
 
-    public static final boolean leaderInverted = true;
+  //Tune? Check values
+  public static final double intakeStatorCurrentLimit = 200;
+  public static final double intakeSupplyCurrentLimit = 40;
 
-    public static final double reduction = 1.;
-    public static final double rotorToSensorRatio = 1.;
-    public static final double sensorToMechanismRatio = 1.;
-
-    public static final Gains gains = switch (Constants.getRobot()) {
-        case SIMBOT -> new Gains(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        case COMPBOT -> new Gains(0, 0.0, 0, 0, 0.0, 0.0, 0);
-        default -> new Gains(0, 0, 0, 0, 0, 0, 0);
-    };
-
-    public static final ServoMotorSubsystemConfig config = new ServoMotorSubsystemConfig();
-    static {
-        // Feedback Configs
-        config.fxConfig.Feedback.RotorToSensorRatio = rotorToSensorRatio;
-        config.fxConfig.Feedback.SensorToMechanismRatio = sensorToMechanismRatio;
-
-        config.fxConfig.TorqueCurrent.PeakForwardTorqueCurrent = 40;
-        config.fxConfig.TorqueCurrent.PeakReverseTorqueCurrent = -40;
-
-        config.fxConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        config.fxConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-        config.fxConfig.CurrentLimits.StatorCurrentLimit = 60;
-        config.fxConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        config.fxConfig.CurrentLimits.SupplyCurrentLimit = 40;
-        config.fxConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.fxConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
-        config.fxConfig.CurrentLimits.SupplyCurrentLowerTime = 1;
-
-        config.name = "intake";
-
-        config.kMinPositionUnits = 0;
-        config.kMaxPositionUnits = 0;
-        config.momentOfInertia = 1;
-
-        config.talonCANID = intakeTalon;
-        config.unitToRotorRatio = reduction;
-
-    }
+  public static final double rollerStatorCurrentLimit = 200;
+  public static final double rollerSupplyCurrentLimit = 40;
 }

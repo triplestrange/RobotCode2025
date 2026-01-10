@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -7,15 +7,13 @@
 
 package com.team1533.frc2025.subsystems.vision;
 
-
+import com.team1533.frc2025.Constants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-
-import com.team1533.frc2025.Constants;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
 public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
@@ -27,7 +25,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   /**
    * Creates a new VisionIOPhotonVisionSim.
    *
-   * @param name         The name of the camera.
+   * @param name The name of the camera.
    * @param poseSupplier Supplier for the robot pose to use in simulation.
    */
   public VisionIOPhotonVisionSim(

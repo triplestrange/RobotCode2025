@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -18,12 +18,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 /** Utility functions for flipping from the blue to red alliance. */
 public class AllianceFlipUtil {
-  public static AprilTagFieldLayout field = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  public static AprilTagFieldLayout field =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-  /**
-   * Flips an x coordinate to the correct side of the field based on the current
-   * alliance color.
-   */
+  /** Flips an x coordinate to the correct side of the field based on the current alliance color. */
   public static double applyX(double xCoordinate) {
     if (shouldFlip()) {
       return field.getFieldLength() - xCoordinate;
@@ -40,10 +38,7 @@ public class AllianceFlipUtil {
     }
   }
 
-  /**
-   * Flips a translation to the correct side of the field based on the current
-   * alliance color.
-   */
+  /** Flips a translation to the correct side of the field based on the current alliance color. */
   public static Translation2d apply(Translation2d translation) {
     if (shouldFlip()) {
       return new Translation2d(applyX(translation.getX()), applyY(translation.getY()));
@@ -61,10 +56,7 @@ public class AllianceFlipUtil {
     }
   }
 
-  /**
-   * Flips a pose to the correct side of the field based on the current alliance
-   * color.
-   */
+  /** Flips a pose to the correct side of the field based on the current alliance color. */
   public static Pose2d apply(Pose2d pose) {
     if (shouldFlip()) {
       return new Pose2d(apply(pose.getTranslation()), apply(pose.getRotation()));

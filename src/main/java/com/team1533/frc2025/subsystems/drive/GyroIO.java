@@ -1,5 +1,5 @@
 // Copyright (c) 2025 FRC 1533
-// 
+// http://github.com/triplestrange
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file at
@@ -15,9 +15,26 @@ public interface GyroIO {
   public static class GyroIOInputs {
     public boolean connected = false;
     public Rotation2d yawPosition = new Rotation2d();
+    public Rotation2d rollPosition = new Rotation2d();
+    public Rotation2d pitchPosition = new Rotation2d();
     public double yawVelocityRadPerSec = 0.0;
-    public double[] odometryYawTimestamps = new double[] {};
+    public double rollVelocityRadPerSec = 0.0;
+    public double pitchVelocityRadPerSec = 0.0;
+
+    public double[] odometryTimestamps = new double[] {};
     public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
+    public Rotation2d[] odometryRollPositions = new Rotation2d[] {};
+    public Rotation2d[] odometryPitchPositions = new Rotation2d[] {};
+
+    public double[] odometryYawVelocityRadPerSecs = new double[] {};
+    public double[] odometryRollVelocityRadPerSecs = new double[] {};
+    public double[] odometryPitchVelocityRadPerSecs = new double[] {};
+
+    public double accelX = 0.0;
+    public double accelY = 0.0;
+
+    public double[] odometryAccelXs = new double[] {};
+    public double[] odometryAccelYs = new double[] {};
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}
