@@ -8,11 +8,12 @@
 package com.team1533.lib.loops;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusCode;
+import com.team1533.lib.time.RobotTime;
 import edu.wpi.first.wpilibj.Threads;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Thread loop for running a set of callbacks at a Hz driven by the update frequency of CTRE Status
@@ -66,12 +67,19 @@ public class StatusSignalLoop {
     // Thread priority taken from SwerveDrive
     Threads.setCurrentThreadPriority(true, 2);
 
+    double lastTime = RobotTime.getTimestampSeconds();
     while (running.get()) {
-      @SuppressWarnings("unused")
-      StatusCode status = BaseStatusSignal.waitForAll(2.0 / updateFrequency, signals);
+      try {
+        Thread.sleep((long) (1000.0 / updateFrequency));
+      } catch (InterruptedException e) {
+      }
       for (var runnable : callbacks) {
         runnable.run();
       }
+
+      double currentTime = RobotTime.getTimestampSeconds();
+      Logger.recordOutput("FastLooper/loopTime", currentTime - lastTime);
+      lastTime = currentTime;
     }
   }
 

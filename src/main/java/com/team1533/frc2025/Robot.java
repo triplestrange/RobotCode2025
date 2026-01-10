@@ -7,14 +7,12 @@
 
 package com.team1533.frc2025;
 
+import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.lib.util.Alert;
 import com.team1533.lib.util.Alert.AlertType;
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.DigitalInput;
+import com.team1533.lib.util.Tracer;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.util.HashMap;
@@ -39,12 +37,6 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private int i;
-
-  // temp for catawba bc we lowkey need this please forgive me jonah
-
-  private final DigitalInput bannerLaser = new DigitalInput(0);
-
-  private final Debouncer bannerDebouncer = new Debouncer(0.20, DebounceType.kRising);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -76,6 +68,7 @@ public class Robot extends LoggedRobot {
         // Running a physics simulator, log to NT
         Logger.addDataReceiver(new NT4Publisher());
         break;
+        // TODO: fix replay case
       case REPLAY:
         // Replaying a log, set up replay source
         setUseTiming(false); // Run as fast as possible
@@ -89,7 +82,20 @@ public class Robot extends LoggedRobot {
     // the "Understanding Data Flow" page
     Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values may
     // be added.
-    // Log active commands
+    initializeCommandLogging();
+    RobotController.setBrownoutVoltage(6.0);
+    // Instantiate our RobotContainer. This will perform all our button bindings,
+    // and put our
+    // autonomous chooser on the dashboard.
+    robotContainer = new RobotContainer();
+  }
+
+  @Override
+  public void loopFunc() {
+    Tracer.trace("Robot/LoopFunc", super::loopFunc);
+  }
+
+  private void initializeCommandLogging() {
     Map<String, Integer> commandCounts = new HashMap<>();
     BiConsumer<Command, Boolean> logCommandFunction =
         (Command command, Boolean active) -> {
@@ -115,19 +121,36 @@ public class Robot extends LoggedRobot {
             (Command command) -> {
               logCommandFunction.accept(command, false);
             });
-    RobotController.setBrownoutVoltage(6.0);
-    // Instantiate our RobotContainer. This will perform all our button bindings,
-    // and put our
-    // autonomous chooser on the dashboard.
-    robotContainer = new RobotContainer(this);
+  }
+
+  private void initializeTracerLogging() {
+    HashMap<String, Integer> commandCounts = new HashMap<>();
+    final BiConsumer<Command, Boolean> logCommandFunction =
+        (Command command, Boolean active) -> {
+          String name = command.getName();
+          int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+          commandCounts.put(name, count);
+          if (Constants.getRobot() != RobotType.COMPBOT)
+            Logger.recordOutput(
+                "Commands/CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()),
+                active.booleanValue());
+          if (Constants.getRobot() != RobotType.COMPBOT)
+            Logger.recordOutput("Commands/CommandsAll/" + name, count > 0);
+        };
+
+    var scheduler = CommandScheduler.getInstance();
+
+    scheduler.onCommandInitialize(c -> logCommandFunction.accept(c, true));
+    scheduler.onCommandFinish(c -> logCommandFunction.accept(c, false));
+    scheduler.onCommandInterrupt(c -> logCommandFunction.accept(c, false));
   }
 
   @Override
   public void robotPeriodic() {
     if (i % 10 == 0) {}
     i++;
-    SmartDashboard.putBoolean("hasReef", bannerDebouncer.calculate(bannerLaser.get()));
-
+    // TODO: setting this thread's priority could also be killing the pheonix thread so if its a
+    // problem try getting rid of this part
     // Switch thread to high priority to improve loop timing
     Threads.setCurrentThreadPriority(true, 99);
 
@@ -140,6 +163,9 @@ public class Robot extends LoggedRobot {
 
     // Return to normal thread priority
     Threads.setCurrentThreadPriority(false, 10);
+
+    RobotState.getInstance().updateLogger();
+    RobotState.getInstance().updateMech2dViz();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

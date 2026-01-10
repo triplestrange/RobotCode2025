@@ -7,33 +7,36 @@
 
 package com.team1533.frc2025.subsystems.vision;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+
+
+//Front Cam Data
+// 9.75 deg pitch up
+// 13.23 deg yaw inward
 
 public class VisionConstants {
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "Reef_Camera";
-  public static String camera1Name = "Barge_Camera";
+  public static String camera0Name = "Back_Camera";
+  public static String camera1Name = "Front_Right_Camera";
+  public static String camera2Name = "Front_Left_Camera";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
-  public static Transform3d robotToCamera0 =
-      new Transform3d(
-          0,
-          0,
-          Units.inchesToMeters(6.25),
-          new Rotation3d(0.0, Units.degreesToRadians(-21.25), 0.0));
-  public static Transform3d robotToCamera1 =
-      new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
+    public static Transform3d robotToCamera0 =
+        new Transform3d(
+        Units.inchesToMeters(-14.690224), 0, Units.inchesToMeters(5.958701),
+        new Rotation3d(0.0, Units.degreesToRadians(-23.75), Units.degreesToRadians(180.0)));
+ 
+    public static Transform3d robotToCamera1 =
+        new Transform3d(Units.inchesToMeters(-2.087630), Units.inchesToMeters(-7.5), Units.inchesToMeters(11.773733),
+        new Rotation3d(0.0, Units.degreesToRadians(-9.75), Units.degreesToRadians(13.23)));
 
-  // test deviations
-  public static final Vector<N3> STATE_STD_DEVS = VecBuilder.fill(0.1, 0.1, 1);
-  public static final Vector<N3> VISION_MEASUREMENT_STD_DEVS = VecBuilder.fill(1, 1, 1);
+    public static Transform3d robotToCamera2 =
+        new Transform3d(Units.inchesToMeters(-2.087630), Units.inchesToMeters(7.5), Units.inchesToMeters(11.773733),
+        new Rotation3d(0.0, Units.degreesToRadians(-9.75), Units.degreesToRadians(-13.23)));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
@@ -41,7 +44,7 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double linearStdDevBaseline = 0.02; // Meters
+  public static double linearStdDevBaseline = 0.5; // Meters
   public static double angularStdDevBaseline = 0.06; // Radians
 
   // Standard deviation multipliers for each camera

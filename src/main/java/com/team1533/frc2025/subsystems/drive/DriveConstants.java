@@ -23,78 +23,69 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
 public class DriveConstants {
 
-        // Wheel Slippage Constants
-        public static final double acceptableSlippageMeters = 0.075;
-        public static final double acceptableSlippageRadians = Math.PI / 4.;
+  // TunerConstants doesn't include these constants, so they are declared locally
+  static final double ODOMETRY_FREQUENCY =
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
 
-        // TunerConstants doesn't include these constants, so they are declared locally
-        static final double ODOMETRY_FREQUENCY = new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD()
-                        ? 250.0
-                        : 100.0;
+  public static final double DRIVE_BASE_RADIUS =
+      Math.max(
+          Math.max(
+              Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontRight.LocationY),
+              Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
+          Math.max(
+              Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
+              Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-        public static final double DRIVE_BASE_RADIUS = Math.max(
-                        Math.max(
-                                        Math.hypot(TunerConstants.FrontLeft.LocationX,
-                                                        TunerConstants.FrontRight.LocationY),
-                                        Math.hypot(TunerConstants.FrontRight.LocationX,
-                                                        TunerConstants.FrontRight.LocationY)),
-                        Math.max(
-                                        Math.hypot(TunerConstants.BackLeft.LocationX,
-                                                        TunerConstants.BackLeft.LocationY),
-                                        Math.hypot(TunerConstants.BackRight.LocationX,
-                                                        TunerConstants.BackRight.LocationY)));
+  // PathPlanner config constants
+  public static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
+  public static final double ROBOT_MOI = 5.645;
+  public static final double WHEEL_COF = 2.0;
+  public static final double MAX_STEER_VEL_RAD_PER_SEC = 2 * Math.PI;
+  public static final RobotConfig PP_CONFIG =
+      new RobotConfig(
+          ROBOT_MASS_KG,
+          ROBOT_MOI,
+          new ModuleConfig(
+              TunerConstants.FrontLeft.WheelRadius,
+              TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+              WHEEL_COF,
+              DCMotor.getKrakenX60Foc(1)
+                  .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+              TunerConstants.FrontLeft.SlipCurrent,
+              1),
+          getModuleTranslations());
 
-        // PathPlanner config constants
-        public static final double ROBOT_MASS_KG = Units.lbsToKilograms(140);
-        public static final double ROBOT_MOI = 5.645;
-        public static final double WHEEL_COF = 2;
-        public static final double MAX_STEER_VEL_RAD_PER_SEC = 2 * Math.PI;
-        public static final RobotConfig PP_CONFIG = new RobotConfig(
-                        ROBOT_MASS_KG,
-                        ROBOT_MOI,
-                        new ModuleConfig(
-                                        TunerConstants.FrontLeft.WheelRadius,
-                                        TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-                                        WHEEL_COF,
-                                        DCMotor.getKrakenX60Foc(1)
-                                                        .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-                                        TunerConstants.FrontLeft.SlipCurrent,
-                                        1),
-                        getModuleTranslations());
+  public static final DriveTrainSimulationConfig mapleSimConfig =
+      DriveTrainSimulationConfig.Default()
+          .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
+          .withCustomModuleTranslations(getModuleTranslations())
+          .withGyro(COTS.ofPigeon2())
+          .withSwerveModule(
+              new SwerveModuleSimulationConfig(
+                  DCMotor.getKrakenX60Foc(1),
+                  DCMotor.getKrakenX60Foc(1),
+                  TunerConstants.FrontLeft.DriveMotorGearRatio,
+                  TunerConstants.FrontLeft.SteerMotorGearRatio,
+                  Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
+                  Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
+                  Meters.of(TunerConstants.FrontLeft.WheelRadius),
+                  KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
+                  WHEEL_COF));
 
-        public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
-                        .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
-                        .withCustomModuleTranslations(getModuleTranslations())
-                        .withGyro(COTS.ofPigeon2())
-                        .withSwerveModule(
-                                        new SwerveModuleSimulationConfig(
-                                                        DCMotor.getKrakenX60Foc(1),
-                                                        DCMotor.getKrakenX60Foc(1),
-                                                        TunerConstants.FrontLeft.DriveMotorGearRatio,
-                                                        TunerConstants.FrontLeft.SteerMotorGearRatio,
-                                                        Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
-                                                        Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
-                                                        Meters.of(TunerConstants.FrontLeft.WheelRadius),
-                                                        KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
-                                                        WHEEL_COF));
+  /** Returns an array of module translations. */
+  public static Translation2d[] getModuleTranslations() {
+    return new Translation2d[] {
+      new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
+      new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
+      new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
+      new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
+    };
+  }
 
-        /** Returns an array of module translations. */
-        public static Translation2d[] getModuleTranslations() {
-                return new Translation2d[] {
-                                new Translation2d(TunerConstants.FrontLeft.LocationX,
-                                                TunerConstants.FrontLeft.LocationY),
-                                new Translation2d(TunerConstants.FrontRight.LocationX,
-                                                TunerConstants.FrontRight.LocationY),
-                                new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-                                new Translation2d(TunerConstants.BackRight.LocationX,
-                                                TunerConstants.BackRight.LocationY)
-                };
-        }
+  public static final class RotationConfigs {
 
-        public static final class RotationConfigs {
-
-                public static final double kSwerveHeadingControllerErrorTolerance = 0.025;
-                public static final Gains gainsSnap = new Gains(30, 0, 0, 0, 0, 0, 0);
-                public static final Gains gainsMaintain = new Gains(30, 0, 0, 0, 0, 0, 0);
-        }
+    public static final double kSwerveHeadingControllerErrorTolerance = 0.025;
+    public static final Gains gainsSnap = new Gains(30, 0, 0, 0, 0, 0, 0);
+    public static final Gains gainsMaintain = new Gains(30, 0, 0, 0, 0, 0, 0);
+  }
 }

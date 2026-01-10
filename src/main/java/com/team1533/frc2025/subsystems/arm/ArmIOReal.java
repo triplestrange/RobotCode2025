@@ -13,7 +13,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
@@ -33,20 +33,22 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
+import java.util.Arrays;
+import java.util.List;
 
 public class ArmIOReal implements ArmIO {
   protected final TalonFX leaderTalon;
   protected final TalonFX followerTalon;
   protected final CANcoder pivotEncoder;
 
-  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true).withUpdateFreqHz(0.0);
+  private final VoltageOut voltageOut = new VoltageOut(0).withEnableFOC(true);
   private final DutyCycleOut dutyCycleOutControl =
-      new DutyCycleOut(0).withEnableFOC(true).withUpdateFreqHz(0);
+      new DutyCycleOut(0).withEnableFOC(true);
   private final PositionTorqueCurrentFOC positionTorqueCurrentFOC =
-      new PositionTorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0).withUpdateFreqHz(0.0);
-  private final MotionMagicVoltage motionMagicVoltage =
-      new MotionMagicVoltage(0.0).withUpdateFreqHz(0.0);
+      new PositionTorqueCurrentFOC(0);
+  private final TorqueCurrentFOC currentControl = new TorqueCurrentFOC(0);
+  private final MotionMagicExpoVoltage motionMagicVoltage =
+      new MotionMagicExpoVoltage(0.0);
 
   private final StatusSignal<Angle> leaderPositionSignal;
   private final StatusSignal<AngularVelocity> leaderVelocitySignal;
@@ -106,6 +108,8 @@ public class ArmIOReal implements ArmIO {
     config.MotionMagic.MotionMagicCruiseVelocity = ArmConstants.motionMagicCruiseVelocity;
     config.MotionMagic.MotionMagicAcceleration = ArmConstants.motionMagicAcceleration;
     config.MotionMagic.MotionMagicJerk = ArmConstants.motionMagicJerk;
+    config.MotionMagic.MotionMagicExpo_kA = ArmConstants.motionMagicExpo_kA;
+    config.MotionMagic.MotionMagicExpo_kV = ArmConstants.motionMagicExpo_kV;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = ArmConstants.forwardSoftLimitThreshold;
@@ -144,8 +148,7 @@ public class ArmIOReal implements ArmIO {
     CTREUtil.applyConfiguration(pivotEncoder, encoderConfig);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        100,
-        fusedCanCoderRotations,
+        10,
         leaderPositionSignal,
         leaderVelocitySignal,
         leaderVoltsSignal,
@@ -160,15 +163,32 @@ public class ArmIOReal implements ArmIO {
         followerTemperatureSignal,
         encoderAbsolutePositionRotations,
         encoderRelativePositionRotations,
-        armVelocitySignal,
         armAccelerationSignal);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(250, fusedCanCoderRotations, armVelocitySignal);
 
     // Optimize bus utilization
     leaderTalon.optimizeBusUtilization(0, 1.0);
     followerTalon.optimizeBusUtilization(0, 1.0);
+    pivotEncoder.optimizeBusUtilization(0, 1.0);
 
     voltageOut.EnableFOC = true;
     dutyCycleOutControl.EnableFOC = true;
+  }
+
+  @Override
+  public List<BaseStatusSignal> getStatusSignals() {
+    // Only read position and velocity at 250 hz
+    return Arrays.asList(fusedCanCoderRotations, armVelocitySignal);
+  }
+
+  @Override
+  public void updateFastInputs(FastArmIOInputs inputs) {
+    double position =
+        BaseStatusSignal.getLatencyCompensatedValueAsDouble(
+            fusedCanCoderRotations, armVelocitySignal);
+
+    inputs.FusedCANcoderPositionRots = position;
   }
 
   @Override
@@ -185,8 +205,6 @@ public class ArmIOReal implements ArmIO {
                 leaderTemperatureSignal,
                 fusedCanCoderRotations)
             .isOK();
-
-    inputs.FusedCANcoderPositionRots = fusedCanCoderRotations.getValueAsDouble();
 
     inputs.leaderVelocityRotPerSec = leaderVelocitySignal.getValueAsDouble();
     inputs.leaderAppliedVolts = leaderVoltsSignal.getValueAsDouble();

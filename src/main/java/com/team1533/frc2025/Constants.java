@@ -17,18 +17,20 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 public class Constants {
 
-  public static final double loopPeriodSecs = 0.02;
-  public static final double kSimDt = 0.001;
-  private static RobotType robotType = RobotType.REPLAY;
+  public static final double kRealDt = 0.02;
+  public static final double kSimDt = 0.005;
+
+  private static RobotType robotType = RobotType.SIMBOT;
   public static final boolean tuningMode = false;
 
   // AprilTag layout
-  public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout
-      .loadField(AprilTagFields.k2025ReefscapeAndyMark);
+  public static final AprilTagFieldLayout aprilTagLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
   public static RobotType getRobot() {
     if (!disableHAL && RobotBase.isReal() && robotType == RobotType.SIMBOT) {
@@ -60,10 +62,13 @@ public class Constants {
   }
 
   public record Gains(
-      double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {
-  }
+      double kP, double kI, double kD, double ffkS, double ffkV, double ffkA, double ffkG) {}
 
-  public static final Pose2d REEF_OFFSET = new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
+  public record SuperStructureState(
+      double armGoalRots, double elevGoalMeters, double wristGoalRots, double funnelGoalRots) {}
+
+  public static final Pose2d REEF_OFFSET =
+      new Pose2d(0, Units.inchesToMeters(6.5), Rotation2d.kZero);
 
   @RequiredArgsConstructor
   public enum ReefLocations {
@@ -96,7 +101,7 @@ public class Constants {
                             .getTranslation()
                             .rotateBy(pose.getRotation().plus(Rotation2d.k180deg)))
                     .plus(
-                        new Translation2d(Units.inchesToMeters(18.375), 0)
+                        new Translation2d(Units.inchesToMeters(16.375), 0)
                             .rotateBy(pose.getRotation())),
                 pose.getRotation().plus(Rotation2d.k180deg)));
       return AllianceFlipUtil.apply(
@@ -111,5 +116,28 @@ public class Constants {
                           .rotateBy(pose.getRotation())),
               pose.getRotation().plus(Rotation2d.k180deg)));
     }
+  }
+
+  @RequiredArgsConstructor
+  public enum SuperStructureStates {
+    STOW(new SuperStructureState(0, 0, 0, 0)),
+    SAFE(new SuperStructureState(0.21, Units.inchesToMeters(1.5), 0.22, .25)),
+    L1(new SuperStructureState(0, 0, 0, 0)),
+    L2(new SuperStructureState(0.1, 0.086995, 0.145, 0)),
+    L3(new SuperStructureState(0.16, 0.387106, 0.22, 0)),
+    L4(new SuperStructureState(0.205, 1.07, 0.337, 0)),
+    BARGE(new SuperStructureState(0.24, 1.07, 0.3, 0)),
+    PROCESSOR(new SuperStructureState(0.08, 0.1, 0.5, 0)),
+    FEEDER(new SuperStructureState(0.15, 0.043, 0.71, 0)),
+    GROUND_ALGAE(new SuperStructureState(0, 0, 0, 0)),
+    ALGAELOWER(new SuperStructureState(0.155, 0.055, 0.455, 0)),
+    ALGAEUPPER(new SuperStructureState(0.18, 0.48, 0.52, 0)),
+    CLIMB_PREP(new SuperStructureState(0.25, 0, 0.5, 0)),
+    CLIMB(new SuperStructureState(0, 0, 0.4, 0)),
+    REEF_CLEARANCE(new SuperStructureState(0, 0, 0.5, 0)),
+    ELEVATOR_CLEARANCE(new SuperStructureState(0.175, Units.inchesToMeters(1.5), 0.71, 0)),
+    WRIST_CLEARANCE(new SuperStructureState(0, 0.043, 0, 0.04));
+
+    @Getter private final SuperStructureState state;
   }
 }

@@ -11,8 +11,8 @@ import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Gains;
 
 public class ElevatorConstants {
-  public static final int leaderTalonCanID = 23;
-  public static final int followerTalonCanID = 24;
+  public static final int leaderTalonCanID = 17;
+  public static final int followerTalonCanID = 18;
   public static final String canBUS = "rio";
 
   public static final boolean leaderInverted = true;
@@ -31,11 +31,16 @@ public class ElevatorConstants {
   public static final double motionMagicCruiseVelocity = 2;
   public static final double motionMagicAcceleration = 18;
   public static final double motionMagicJerk = 60;
+  // TODO: Tune these
+  public static final double motionMagicExpo_kA = 12.0 / 18;
+  public static final double motionMagicExpo_kV = 12.0 / 1.7;
 
   public static final double reverseSoftLimitThreshold = 0;
-  public static final double forwardSoftLimitThreshold = 1.07;
-
+  public static final double forwardSoftLimitThreshold = 1.09;
+  // TODO: tune this because we changed it to use a linear filter
   public static final double blockedCurrent = 100;
+
+  public static final double toleranceMeters = .02;
 
   public static final Gains gains =
       switch (Constants.getRobot()) {

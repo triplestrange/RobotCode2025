@@ -30,7 +30,7 @@ public class TalonFXIO implements MotorIO {
   protected final DutyCycleOut dutyCycleControl = new DutyCycleOut(0.0);
   private final VelocityVoltage velocityVoltageControl = new VelocityVoltage(0.0);
   private final PositionVoltage positionVoltageControl = new PositionVoltage(0.0);
-  private final MotionMagicVoltage motionMagicPositionControl = new MotionMagicVoltage(0.0);
+  private final MotionMagicExpoVoltage motionMagicPositionControl = new MotionMagicExpoVoltage(0.0);
   private final StatusSignal<Angle> positionSignal;
   private final StatusSignal<AngularVelocity> velocitySignal;
   private final StatusSignal<Voltage> voltageSignal;
@@ -66,6 +66,7 @@ public class TalonFXIO implements MotorIO {
     CTREUtil.tryUntilOK(
         () -> BaseStatusSignal.setUpdateFrequencyForAll(50.0, signals), talon.getDeviceID());
     CTREUtil.tryUntilOK(() -> talon.optimizeBusUtilization(), talon.getDeviceID());
+    talon.setPosition(0);
   }
 
   private double rotorToUnits(double rotor) {

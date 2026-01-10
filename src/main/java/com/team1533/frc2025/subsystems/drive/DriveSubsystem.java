@@ -21,10 +21,8 @@ import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.ReefLocations;
 import com.team1533.frc2025.Constants.RobotType;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.RobotState;
 import com.team1533.frc2025.generated.TunerConstants;
-import com.team1533.frc2025.subsystems.vision.VisionConstants;
-import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
-import com.team1533.lib.odometry.StrangeSwerveDrivePoseEstimator;
 import com.team1533.lib.swerve.AlignController;
 import com.team1533.lib.util.AllianceFlipUtil;
 import com.team1533.lib.util.LocalADStarAK;
@@ -32,7 +30,7 @@ import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -40,8 +38,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -51,28 +47,43 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import lombok.Getter;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.VisionConsumer {
+public class DriveSubsystem extends SubsystemBase {
 
   static final Lock odometryLock = new ReentrantLock();
 
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+
+// raw input from shaun
+  private ChassisSpeeds prePoofed = new ChassisSpeeds();
   private final SysIdRoutine sysId;
+
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
+
   private SwerveSetpoint setpoint;
   private SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(DriveConstants.getModuleTranslations());
   private final SwerveSetpointGenerator generator =
       new SwerveSetpointGenerator(
           DriveConstants.PP_CONFIG, DriveConstants.MAX_STEER_VEL_RAD_PER_SEC);
+
   private final AlignController alignController =
-      new AlignController(10, Constants.loopPeriodSecs, this::getPose);
-  private Rotation2d rawGyroRotation = new Rotation2d();
+      new AlignController(7, Constants.kRealDt, this::getPose);
+
+  private Rotation2d rawYawRotation = new Rotation2d();
+
+  private double rawYawVelocity = 0.0;
+
+  private double rawAccelX = 0.0;
+  private double rawAccelY = 0.0;
+
+  private final RobotState state;
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
         new SwerveModulePosition(),
@@ -80,15 +91,10 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         new SwerveModulePosition(),
         new SwerveModulePosition()
       };
-  private StrangeSwerveDrivePoseEstimator poseEstimator =
-      new StrangeSwerveDrivePoseEstimator(
-          kinematics,
-          rawGyroRotation,
-          lastModulePositions,
-          new Pose2d(),
-          VisionConstants.STATE_STD_DEVS,
-          VisionConstants.VISION_MEASUREMENT_STD_DEVS,
-          1. / DriveConstants.ODOMETRY_FREQUENCY);
+
+  @Getter
+  private SwerveDrivePoseEstimator poseEstimator =
+      new SwerveDrivePoseEstimator(kinematics, rawYawRotation, lastModulePositions, new Pose2d());
 
   public DriveSubsystem(
       GyroIO gyroIO,
@@ -97,6 +103,9 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
       ModuleIO blModuleIO,
       ModuleIO brModuleIO) {
     this.gyroIO = gyroIO;
+
+    state = RobotState.getInstance();
+
     modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
     modules[2] = new Module(blModuleIO, 2, TunerConstants.BackLeft);
@@ -118,7 +127,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(7, 0.0, 0), new PIDConstants(5.0, 0.0, 0.0)),
         DriveConstants.PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -151,10 +160,13 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
+
     for (var module : modules) {
       module.periodic();
     }
     odometryLock.unlock();
+
+    state.incrementIterationCount();
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -190,14 +202,48 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
       // Update gyro angle
       if (gyroInputs.connected) {
         // Use the real gyro angle
-        rawGyroRotation = gyroInputs.odometryYawPositions[i];
+        rawYawRotation = gyroInputs.odometryYawPositions[i];
+        // too lazy to update gyro sim so here's the solution
+        if (Constants.getRobot() == RobotType.COMPBOT) {
+          rawYawVelocity = gyroInputs.odometryYawVelocityRadPerSecs[i];
+
+          rawAccelX = gyroInputs.odometryAccelXs[i];
+          rawAccelY = gyroInputs.odometryAccelYs[i];
+        }
       } else {
         // Use the angle delta from the kinematics and module deltas
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
-        rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+        rawYawRotation = rawYawRotation.plus(new Rotation2d(twist.dtheta));
       }
       // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
+      state.addOdometryMeasurement(
+          sampleTimestamps[i],
+          poseEstimator.updateWithTime(sampleTimestamps[i], rawYawRotation, modulePositions));
+
+      ChassisSpeeds measuredRobotRelativeChassisSpeeds =
+          kinematics.toChassisSpeeds(swerveModulePositionToState(modulePositions));
+      ChassisSpeeds measuredFieldRelativeChassisSpeeds =
+          ChassisSpeeds.fromRobotRelativeSpeeds(measuredRobotRelativeChassisSpeeds, rawYawRotation);
+      ChassisSpeeds desiredFieldRelativeChassisSpeeds =
+          ChassisSpeeds.fromRobotRelativeSpeeds(setpoint.robotRelativeSpeeds(), rawYawRotation);
+
+      ChassisSpeeds fusedFieldRelativeChassisSpeeds =
+          new ChassisSpeeds(
+              measuredFieldRelativeChassisSpeeds.vxMetersPerSecond,
+              measuredFieldRelativeChassisSpeeds.vyMetersPerSecond,
+              rawYawVelocity);
+
+      state.addDriveMotionMeasurements(
+          sampleTimestamps[i],
+          rawYawVelocity,
+          rawAccelX,
+          rawAccelY,
+          desiredFieldRelativeChassisSpeeds,
+          measuredRobotRelativeChassisSpeeds,
+          measuredFieldRelativeChassisSpeeds,
+          fusedFieldRelativeChassisSpeeds);
+
+      state.addYawMeasurements(rawYawRotation, sampleTimestamps[i]);
     }
 
     // Update gyro alert
@@ -244,6 +290,21 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
       }
     }
 
+    if (
+    Math.abs(
+       MathUtil.angleModulus(
+        bestPose.getRotation().minus(
+          RobotContainer.getInstance().getDriveSubsystem().getRotation()).getRadians()
+        )) > Math.PI/2) 
+    {
+    bestPose = new Pose2d(bestPose.getX(),bestPose.getY(),bestPose.getRotation().plus(Rotation2d.k180deg));
+      RobotContainer.getInstance().setFacingForward(false);
+    }
+
+    else{
+      RobotContainer.getInstance().setFacingForward(true);
+    }
+
     setAlignTarget(bestPose);
 
     if (!RobotContainer.getInstance().isLeft() && !RobotContainer.getInstance().isRight()) {
@@ -259,7 +320,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   public void runVelocity(ChassisSpeeds speeds) {
     Logger.recordOutput("SwerveStates/AutoSpeeds", speeds);
     // Calculate module setpoints
-    speeds = ChassisSpeeds.discretize(speeds, Constants.loopPeriodSecs);
+    speeds = ChassisSpeeds.discretize(speeds, Constants.kRealDt);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
@@ -369,7 +430,7 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    poseEstimator.resetPosition(rawYawRotation, getModulePositions(), pose);
     if (Constants.getRobot() == Constants.RobotType.SIMBOT) {
       RobotContainer.getInstance().driveSimulation.setSimulationWorldPose(pose);
     }
@@ -378,15 +439,6 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
   /** Resets the current odometry pose. */
   public void setPose() {
     setPose(Pose2d.kZero);
-  }
-
-  /** Adds a new timestamped vision measurement. */
-  @Override
-  public void accept(
-      Pose2d visionRobotPoseMeters,
-      double timestampSeconds,
-      Matrix<N3, N1> visionMeasurementStdDevs) {
-    poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
   }
 
   /** Returns the maximum linear speed in meters per sec. */
@@ -413,8 +465,8 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
     // Yuckers Maybe?
     if (RobotContainer.getInstance().getElevatorSubsystem().getCurrentPosition() > 0.5) {
-      speedX *= 0.5;
-      speedY *= 0.5;
+      speedX *= 0.25;
+      speedY *= 0.25;
       speedR *= 0.2;
     }
 
@@ -422,20 +474,21 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
       speedX = -speedX;
       speedY = -speedY;
     }
-
+    prePoofed =  ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation());
+    Logger.recordOutput("prePoofed", prePoofed);
     setpoint =
         generator.generateSetpoint(
             setpoint,
             alignController.update(
-                ChassisSpeeds.fromFieldRelativeSpeeds(speedX, speedY, speedR, getRotation())),
-            Constants.loopPeriodSecs);
+               prePoofed),
+            Constants.kRealDt);
     Logger.recordOutput("Drive/Poofed/Setpoint", setpoint.robotRelativeSpeeds());
     runVelocity(setpoint.robotRelativeSpeeds());
   }
 
   public void teleopResetRotation() {
     poseEstimator.resetPosition(
-        rawGyroRotation,
+        rawYawRotation,
         getModulePositions(),
         new Pose2d(
             getPose().getX(), getPose().getY(), AllianceFlipUtil.apply(Rotation2d.fromDegrees(0))));
@@ -443,5 +496,14 @@ public class DriveSubsystem extends SubsystemBase implements VisionSubsystem.Vis
 
   public void setAlignTarget(Pose2d target) {
     alignController.setTarget(target);
+  }
+
+  public static SwerveModuleState[] swerveModulePositionToState(SwerveModulePosition... positions) {
+    SwerveModuleState[] states = new SwerveModuleState[positions.length];
+    for (int i = 0; i < positions.length; i++) {
+      states[i] = new SwerveModuleState(positions[i].distanceMeters, positions[i].angle);
+    }
+
+    return states;
   }
 }

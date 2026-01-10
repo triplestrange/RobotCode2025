@@ -7,7 +7,6 @@
 
 package com.team1533.lib.util;
 
-import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.StatusCode;

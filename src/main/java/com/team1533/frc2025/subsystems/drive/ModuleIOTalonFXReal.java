@@ -30,7 +30,6 @@ public class ModuleIOTalonFXReal extends ModuleIOTalonFX {
       SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
           constants) {
     super(constants);
-
     this.timestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
     this.drivePositionQueue =
         PhoenixOdometryThread.getInstance().registerSignal(super.drivePosition);

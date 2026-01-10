@@ -10,10 +10,10 @@ package com.team1533.frc2025.subsystems.vision;
 import static com.team1533.frc2025.subsystems.vision.VisionConstants.*;
 
 import com.team1533.frc2025.Constants;
+import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservation;
 import com.team1533.frc2025.subsystems.vision.VisionIO.PoseObservationType;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -135,10 +135,7 @@ public class VisionSubsystem extends SubsystemBase {
         }
 
         // Send vision observation
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        consumer.accept(observation, VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
       // Log camera datadata
@@ -175,9 +172,6 @@ public class VisionSubsystem extends SubsystemBase {
 
   @FunctionalInterface
   public interface VisionConsumer {
-    void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs);
+    void accept(PoseObservation observation, Matrix<N3, N1> visionMeasurementStdDevs);
   }
 }

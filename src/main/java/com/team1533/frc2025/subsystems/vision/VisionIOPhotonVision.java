@@ -9,12 +9,15 @@ package com.team1533.frc2025.subsystems.vision;
 
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.RobotContainer;
+import com.team1533.frc2025.RobotState;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +29,7 @@ import org.photonvision.PhotonCamera;
 public class VisionIOPhotonVision implements VisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  protected final RobotState state = RobotState.getInstance();
 
   /**
    * Creates a new VisionIOPhotonVision.
@@ -54,12 +58,15 @@ public class VisionIOPhotonVision implements VisionIO {
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()));
 
         for (var target : result.targets) {
-          // Pinhole model using sensed tag distance instead of height difference
 
+          // Pinhole model using sensed tag distance instead of height difference
           Optional<Pose3d> tagPose = Constants.aprilTagLayout.getTagPose(target.fiducialId);
           double tagDistance = target.getBestCameraToTarget().getTranslation().getNorm();
 
-          if (tagPose.isEmpty()) continue;
+          if (tagPose.isEmpty()
+          || tagPose.get().getZ() > Units.inchesToMeters(18) 
+          || tagDistance >2)
+          continue;
 
           // calculate direction vector using pitch/yaw
           Translation3d cameraToTag =
@@ -73,7 +80,13 @@ public class VisionIOPhotonVision implements VisionIO {
           Translation3d robotToTag = cameraToTag.rotateBy(robotToCamera.getRotation());
           robotToTag = robotToTag.plus(robotToCamera.getTranslation());
 
+          // Rotation2d robotRotation =
+          //     state.getYawRads(result.getTimestampSeconds()).isPresent()
+          //         ? Rotation2d.fromRadians(state.getYawRads(result.getTimestampSeconds()).get())
+          //         : RobotContainer.getInstance().getDriveSubsystem().getRotation();
+
           Rotation2d robotRotation = RobotContainer.getInstance().getDriveSubsystem().getRotation();
+
           // rotate to field coordinates
           Translation2d robotToTagFC = robotToTag.toTranslation2d().rotateBy(robotRotation);
           Translation2d fieldToRobot =

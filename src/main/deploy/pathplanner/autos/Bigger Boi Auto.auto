@@ -1,0 +1,131 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bigger Boi Auto.0"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Arm Default"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Arm L4 Front"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Outtake Front"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Arm Default"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Bigger Boi Auto.1"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bigger Boi Auto.2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Arm Default To Intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bigger Boi Auto.3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Intake Coral"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Bigger Boi Auto.4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Arm Intake To Default"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Arm L4 Back"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Outtake Back"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Arm Default"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": true
+}
