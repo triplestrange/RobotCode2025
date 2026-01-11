@@ -27,7 +27,7 @@ public class SimElevatorIO extends TalonFXIO {
   private Notifier simNotifier = null;
   private double lastUpdateTimestamp = 0.0;
 
-  public SimElevatorIO(ServoMotorSubsystemConfig config, SimElevatorConfig elevatorConfig) {
+  public SimElevatorIO(MotorSubsystemConfig config, SimElevatorConfig elevatorConfig) {
     super(config);
 
     sim =

@@ -12,13 +12,13 @@ import org.littletonrobotics.junction.Logger;
 import com.team1533.frc2025.RobotState;
 import com.team1533.lib.subsystems.MotorIO;
 import com.team1533.lib.subsystems.MotorInputsAutoLogged;
-import com.team1533.lib.subsystems.ServoMotorSubsystem;
-import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
+import com.team1533.lib.subsystems.MotorSubsystem;
+import com.team1533.lib.subsystems.MotorSubsystemConfig;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ClimbSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, MotorIO> {
+public class ClimbSubsystem extends MotorSubsystem<MotorInputsAutoLogged, MotorIO> {
 
   private final RobotState state;
 
@@ -26,7 +26,7 @@ public class ClimbSubsystem extends ServoMotorSubsystem<MotorInputsAutoLogged, M
   
   public double currentFilterValue = 0.0;
 
-  public ClimbSubsystem(ServoMotorSubsystemConfig c, final MotorIO io) {
+  public ClimbSubsystem(MotorSubsystemConfig c, final MotorIO io) {
     super(c, new MotorInputsAutoLogged(), io);
     this.state = RobotState.getInstance();
     setDefaultCommand(dutyCycleCommand(() -> 0.0).withName("Zero Climb Duty Cycle"));

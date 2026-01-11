@@ -12,7 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.Constants;
 import com.team1533.frc2025.Constants.Gains;
 import com.team1533.lib.drivers.CANDeviceId;
-import com.team1533.lib.subsystems.ServoMotorSubsystemConfig;
+import com.team1533.lib.subsystems.MotorSubsystemConfig;
 
 public class ClimbConstants {
   public static final CANDeviceId climbTalon = new CANDeviceId(28, "rio");
@@ -31,7 +31,7 @@ public class ClimbConstants {
         default -> new Gains(0, 0, 0, 0, 0, 0, 0);
       };
 
-  public static final ServoMotorSubsystemConfig config = new ServoMotorSubsystemConfig();
+  public static final MotorSubsystemConfig config = new MotorSubsystemConfig();
 
   static {
     // Feedback Configs

@@ -43,9 +43,10 @@ import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
 import com.team1533.frc2025.subsystems.vision.VisionSubsystem;
-import com.team1533.frc2025.subsystems.wrist.WristIO;
-import com.team1533.frc2025.subsystems.wrist.WristIOReal;
-import com.team1533.frc2025.subsystems.wrist.WristIOSim;
+import com.team1533.frc2025.subsystems.wrist.WristConstants;
+// import com.team1533.frc2025.subsystems.wrist.WristIO;
+// import com.team1533.frc2025.subsystems.wrist.WristIOReal;
+// import com.team1533.frc2025.subsystems.wrist.WristIOSim;
 import com.team1533.frc2025.subsystems.wrist.WristSubsystem;
 import com.team1533.lib.loops.StatusSignalLoop;
 import com.team1533.lib.subsystems.SimTalonFXIO;
@@ -122,7 +123,7 @@ public class RobotContainer {
 
         armSubsystem = new ArmSubsystem(new ArmIOReal());
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
-        wristSubsystem = new WristSubsystem(new WristIOReal());
+        wristSubsystem = new WristSubsystem(WristConstants.config, new TalonFXIO(ClimbConstants.config));
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new TalonFXIO(ClimbConstants.config));
         intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());    
 
@@ -147,7 +148,9 @@ public class RobotContainer {
                     camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose));
         armSubsystem = new ArmSubsystem(new ArmIOSim());
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
+
         wristSubsystem = new WristSubsystem(new WristIOSim());
+        wristSubsystem = new WristSubsystem(WristConstants.config, new SimTalonFXIO(ClimbConstants.config));
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new SimTalonFXIO(ClimbConstants.config));
         intakeSubsystem = new IntakeSubsystem(new IntakeIOSim());
 
@@ -168,7 +171,7 @@ public class RobotContainer {
 
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {});
 
-        wristSubsystem = new WristSubsystem(new WristIO() {});
+        wristSubsystem = new WristSubsystem(WristConstants.config, new TalonFXIO(WristConstants.config));
 
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new TalonFXIO(ClimbConstants.config));
 

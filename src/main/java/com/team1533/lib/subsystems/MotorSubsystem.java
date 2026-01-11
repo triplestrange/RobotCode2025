@@ -7,6 +7,7 @@
 
 package com.team1533.lib.subsystems;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.team1533.frc2025.subsystems.elevator.ElevatorConstants;
 // import com.team1533.frc2025.subsystems.funnel.FunnelConstants;
@@ -24,19 +25,19 @@ import org.littletonrobotics.junction.Logger;
  *
  * @param <T>
  */
-public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends MotorIO>
+public class MotorSubsystem<T extends MotorInputsAutoLogged, U extends MotorIO>
     extends SubsystemBase {
   protected U io;
   protected T inputs;
   private double positionSetpoint = 0.0;
 
-  protected ServoMotorSubsystemConfig conf;
+  protected MotorSubsystemConfig conf;
 
-  public ServoMotorSubsystem(ServoMotorSubsystemConfig config, T inputs, U io) {
+  public MotorSubsystem(MotorSubsystemConfig config, T cancoderInputs, U cancoder) {
     super(config.name);
     this.conf = config;
-    this.io = io;
-    this.inputs = inputs;
+    this.io = cancoder;
+    this.inputs = cancoderInputs;
 
     setDefaultCommand(dutyCycleCommand(() -> 0.0).withName(getName() + " Default Command Neutral"));
   }
@@ -153,21 +154,24 @@ public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends Moto
         .withName(getName() + " motionMagicSetpointCommand");
   }
 
-  // public Command motionMagicSetpointUntilOnTargetCommand(DoubleSupplier unitSupplier) {
-  //   return runEnd(
-  //           () -> {
-  //             setMotionMagicSetpointImpl(unitSupplier.getAsDouble());
-  //           },
-  //           () -> {})
-  //       .until(atSetpoint(FunnelConstants.toleranceRotations))
-  //       .withName(getName() + " motionMagicSetpointCommand");
-  // }
-
   public Command holdSetpointCommand() {
     return run(() -> {
           setMotionMagicSetpointImpl(positionSetpoint);
-        })
-        .withName(getName() + " Maintain Setpoint");
+        }).withName(getName() + " Maintain Setpoint");
+  }
+
+  public void setTorqueCurrentFOCImpl(double current) {
+    Logger.recordOutput(getName() + "/API/setTorqueCurrentFoC/Current", current);
+    io.setTorqueCurrentFOC(current);
+  }
+
+  public Command setTorqueCurrentFOC(DoubleSupplier current) {
+    return runEnd(
+                    () -> {
+                        setTorqueCurrentFOCImpl(current.getAsDouble());
+                    },
+                    () -> {})
+            .withName(getName() + " torqueCurrentFOCCommand");
   }
 
   protected void setCurrentPositionAsZero() {
@@ -178,14 +182,15 @@ public class ServoMotorSubsystem<T extends MotorInputsAutoLogged, U extends Moto
     io.setCurrentPosition(positionUnits);
   }
 
-  public Command waitForElevatorPosition(DoubleSupplier targetPosition) {
-    return new WaitUntilCommand(
-        () ->
-            Util.epsilonEquals(
-                inputs.unitPosition,
-                targetPosition.getAsDouble(),
-                ElevatorConstants.kElevatorPositioningToleranceInches));
-  }
+  //Wait for command?
+  // public Command waitForElevatorPosition(DoubleSupplier targetPosition) {
+  //   return new WaitUntilCommand(
+  //       () ->
+  //           Util.epsilonEquals(
+  //               inputs.unitPosition,
+  //               targetPosition.getAsDouble(),
+  //               ElevatorConstants.kElevatorPositioningToleranceInches));
+  // }
 
   protected Command withoutLimitsTemporarily() {
     var prev =

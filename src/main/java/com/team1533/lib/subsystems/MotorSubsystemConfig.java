@@ -10,7 +10,7 @@ package com.team1533.lib.subsystems;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.team1533.lib.drivers.CANDeviceId;
 
-public class ServoMotorSubsystemConfig {
+public class MotorSubsystemConfig {
   public String name = "UNNAMED";
   public CANDeviceId talonCANID;
   public TalonFXConfiguration fxConfig = new TalonFXConfiguration();

@@ -32,7 +32,7 @@ public class SimTalonFXIO extends TalonFXIO {
   private Notifier simNotifier = null;
   private double lastUpdateTimestamp = 0.0;
 
-  public SimTalonFXIO(ServoMotorSubsystemConfig config) {
+  public SimTalonFXIO(MotorSubsystemConfig config) {
     super(config);
 
     configMaple =

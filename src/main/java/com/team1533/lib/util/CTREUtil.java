@@ -10,7 +10,10 @@ package com.team1533.lib.util;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.HardwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.VoltageConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -47,5 +50,17 @@ public class CTREUtil {
 
   public static StatusCode refreshConfiguration(TalonFX motor, TalonFXConfiguration config) {
     return tryUntilOK(() -> motor.getConfigurator().refresh(config), motor.getDeviceID());
+  }
+
+   public static StatusCode applyConfiguration(TalonFX motor, HardwareLimitSwitchConfigs config) {
+    return tryUntilOK(() -> motor.getConfigurator().apply(config), motor.getDeviceID());
+  }
+
+  public static StatusCode applyConfiguration(TalonFX motor, MotionMagicConfigs config) {
+    return tryUntilOK(() -> motor.getConfigurator().apply(config), motor.getDeviceID());
+  }
+
+  public static StatusCode applyConfigurationNonBlocking(TalonFX motor, VoltageConfigs config) {
+    return motor.getConfigurator().apply(config, 0.01);
   }
 }
