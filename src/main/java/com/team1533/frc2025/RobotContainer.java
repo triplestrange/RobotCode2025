@@ -38,6 +38,9 @@ import com.team1533.frc2025.subsystems.intake.IntakeIO;
 import com.team1533.frc2025.subsystems.intake.IntakeIOReal;
 import com.team1533.frc2025.subsystems.intake.IntakeIOSim;
 import com.team1533.frc2025.subsystems.intake.IntakeSubsystem;
+import com.team1533.frc2025.subsystems.shooter.ShooterIO;
+import com.team1533.frc2025.subsystems.shooter.ShooterIOReal;
+import com.team1533.frc2025.subsystems.shooter.ShooterSubsystem;
 import com.team1533.frc2025.subsystems.vision.VisionConstants;
 import com.team1533.frc2025.subsystems.vision.VisionIO;
 import com.team1533.frc2025.subsystems.vision.VisionIOPhotonVision;
@@ -52,6 +55,7 @@ import com.team1533.lib.subsystems.SimTalonFXIO;
 import com.team1533.lib.subsystems.TalonFXIO;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -87,6 +91,7 @@ public class RobotContainer {
   @Getter private final WristSubsystem wristSubsystem;
   @Getter private final IntakeSubsystem intakeSubsystem;
   @Getter private final ClimbSubsystem climbSubsystem;
+  @Getter private final ShooterSubsystem shooterSubsystem;
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
@@ -124,7 +129,8 @@ public class RobotContainer {
         elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOReal());
         wristSubsystem = new WristSubsystem(new WristIOReal());
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new TalonFXIO(ClimbConstants.config));
-        intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());    
+        intakeSubsystem = new IntakeSubsystem(new IntakeIOReal());  
+        shooterSubsystem = new ShooterSubsystem(new ShooterIOReal());  
 
         break;
 
@@ -150,6 +156,7 @@ public class RobotContainer {
         wristSubsystem = new WristSubsystem(new WristIOSim());
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new SimTalonFXIO(ClimbConstants.config));
         intakeSubsystem = new IntakeSubsystem(new IntakeIOSim());
+        shooterSubsystem = new ShooterSubsystem(new ShooterIO() {});
 
         break;
 
@@ -173,6 +180,8 @@ public class RobotContainer {
         climbSubsystem = new ClimbSubsystem(ClimbConstants.config, new TalonFXIO(ClimbConstants.config));
 
         intakeSubsystem = new IntakeSubsystem(new IntakeIO() {});
+
+        shooterSubsystem = new ShooterSubsystem(new ShooterIO() {});
 
         break;
     }
@@ -249,7 +258,8 @@ public class RobotContainer {
     // autoChooser.addOption("Big Boi Right", new PathPlannerAuto("Big Boi", true));
 
     // configure button bindings
-    configureButtonBindings();
+    // configureButtonBindings();
+    prototypingButtonBinds();
     fastLoop.register(armSubsystem);
     fastLoop.register(elevatorSubsystem);
     // fastLoop.register(intakeSubsystem);
@@ -455,27 +465,41 @@ public class RobotContainer {
     // .onTrue(SuperStructureCommandFactory.defaultParallelPreset(0.164, 0.2, 0.565));
 
 
-// Operator Binds
+    // Operator Binds
 
-//Operator Manual ONe of them
-    operatorController.R1().whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.5, -0.5, 0.5));
-    operatorController.L1().whileTrue(intakeSubsystem.spinCoralRollersCommand(0.5, 0.5, -0.5));
+    //Operator Manual ONe of them
+        operatorController.R1().whileTrue(intakeSubsystem.spinCoralRollersCommand(-0.5, -0.5, 0.5));
+        operatorController.L1().whileTrue(intakeSubsystem.spinCoralRollersCommand(0.5, 0.5, -0.5));
 
-//Operator Manual Arm Override
-new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
-        .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
+    //Operator Manual Arm Override
+    new Trigger(() -> Math.abs(operatorController.getLeftY()) > 0.1)
+            .whileTrue(armSubsystem.runDutyCycle(() -> 0.3* operatorController.getLeftY()));
 
-//Operator Manual Wrist Override        
-new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
-        .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
+    //Operator Manual Wrist Override        
+    new Trigger(() -> Math.abs(operatorController.getRightY()) > 0.1)
+            .whileTrue(wristSubsystem.runDutyCycle(() -> 0.15* operatorController.getRightY()));
 
-//Operator Manual Elevator Override
-new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
-        .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
+    //Operator Manual Elevator Override
+    new Trigger(() -> Math.abs((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2) > 0.1)
+            .whileTrue(elevatorSubsystem.runDutyCycle(() -> 0.25* ((operatorController.getR2Axis() -operatorController.getL2Axis()) / 2)));
 
-// Operator Elevator Zero
-operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
-}
+    // Operator Elevator Zero
+    operatorController.cross().onTrue(SuperStructureCommandFactory.zeroElevator());
+  }
+
+  private void prototypingButtonBinds() {
+    SmartDashboard.putNumber("shooterVoltage", 0);
+    // Swerve Drive
+    driveSubsystem.setDefaultCommand(
+        driveSubsystem.run(
+            () ->
+                driveSubsystem.teleopControl(
+                    -driveController.getLeftY(),
+                    -driveController.getLeftX(),
+                    -driveController.getRightX())));
+    //driveController.R1().whileTrue(shooterSubsystem.runVoltage(() -> SmartDashboard.getNumber("shooterVoltage", 0)));
+    driveController.R1().whileTrue(shooterSubsystem.runDutyCycle(()->1.0));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
